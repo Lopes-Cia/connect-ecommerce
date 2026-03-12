@@ -1,0 +1,221 @@
+"use client";
+
+import { useState } from "react";
+import { Search } from "lucide-react";
+import ProductCard from "../_components/ProductCard";
+
+type ProductCardType =
+  | "standard"
+  | "discount"
+  | "highlighted"
+  | "highlighted-discount"
+  | "coming-soon";
+
+interface ProductItem {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  discountPrice?: number;
+  image_url: string;
+  cardType?: ProductCardType;
+}
+
+// Mock product data - replace with real API call later
+const mockProducts = [
+  {
+    id: "1",
+    name: "Cerveja Heineken Long Neck - 330ml",
+    category: "Cervejas",
+    price: 10.9,
+    discountPrice: 9.4,
+    image_url: "/assets/products/cerveja-heineken.jpg",
+    cardType: "highlighted-discount" as ProductCardType,
+  },
+  {
+    id: "2",
+    name: "Heineken Lata - 350ml",
+    category: "Cervejas",
+    price: 8.9,
+    discountPrice: 7.9,
+    image_url: "/assets/products/heineken-lata.jpg",
+    cardType: "discount" as ProductCardType,
+  },
+  {
+    id: "3",
+    name: "Coca-Cola Lata - 350ml",
+    category: "Refrigerantes",
+    price: 5.9,
+    discountPrice: 5.2,
+    image_url: "/assets/products/coca-lata.jpg",
+    cardType: "discount" as ProductCardType,
+  },
+  {
+    id: "4",
+    name: "Coca-Cola Zero Lata - 350ml",
+    category: "Refrigerantes",
+    price: 6.2,
+    image_url: "/assets/products/coca-zero.jpg",
+    cardType: "standard" as ProductCardType,
+  },
+  {
+    id: "5",
+    name: "Vodka Smirnoff - 998ml",
+    category: "Vodkas",
+    price: 46.9,
+    discountPrice: 41.9,
+    image_url: "/assets/products/smirnoff.jpg",
+    cardType: "highlighted-discount" as ProductCardType,
+  },
+  {
+    id: "6",
+    name: "Vodka Absolut - 1L",
+    category: "Vodkas",
+    price: 89.9,
+    image_url: "/assets/products/vodka-absolut.jpg",
+    cardType: "highlighted" as ProductCardType,
+  },
+  {
+    id: "7",
+    name: "Combo Cerveja + Refrigerante - Atacado",
+    category: "Combos",
+    price: 119.9,
+    discountPrice: 104.9,
+    image_url: "/assets/products/cerveja-heineken.jpg",
+    cardType: "discount" as ProductCardType,
+  },
+  {
+    id: "8",
+    name: "Energético Zero Açúcar - 250ml",
+    category: "Energéticos",
+    price: 8.5,
+    image_url: "/assets/products/coca-zero.jpg",
+    cardType: "coming-soon" as ProductCardType,
+  },
+] as ProductItem[];
+
+const categories = [
+  "Cervejas",
+  "Refrigerantes",
+  "Vodkas",
+  "Energéticos",
+  "Combos",
+];
+
+export default function ProductsPage() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProducts = mockProducts.filter((product) => {
+    const matchesCategory = selectedCategory
+      ? product.category === selectedCategory
+      : true;
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleClearFilter = () => {
+    setSelectedCategory("");
+    setSearchTerm("");
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-custom-light-100 to-custom-light-300">
+      {/* Header */}
+      <div className="px-4 md:px-6 pt-6 md:pt-8 pb-4">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-league-spartan font-bold text-custom-dark-1000 mb-2">
+            Catálogo de Bebidas
+          </h1>
+          <p className="text-custom-dark-700 font-montserrat text-sm md:text-base">
+            Explore o portfólio completo para reposição rápida do seu estoque.
+          </p>
+        </div>
+      </div>
+
+      {/* Filter Section */}
+      <div className="px-4 md:px-6 pb-3">
+        <div className="max-w-7xl mx-auto rounded-xl border border-custom-light-300 bg-white p-4 md:p-5 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-end gap-3 md:gap-4">
+            <div className="w-full lg:max-w-sm">
+              <label className="block mb-1 text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700">
+                Categoria
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-md border border-custom-light-400 bg-white text-custom-dark-1000 font-montserrat text-sm focus:outline-none focus:border-tints-french-blue focus:ring-2 focus:ring-tints-french-blue focus:ring-opacity-20"
+              >
+                <option value="">Todas as categorias</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="w-full lg:flex-1">
+              <label className="block mb-1 text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700">
+                Buscar produto
+              </label>
+              <div className="relative">
+                <Search className="h-4 w-4 text-custom-light-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Ex.: Heineken, Vodka, Coca-Cola"
+                  className="w-full pl-11 pr-3 py-2.5 rounded-md border border-custom-light-400 bg-white text-custom-dark-1000 font-montserrat text-sm placeholder:text-custom-light-600 focus:outline-none focus:border-tints-french-blue focus:ring-2 focus:ring-tints-french-blue focus:ring-opacity-20"
+                />
+              </div>
+            </div>
+
+            {(selectedCategory || searchTerm) && (
+              <button
+                onClick={handleClearFilter}
+                className="h-[42px] px-4 bg-tints-ruby-red-100 text-white font-montserrat font-semibold text-sm rounded-md hover:opacity-90 transition-opacity"
+              >
+                Limpar Filtros
+              </button>
+            )}
+          </div>
+
+          <p className="mt-3 text-xs md:text-sm font-montserrat text-custom-dark-700">
+            Exibindo {filteredProducts.length} de {mockProducts.length} produtos
+          </p>
+        </div>
+      </div>
+
+      {/* Products Grid */}
+      <div className="px-4 md:px-6 py-4 md:py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              type={product.cardType ?? (product.discountPrice ? "discount" : "standard")}
+              product={product}
+            />
+          ))}
+        </div>
+
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-white/70 mt-4">
+            <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">
+              Nenhum produto encontrado com os filtros atuais.
+            </p>
+            <p className="text-custom-dark-700 font-montserrat text-sm mt-1">
+              Tente outra categoria ou ajuste o termo de busca.
+            </p>
+          </div>
+        )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
