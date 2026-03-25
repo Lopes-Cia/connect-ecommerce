@@ -1,6 +1,7 @@
 import DashboardCard from "./_components/DashboardCard";
 import OrderCard from "./_components/OrderCard";
 import { ShoppingCart, TrendingUp, Package, AlertCircle } from "lucide-react";
+import { requireAuth } from "@/lib/auth/protected";
 
 // Mock order data for beverage distributor
 const mockOrders = [
@@ -38,14 +39,17 @@ const mockOrders = [
   },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await requireAuth();
+  const displayName = session.name?.trim() || session.email || "Cliente";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-custom-light-100 to-custom-light-200 p-4 md:p-8">
+    <div className="min-h-screen bg-linear-to-br from-custom-light-100 to-custom-light-200 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-league-spartan font-bold text-custom-dark-1000 mb-2">
-            Bem-vindo ao Dashboard
+            Bem-vindo, {displayName}
           </h1>
           <p className="text-custom-dark-700 font-montserrat text-base">
             Acompanhe suas compas, pedidos e gerenciar sua conta de distribuidor

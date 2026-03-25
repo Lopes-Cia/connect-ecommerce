@@ -1,16 +1,5 @@
 import { ClipboardList } from "lucide-react";
-
-// Mock profile data
-const profileData = {
-  companyName: "Connect Bebidas - Distribuidora Premium",
-  cnpj: "12.345.678/0001-90",
-  businessType: "Distribuidora de Bebidas",
-  email: "vendas@connectbebidas.com.br",
-  contactName: "João Silva",
-  phone: "(35) 3722-1234",
-  address: "Avenida Principal, 456 - Poços de Caldas, MG - 37700-000",
-  registrationDate: "15 de Janeiro de 2024",
-};
+import { requireAuth } from "@/lib/auth/protected";
 
 interface ProfileFieldProps {
   label: string;
@@ -30,7 +19,11 @@ function ProfileField({ label, value }: ProfileFieldProps) {
   );
 }
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const session = await requireAuth();
+  const userName = session.name?.trim() || "Nao informado";
+  const userEmail = session.email || "Nao informado";
+
   return (
     <div className="min-h-screen bg-custom-light-200 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -51,36 +44,28 @@ export default function ProfilePage() {
         <div className="bg-white rounded-lg border border-custom-light-300 p-6 shadow-sm">
           <div className="space-y-5">
             <ProfileField
-              label="Nome da Empresa"
-              value={profileData.companyName}
+              label="Nome"
+              value={userName}
             />
             <ProfileField
-              label="Tipo de Negócio"
-              value={profileData.businessType}
-            />
-            <ProfileField
-              label="CNPJ"
-              value={profileData.cnpj}
+              label="Perfil"
+              value="Distribuidor"
             />
             <ProfileField
               label="Email"
-              value={profileData.email}
+              value={userEmail}
             />
             <ProfileField
-              label="Contato"
-              value={profileData.contactName}
+              label="ID do Usuario"
+              value={session.userId}
             />
             <ProfileField
-              label="Telefone"
-              value={profileData.phone}
+              label="Status da Sessao"
+              value="Ativa"
             />
             <ProfileField
-              label="Endereço"
-              value={profileData.address}
-            />
-            <ProfileField
-              label="Data de Cadastro"
-              value={profileData.registrationDate}
+              label="Origem"
+              value="Autenticacao por token"
             />
           </div>
         </div>

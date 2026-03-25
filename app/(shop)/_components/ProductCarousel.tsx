@@ -6,62 +6,21 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import type { ProductCardViewModel } from "@/lib/products/viewModels";
 
-const mockProducts = [
-  {
-    id: "1",
-    name: "Cerveja Heineken Long Neck 330ml",
-    category: "Cervejas",
-    price: 9.99,
-    discountPrice: 7.49,
-    image_url: "/assets/products/cerveja-heineken.jpg",
-    type: "highlighted-discount" as const,
-  },
-  {
-    id: "2",
-    name: "Coca-Cola Lata 350ml",
-    category: "Refrigerantes",
-    price: 4.99,
-    image_url: "/assets/products/coca-lata.jpg",
-    type: "standard" as const,
-  },
-  {
-    id: "3",
-    name: "Coca-Cola Zero Lata 350ml",
-    category: "Refrigerantes",
-    price: 4.99,
-    image_url: "/assets/products/coca-zero.jpg",
-    type: "standard" as const,
-  },
-  {
-    id: "4",
-    name: "Heineken Lata 350ml",
-    category: "Cervejas",
-    price: 6.49,
-    discountPrice: 5.29,
-    image_url: "/assets/products/heineken-lata.jpg",
-    type: "discount" as const,
-  },
-  {
-    id: "5",
-    name: "Smirnoff Vodka 998ml",
-    category: "Destilados",
-    price: 59.90,
-    image_url: "/assets/products/smirnoff.jpg",
-    type: "highlighted" as const,
-  },
-  {
-    id: "6",
-    name: "Vodka Absolut Original 1L",
-    category: "Destilados",
-    price: 79.90,
-    discountPrice: 69.90,
-    image_url: "/assets/products/vodka-absolut.jpg",
-    type: "highlighted-discount" as const,
-  },
-];
+interface ProductCarouselProps {
+  products: ProductCardViewModel[];
+}
 
-export default function ProductCarousel() {
+export default function ProductCarousel({ products }: ProductCarouselProps) {
+  if (products.length === 0) {
+    return (
+      <div className="w-full py-10 text-center text-custom-dark-700 font-montserrat text-sm">
+        Nenhum produto disponivel no momento.
+      </div>
+    );
+  }
+
   return (
     <Carousel
       className="w-full"
@@ -72,10 +31,10 @@ export default function ProductCarousel() {
       }}
     >
       <CarouselContent className="-ml-6 md:-ml-6">
-        {mockProducts.map((product) => (
+        {products.map((product) => (
           <CarouselItem key={product.id} className="basis-[60%] sm:basis-1/3 md:basis-1/3 lg:basis-1/6">
             <ProductCard
-              type={product.type}
+              type={product.cardType ?? "standard"}
               product={{
                 id: product.id,
                 name: product.name,

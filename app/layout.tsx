@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, League_Spartan } from "next/font/google";
 import "./globals.css";
+import AppProviders from "@/components/providers/AppProviders";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -29,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${leagueSpartan.variable} antialiased flex flex-col min-h-screen`}
       >
-        {children}
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

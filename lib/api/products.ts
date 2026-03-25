@@ -1,29 +1,47 @@
 import { apiClient } from './client'
+import type { Product, ProductListResponse } from '@/lib/types/product'
 
-export interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  imageUrl?: string
-}
-
-export interface ProductListResponse {
-  products: Product[]
+interface ProductListApiResponse {
+  success: boolean
+  data: ProductListResponse
   total: number
 }
 
-export async function getProducts(params?: { page?: number; limit?: number }): Promise<ProductListResponse> {
-  // TODO: Implement actual products listing API call
-  const queryParams = new URLSearchParams({
-    page: String(params?.page || 1),
-    limit: String(params?.limit || 20),
-  })
-  
-  return apiClient<ProductListResponse>(`/products?${queryParams}`)
+interface ProductDetailApiResponse {
+  success: boolean
+  data: Product
 }
 
-export async function getProductById(id: string): Promise<Product> {
-  // TODO: Implement actual product detail API call
-  return apiClient<Product>(`/products/${id}`)
+export async function getProducts(params?: {
+  idIntegradora?: number
+}): Promise<ProductListResponse> {
+  const queryParams = new URLSearchParams()
+
+  if (params?.idIntegradora !== undefined) {
+    queryParams.set('idIntegradora', String(params.idIntegradora))
+  }
+
+  const query = queryParams.toString()
+  const endpoint = query ? `/products?${query}` : '/products'
+  const response = await apiClient<ProductListApiResponse>(endpoint)
+  return response.data
+}
+
+export async function getProductById(
+  codProd: string | number,
+  params?: { idIntegradora?: number }
+): Promise<Product> {
+  const queryParams = new URLSearchParams()
+
+  if (params?.idIntegradora !== undefined) {
+    queryParams.set('idIntegradora', String(params.idIntegradora))
+  }
+
+  const query = queryParams.toString()
+  const endpoint = query
+    ? `/products/${codProd}?${query}`
+    : `/products/${codProd}`
+
+  const response = await apiClient<ProductDetailApiResponse>(endpoint)
+  return response.data
 }

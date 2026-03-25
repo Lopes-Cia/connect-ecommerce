@@ -1,40 +1,52 @@
 import { apiClient } from './client'
+import type {
+  AuthResponse,
+  OperadorPayload,
+  RegisterUserInput,
+  Session,
+  SendLoginTokenInput,
+  VerifyLoginTokenInput,
+  VerifyTokenPayload,
+} from '@/lib/types/auth'
 
-export interface LoginCredentials {
-  email: string
-  password: string
-}
-
-export interface TwoFactorVerification {
-  sessionToken: string
-  code: string
-}
-
-export interface AuthResponse {
-  success: boolean
-  sessionToken?: string
-  message?: string
-}
-
-export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
-  // TODO: Implement actual login API call
-  return apiClient<AuthResponse>('/auth/login', {
+export async function registerUser(
+  payload: RegisterUserInput
+): Promise<AuthResponse<unknown>> {
+  return apiClient<AuthResponse<unknown>>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify(credentials),
+    body: JSON.stringify(payload),
   })
 }
 
-export async function verifyTwoFactor(verification: TwoFactorVerification): Promise<AuthResponse> {
-  // TODO: Implement actual 2FA verification API call
-  return apiClient<AuthResponse>('/auth/verify-2fa', {
+export async function sendLoginToken(
+  payload: SendLoginTokenInput
+): Promise<AuthResponse<boolean>> {
+  return apiClient<AuthResponse<boolean>>('/auth/send-token', {
     method: 'POST',
-    body: JSON.stringify(verification),
+    body: JSON.stringify(payload),
   })
 }
 
-export async function logout(): Promise<void> {
-  // TODO: Implement actual logout API call
-  return apiClient<void>('/auth/logout', {
+export async function verifyLoginToken(
+  payload: VerifyLoginTokenInput
+): Promise<AuthResponse<{ verification: VerifyTokenPayload; operador: OperadorPayload }>> {
+  return apiClient<AuthResponse<{ verification: VerifyTokenPayload; operador: OperadorPayload }>>(
+    '/auth/verify-token',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }
+  )
+}
+
+export async function logout(): Promise<AuthResponse<undefined>> {
+  return apiClient<AuthResponse<undefined>>('/auth/logout', {
     method: 'POST',
+  })
+}
+
+export async function getCurrentSession(): Promise<AuthResponse<Session>> {
+  return apiClient<AuthResponse<Session>>('/auth/me', {
+    method: 'GET',
   })
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/contexts/CartContext";
 
 type ProductCardType =
   | "standard"
@@ -34,10 +35,26 @@ function formatCurrency(value: number): string {
 }
 
 export default function ProductCard({ type, product }: ProductCardProps) {
+  const { addItem } = useCart();
   const isComingSoon = type === "coming-soon";
   const hasDiscount = type === "discount" || type === "highlighted-discount";
   const isHighlighted =
     type === "highlighted" || type === "highlighted-discount";
+
+  const handleAddToCart = () => {
+    if (isComingSoon) {
+      return;
+    }
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      imageUrl: product.image_url,
+      unitPrice: product.discountPrice ?? product.price,
+      quantity: 1,
+    });
+  };
 
   return (
     <div className="w-46 h-100 flex flex-col justify-start relative rounded-xs bg-white p-3">
@@ -47,24 +64,28 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         </div>
       )}
 
-      <div
-        className={`mb-4 h-56 shrink-0 flex items-center justify-center border border-black/10 rounded-xs ${isComingSoon ? "opacity-50" : ""}`}
-      >
-        <Image
-          src={product.image_url || "/placeholder.svg"}
-          alt={product.name}
-          width={120}
-          height={135}
-          className="h-full w-6/10 object-contain"
-        />
-      </div>
+      <Link href={isComingSoon ? "#" : `/products/${product.id}`}>
+        <div
+          className={`mb-4 h-56 shrink-0 flex items-center justify-center border border-black/10 rounded-xs ${isComingSoon ? "opacity-50" : ""}`}
+        >
+          <Image
+            src={product.image_url || "/placeholder.svg"}
+            alt={product.name}
+            width={120}
+            height={135}
+            className="h-full w-6/10 object-contain"
+          />
+        </div>
+      </Link>
 
       <div className="flex flex-col gap-1">
         <h3
           className={`h-8 overflow-hidden line-clamp-2 font-montserrat text-[14px] font-black leading-tight ${isComingSoon ? "opacity-50" : ""}`}
           style={{ color: "#192227" }}
         >
-          {product.name}
+          <Link href={isComingSoon ? "#" : `/products/${product.id}`}>
+            {product.name}
+          </Link>
         </h3>
 
         <div className="h-11 flex flex-col justify-end">
@@ -110,17 +131,16 @@ export default function ProductCard({ type, product }: ProductCardProps) {
           por unidade
         </p>
 
-        <Link href={isComingSoon ? "#" : `/products/${product.id}`} passHref>
-          <button
-            className={cn(
-              "mt-1.5 w-full rounded-xs py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed",
-              isComingSoon ? "bg-tints-french-blue/60 cursor-not-allowed" : "bg-tints-french-blue cursor-pointer",
-            )}
-            disabled={isComingSoon}
-          >
-            {isComingSoon ? "EM BREVE!" : "Adicionar"}
-          </button>
-        </Link>
+        <button
+          onClick={handleAddToCart}
+          className={cn(
+            "mt-1.5 w-full rounded-xs py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed",
+            isComingSoon ? "bg-tints-french-blue/60 cursor-not-allowed" : "bg-tints-french-blue cursor-pointer"
+          )}
+          disabled={isComingSoon}
+        >
+          {isComingSoon ? "EM BREVE!" : "Adicionar"}
+        </button>
       </div>
     </div>
   );

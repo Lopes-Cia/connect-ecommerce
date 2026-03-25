@@ -1,50 +1,13 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import ImageViewer from "./_components/ImageViewer";
 import ProductSummary from "./_components/ProductSummary";
 import ProductActivity from "./_components/ProductActivity";
 import ProductInfo from "./_components/ProductInfo";
-
-// Mock product data - replace with actual API call
-const mockProduct = {
-  id: "1",
-  name: "Cerveja Heineken Lager Premium 350ml Lata",
-  shop: "Heineken Brasil",
-  price: 4.99,
-  oldPrice: 7.99,
-  images: [
-    "/assets/products/cerveja-heineken.jpg",
-    "/assets/products/cerveja-heineken.jpg",
-    "/assets/products/cerveja-heineken.jpg",
-    "/assets/products/cerveja-heineken.jpg",
-    "/assets/products/cerveja-heineken.jpg",
-  ],
-  specs: [
-    { label: "Quantidade:", value: "1 unidade" },
-    { label: "Marca:", value: "Heineken" },
-    { label: "Tipo:", value: "Cerveja Lager" },
-    { label: "Teor Alcoólico:", value: "5%" },
-    { label: "Volume:", value: "350ml" },
-  ],
-  shortDescription:
-    "Heineken é uma cerveja lager premium de origem holandesa, conhecida mundialmente pelo seu sabor refrescante, levemente amargo e equilibrado.",
-  ingredients:
-    "Água, malte de cevada, lúpulo e extrato de lúpulo.",
-  legalNotice:
-    "Venda proibida para menores de 18 anos. Beba com moderação. As informações nutricionais podem variar de acordo com o lote. Consulte sempre a embalagem do produto.",
-  fullDescription:
-    "A Heineken é uma das cervejas mais reconhecidas do mundo. Produzida com ingredientes selecionados e o exclusivo fermento Heineken A-Yeast, oferece um sabor fresco, levemente amargo e extremamente equilibrado. Ideal para momentos de confraternização, ela é a escolha certa para quem aprecia uma cerveja de qualidade premium. Sirva bem gelada entre 0°C e 3°C para a melhor experiência.",
-  technicalSpecs: [
-    { label: "Marca", value: "Heineken" },
-    { label: "Fabricante", value: "Heineken Brasil Bebidas S.A." },
-    { label: "Volume", value: "350ml" },
-    { label: "Embalagem", value: "Lata" },
-    { label: "Teor Alcoólico", value: "5% vol." },
-    { label: "Código de Barras", value: "7896045500237" },
-    { label: "Validade", value: "Conforme impressão na embalagem" },
-    { label: "Armazenamento", value: "Conservar em local fresco, seco e ao abrigo da luz" },
-  ],
-};
+import { getIntegratedProductByCode } from "@/lib/integration/productsService";
+import { toProductDetailViewModel } from "@/lib/products/viewModels";
+import type { Product } from "@/lib/types/product";
 
 export default async function ProductDetailPage({
   params,
@@ -52,9 +15,25 @@ export default async function ProductDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const codProd = Number.parseInt(id, 10);
 
-  // TODO: Fetch product data from API using id
-  const product = mockProduct;
+  if (Number.isNaN(codProd)) {
+    notFound();
+  }
+
+  let integratedProduct: Product | null = null;
+
+  try {
+    integratedProduct = await getIntegratedProductByCode(codProd);
+  } catch {
+    notFound();
+  }
+
+  if (!integratedProduct) {
+    notFound();
+  }
+
+  const product = toProductDetailViewModel(integratedProduct);
 
   return (
     <div className="container mx-auto px-2 sm:px-4 md:px-6 py-6 bg-white">
@@ -96,6 +75,10 @@ export default async function ProductDetailPage({
             price={product.price}
             oldPrice={product.oldPrice}
             productId={product.id}
+            productName={product.name}
+            productImageUrl={product.images[0]}
+            productCategory={product.category}
+            inStock={product.inStock}
           />
         </div>
       </div>

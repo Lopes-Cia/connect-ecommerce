@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import CategoryHeader from "@/components/layout/CategoryHeader";
+import Footer from "@/components/layout/Footer";
 
 export default function AuthLayout({
   children,
@@ -10,9 +11,8 @@ export default function AuthLayout({
     <div>
       <Header />
       <CategoryHeader />
-      <main>
-        {children}
-      </main>
+      <main>{children}</main>
+      <Footer />
     </div>
   );
 }

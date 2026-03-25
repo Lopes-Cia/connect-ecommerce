@@ -2,20 +2,21 @@
 
 import { ShoppingCart, X, Trash2, Plus, Minus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/contexts/CartContext";
 
-// Temporary interface for cart items
-interface CartItem {
-  id: string;
-  name: string;
-  weight: string;
-  unitInfo: string;
-  quantity: number;
-  price: number;
+function formatCurrency(value: number): string {
+  return value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 }
 
 export default function CartSidebarMenu() {
+  const { totalItems } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -45,9 +46,14 @@ export default function CartSidebarMenu() {
       <button
         aria-label="Open cart"
         onClick={toggleCart}
-        className="cursor-pointer"
+        className="cursor-pointer relative"
       >
         <ShoppingCart size={24} color="white" />
+        {totalItems > 0 && (
+          <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-tints-ruby-red-100 text-white text-[11px] font-bold flex items-center justify-center">
+            {totalItems}
+          </span>
+        )}
       </button>
       {isOpen && (
         <CartSidebar
@@ -65,55 +71,29 @@ interface CartSidebarProps {
 }
 
 function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
+  const router = useRouter();
   const isMobile = useCheckIsMobile();
-
-  // Temporary cart data - will be replaced with actual cart state
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      name: "Refrigerante Cola 2L",
-      weight: "R$ 8,50",
-      unitInfo: "garrafa",
-      quantity: 50,
-      price: 425.0,
-    },
-    {
-      id: "2",
-      name: "Suco Natural Laranja 1L",
-      weight: "R$ 11,00",
-      unitInfo: "garrafa",
-      quantity: 50,
-      price: 550.0,
-    },
-    {
-      id: "3",
-      name: "Cerveja Premium 600ml",
-      weight: "R$ 22,00",
-      unitInfo: "unidade",
-      quantity: 30,
-      price: 660.0,
-    },
-  ]);
+  const {
+    items,
+    totalItems,
+    totalAmount,
+    setItemQuantity,
+    removeItem,
+    clearCart,
+  } = useCart();
 
   const updateQuantity = (id: string, delta: number) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
-      )
-    );
-  };
+    const item = items.find((entry) => entry.id === id);
+    if (!item) {
+      return;
+    }
 
-  const removeItem = (id: string) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+    setItemQuantity(id, Math.max(1, item.quantity + delta));
   };
-
-  const total = cartItems.reduce((sum, item) => sum + item.price, 0);
 
   const handleCheckout = () => {
-    // TODO: Implement checkout logic
-    console.log("Finalizar Pedido clicked");
+    onClose();
+    router.push("/checkout");
   };
 
   const handleContinueShopping = () => {
@@ -135,7 +115,7 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Carrinho</h2>
             <p className="text-sm text-gray-500">
-              {cartItems.length} {cartItems.length === 1 ? "item" : "itens"}
+              {totalItems} {totalItems === 1 ? "item" : "itens"}
             </p>
           </div>
         </div>
@@ -150,25 +130,39 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
 
       {/* Cart Items */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        {cartItems.length === 0 ? (
+        {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-500">
             <ShoppingCart size={48} className="mb-2 opacity-30" />
             <p>Seu carrinho está vazio</p>
           </div>
         ) : (
-          cartItems.map((item) => (
+          items.map((item) => {
+            const subtotal = item.unitPrice * item.quantity;
+
+            return (
             <div
               key={item.id}
               className="border border-gray-200 rounded-lg p-4 space-y-3"
             >
               <div className="flex justify-between items-start">
-                <div className="flex-1">
+                <div className="flex-1 flex items-start gap-3">
+                  <div className="w-14 h-14 rounded border border-gray-200 bg-gray-50 shrink-0 flex items-center justify-center overflow-hidden">
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.name}
+                      width={56}
+                      height={56}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div>
                   <h3 className="text-sm font-medium text-gray-900">
                     {item.name}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">
-                    {item.weight} / {item.unitInfo}
+                    {item.category}
                   </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => removeItem(item.id)}
@@ -188,7 +182,7 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
                   >
                     <Minus size={16} className="text-gray-700" />
                   </button>
-                  <span className="text-sm font-medium text-gray-900 min-w-[2rem] text-center">
+                  <span className="text-sm font-medium text-gray-900 min-w-8 text-center">
                     {item.quantity}
                   </span>
                   <button
@@ -200,21 +194,22 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
                   </button>
                 </div>
                 <div className="text-base font-semibold text-gray-900">
-                  R$ {item.price.toFixed(2).replace(".", ",")}
+                  {formatCurrency(subtotal)}
                 </div>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 
       {/* Footer */}
-      {cartItems.length > 0 && (
+      {items.length > 0 && (
         <div className="border-t border-gray-200 px-6 py-4 space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-lg font-semibold text-gray-900">Total</span>
             <span className="text-xl font-bold text-tints-french-blue">
-              R$ {total.toFixed(2).replace(".", ",")}
+              {formatCurrency(totalAmount)}
             </span>
           </div>
 
@@ -223,6 +218,13 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
             className="w-full bg-tints-french-blue text-white py-3 rounded font-medium hover:bg-tints-french-blue/90 transition-colors cursor-pointer"
           >
             Finalizar Pedido
+          </button>
+
+          <button
+            onClick={clearCart}
+            className="w-full bg-white text-gray-900 py-3 rounded font-medium border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            Limpar carrinho
           </button>
 
           <button

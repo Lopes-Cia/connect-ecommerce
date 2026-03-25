@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import ProductCard from "../_components/ProductCard";
+import { getProducts } from "@/lib/api/products";
+import { toProductCardViewModel } from "@/lib/products/viewModels";
 
 type ProductCardType =
   | "standard"
@@ -21,92 +23,53 @@ interface ProductItem {
   cardType?: ProductCardType;
 }
 
-// Mock product data - replace with real API call later
-const mockProducts = [
-  {
-    id: "1",
-    name: "Cerveja Heineken Long Neck - 330ml",
-    category: "Cervejas",
-    price: 10.9,
-    discountPrice: 9.4,
-    image_url: "/assets/products/cerveja-heineken.jpg",
-    cardType: "highlighted-discount" as ProductCardType,
-  },
-  {
-    id: "2",
-    name: "Heineken Lata - 350ml",
-    category: "Cervejas",
-    price: 8.9,
-    discountPrice: 7.9,
-    image_url: "/assets/products/heineken-lata.jpg",
-    cardType: "discount" as ProductCardType,
-  },
-  {
-    id: "3",
-    name: "Coca-Cola Lata - 350ml",
-    category: "Refrigerantes",
-    price: 5.9,
-    discountPrice: 5.2,
-    image_url: "/assets/products/coca-lata.jpg",
-    cardType: "discount" as ProductCardType,
-  },
-  {
-    id: "4",
-    name: "Coca-Cola Zero Lata - 350ml",
-    category: "Refrigerantes",
-    price: 6.2,
-    image_url: "/assets/products/coca-zero.jpg",
-    cardType: "standard" as ProductCardType,
-  },
-  {
-    id: "5",
-    name: "Vodka Smirnoff - 998ml",
-    category: "Vodkas",
-    price: 46.9,
-    discountPrice: 41.9,
-    image_url: "/assets/products/smirnoff.jpg",
-    cardType: "highlighted-discount" as ProductCardType,
-  },
-  {
-    id: "6",
-    name: "Vodka Absolut - 1L",
-    category: "Vodkas",
-    price: 89.9,
-    image_url: "/assets/products/vodka-absolut.jpg",
-    cardType: "highlighted" as ProductCardType,
-  },
-  {
-    id: "7",
-    name: "Combo Cerveja + Refrigerante - Atacado",
-    category: "Combos",
-    price: 119.9,
-    discountPrice: 104.9,
-    image_url: "/assets/products/cerveja-heineken.jpg",
-    cardType: "discount" as ProductCardType,
-  },
-  {
-    id: "8",
-    name: "Energético Zero Açúcar - 250ml",
-    category: "Energéticos",
-    price: 8.5,
-    image_url: "/assets/products/coca-zero.jpg",
-    cardType: "coming-soon" as ProductCardType,
-  },
-] as ProductItem[];
-
-const categories = [
-  "Cervejas",
-  "Refrigerantes",
-  "Vodkas",
-  "Energéticos",
-  "Combos",
-];
-
 export default function ProductsPage() {
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredProducts = mockProducts.filter((product) => {
+  useEffect(() => {
+    let active = true;
+
+    const loadProducts = async () => {
+      try {
+        const result = await getProducts();
+        if (!active) {
+          return;
+        }
+
+        setProducts(result.map(toProductCardViewModel));
+        setLoadError(null);
+      } catch (error) {
+        if (!active) {
+          return;
+        }
+
+        setLoadError("Nao foi possivel carregar os produtos agora.");
+        console.error("Failed to load products page data", error);
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const categories = useMemo(() => {
+    return [...new Set(products.map((product) => product.category))].sort(
+      (left, right) => left.localeCompare(right)
+    );
+  }, [products]);
+
+  const filteredProducts = products.filter((product) => {
     const matchesCategory = selectedCategory
       ? product.category === selectedCategory
       : true;
@@ -123,7 +86,7 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-custom-light-100 to-custom-light-300">
+    <div className="min-h-screen bg-linear-to-br from-custom-light-100 to-custom-light-300">
       {/* Header */}
       <div className="px-4 md:px-6 pt-6 md:pt-8 pb-4">
         <div className="max-w-7xl mx-auto">
@@ -131,7 +94,7 @@ export default function ProductsPage() {
             Catálogo de Bebidas
           </h1>
           <p className="text-custom-dark-700 font-montserrat text-sm md:text-base">
-            Explore o portfólio completo para reposição rápida do seu estoque.
+            Explore o portfolio completo para reposicao rapida do seu estoque.
           </p>
         </div>
       </div>
@@ -177,7 +140,7 @@ export default function ProductsPage() {
             {(selectedCategory || searchTerm) && (
               <button
                 onClick={handleClearFilter}
-                className="h-[42px] px-4 bg-tints-ruby-red-100 text-white font-montserrat font-semibold text-sm rounded-md hover:opacity-90 transition-opacity"
+                className="h-10.5 px-4 bg-tints-ruby-red-100 text-white font-montserrat font-semibold text-sm rounded-md hover:opacity-90 transition-opacity"
               >
                 Limpar Filtros
               </button>
@@ -185,7 +148,7 @@ export default function ProductsPage() {
           </div>
 
           <p className="mt-3 text-xs md:text-sm font-montserrat text-custom-dark-700">
-            Exibindo {filteredProducts.length} de {mockProducts.length} produtos
+            Exibindo {filteredProducts.length} de {products.length} produtos
           </p>
         </div>
       </div>
@@ -193,17 +156,35 @@ export default function ProductsPage() {
       {/* Products Grid */}
       <div className="px-4 md:px-6 py-4 md:py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              type={product.cardType ?? (product.discountPrice ? "discount" : "standard")}
-              product={product}
-            />
-          ))}
-        </div>
+          {isLoading && (
+            <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-white/70 mt-4">
+              <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">
+                Carregando produtos...
+              </p>
+            </div>
+          )}
 
-        {filteredProducts.length === 0 && (
+          {loadError && !isLoading && (
+            <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-white/70 mt-4">
+              <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">
+                {loadError}
+              </p>
+            </div>
+          )}
+
+          {!isLoading && !loadError && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                type={product.cardType ?? (product.discountPrice ? "discount" : "standard")}
+                product={product}
+              />
+            ))}
+          </div>
+          )}
+
+        {!isLoading && !loadError && filteredProducts.length === 0 && (
           <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-white/70 mt-4">
             <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">
               Nenhum produto encontrado com os filtros atuais.

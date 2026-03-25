@@ -3,11 +3,16 @@
 import { useState } from "react";
 import { Truck, Search } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/contexts/CartContext";
 
 interface ProductActivityProps {
   price: number;
   oldPrice?: number;
   productId?: string;
+  productName?: string;
+  productImageUrl?: string;
+  productCategory?: string;
   pricePerUnit?: string;
   installments?: number;
   installmentValue?: number;
@@ -27,6 +32,9 @@ export default function ProductActivity({
   price,
   oldPrice,
   productId,
+  productName,
+  productImageUrl,
+  productCategory,
   pricePerUnit,
   installments = 10,
   installmentValue,
@@ -34,6 +42,8 @@ export default function ProductActivity({
   onAddToCart,
   onBuyNow,
 }: ProductActivityProps) {
+  const router = useRouter();
+  const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [cep, setCep] = useState("");
 
@@ -44,9 +54,48 @@ export default function ProductActivity({
     console.log("Consulting CEP:", cep);
   };
 
+  const addCurrentProductToCart = (selectedQuantity: number) => {
+    if (!productId || !productName) {
+      return;
+    }
+
+    addItem({
+      id: productId,
+      name: productName,
+      category: productCategory,
+      imageUrl: productImageUrl,
+      unitPrice: price,
+      quantity: selectedQuantity,
+    });
+  };
+
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart(quantity);
+      return;
+    }
+
+    addCurrentProductToCart(quantity);
+  };
+
+  const handleBuyNow = () => {
+    if (onBuyNow) {
+      onBuyNow(quantity);
+      return;
+    }
+
+    addCurrentProductToCart(quantity);
+    router.push("/checkout");
+  };
+
   return (
     <div className="bg-custom-light-100 border border-custom-light-400 rounded-md p-4 flex flex-col gap-3">
       {/* Price Section */}
+      {oldPrice && oldPrice > price && (
+        <p className="text-custom-light-600 font-montserrat text-xs line-through">
+          {formatCurrency(oldPrice)}
+        </p>
+      )}
       <div className="flex items-baseline gap-1">
         <span className="text-custom-dark-1000 font-montserrat text-xs">R$</span>
         <span className="text-custom-dark-1000 font-montserrat font-bold text-2xl">
@@ -113,14 +162,14 @@ export default function ProductActivity({
       {/* Action Buttons */}
       <div className="flex flex-col gap-2 mt-2">
         <button
-          onClick={() => onAddToCart?.(quantity)}
+          onClick={handleAddToCart}
           disabled={!inStock}
           className="w-full py-2.5 bg-tints-french-blue cursor-pointer text-white font-montserrat font-semibold text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Adicionar ao carrinho
         </button>
         <button
-          onClick={() => onBuyNow?.(quantity)}
+          onClick={handleBuyNow}
           disabled={!inStock}
           className="w-full py-2.5 bg-tints-french-blue cursor-pointer text-white font-montserrat font-semibold text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >

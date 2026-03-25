@@ -4,6 +4,7 @@ export interface Session {
   userId: string
   email: string
   token: string
+  name?: string
 }
 
 export async function getSession(): Promise<Session | null> {

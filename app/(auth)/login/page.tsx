@@ -17,28 +17,34 @@ export default function LoginPage() {
 
         <div className="bg-[linear-gradient(to_bottom,#080956_0%,#040228_100%)] rounded-lg shadow-xl p-8 border border-custom-light-400">
           <div className="text-center mb-8">
-        <Image
-          src="/logo.png"
-          alt="New Bread Logo"
-          width={120}
-          height={120}
-          className="mx-auto mb-4"
-        />
-        <p className="text-white font-montserrat text-sm">
-          Faça login para continuar
-        </p>
+            <Image
+              src="/logo.png"
+              alt="New Bread Logo"
+              width={120}
+              height={120}
+              className="mx-auto mb-4"
+            />
+            <p className="text-white font-montserrat text-sm">
+              Faça login para continuar
+            </p>
           </div>
           <LoginForm />
         </div>
 
         <p className="text-center text-black font-montserrat text-xs mt-6">
           Ao fazer login, você concorda com nossos{" "}
-          <Link href="/terms" className="text-tints-french-blue hover:underline">
-        Termos de Uso
+          <Link
+            href="/terms"
+            className="text-tints-french-blue hover:underline"
+          >
+            Termos de Uso
           </Link>{" "}
           e{" "}
-          <Link href="/privacy" className="text-tints-french-blue hover:underline">
-        Política de Privacidade
+          <Link
+            href="/privacy"
+            className="text-tints-french-blue hover:underline"
+          >
+            Política de Privacidade
           </Link>
         </p>
       </div>

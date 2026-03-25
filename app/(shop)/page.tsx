@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import Image from "next/image";
 import CategoryLine from "./_components/CategoryLine";
@@ -7,9 +8,41 @@ import ProductCarousel from "./_components/ProductCarousel";
 import BannerCarousel from "./_components/BannerCarousel";
 import Unidades from "./_components/Unidades";
 import { Truck, Package, Headphones, CreditCard } from "lucide-react";
+import { getProducts } from "@/lib/api/products";
+import type { Product } from "@/lib/types/product";
+import { toProductCardViewModel } from "@/lib/products/viewModels";
 
 export default function Home() {
   const isMobile = useCheckIsMobile();
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadProducts = async () => {
+      try {
+        const result = await getProducts();
+        if (!active) {
+          return;
+        }
+
+        setProducts(result);
+      } catch (error) {
+        console.error("Failed to load products for home page", error);
+      }
+    };
+
+    void loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const carouselProducts = useMemo(
+    () => products.slice(0, 12).map(toProductCardViewModel),
+    [products]
+  );
 
   return (
     <div>
@@ -140,7 +173,7 @@ export default function Home() {
           verticalLineColor="bg-white"
         />
         <div className="w-full flex justify-center py-10 px-4">
-          <ProductCarousel />
+          <ProductCarousel products={carouselProducts} />
         </div>
       </section>
       <section aria-label="Promoções">
@@ -150,7 +183,7 @@ export default function Home() {
           verticalLineColor="bg-white"
         />
         <div className="w-full flex justify-center py-10 px-4">
-          <ProductCarousel />
+          <ProductCarousel products={carouselProducts} />
         </div>
       </section>
       <section aria-label="Cervejas">
@@ -160,7 +193,7 @@ export default function Home() {
           verticalLineColor="bg-white"
         />
         <div className="w-full flex justify-center py-10 px-4">
-          <ProductCarousel />
+          <ProductCarousel products={carouselProducts} />
         </div>
       </section>
       <Unidades />
