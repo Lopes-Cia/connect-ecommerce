@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 
 import { setSession } from '@/lib/auth/session'
 import { getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
-import { getIntegrationEnvConfig } from '@/lib/integration/config'
 import { ensureAuthReady } from '@/lib/integration/authService'
 import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
 
@@ -53,12 +52,11 @@ export async function POST(request: Request) {
       )
     }
 
-    const env = getIntegrationEnvConfig()
     const auth = await ensureAuthReady({ backgroundRefresh: false })
     const authHeader = toRawToken(auth.token.hashToken)
     const baseUrl = getAuthWebserviceBaseUrl()
 
-    const verifyUrl = `${baseUrl}/verificarTokenSistema?token=${encodeURIComponent(token)}&idIntegradora=${env.idIntegradora}`
+    const verifyUrl = `${baseUrl}/verificarTokenSistema?token=${encodeURIComponent(token)}`
     const verifyResponse = await fetchWithRetry(
       verifyUrl,
       {
