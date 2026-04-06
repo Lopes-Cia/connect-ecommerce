@@ -1,37 +1,9 @@
-function resolveApiBaseUrl(): string {
-  const configured = process.env.NEXT_PUBLIC_API_URL?.trim()
-
-  if (!configured) {
-    return '/api'
-  }
-
-  if (typeof window !== 'undefined') {
-    try {
-      const parsed = new URL(configured, window.location.origin)
-      const configuredHost = parsed.hostname
-      const currentHost = window.location.hostname
-
-      const isConfiguredLocal = configuredHost === 'localhost' || configuredHost === '127.0.0.1'
-      const isCurrentLocal = currentHost === 'localhost' || currentHost === '127.0.0.1'
-
-      if (isConfiguredLocal && !isCurrentLocal) {
-        return '/api'
-      }
-    } catch {
-      return '/api'
-    }
-  }
-
-  return configured
-}
-
-const API_BASE_URL = resolveApiBaseUrl()
+const API_BASE_URL = '/api'
 
 function buildApiUrl(endpoint: string): string {
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
-  const normalizedBase = API_BASE_URL.replace(/\/+$/, '')
 
-  return `${normalizedBase}${normalizedEndpoint}`
+  return `${API_BASE_URL}${normalizedEndpoint}`
 }
 
 export class ApiError extends Error {
@@ -47,7 +19,7 @@ export class ApiError extends Error {
 
 export async function apiClient<T>(
   endpoint: string,
-  options?: RequestInit
+  options: RequestInit = {}
 ): Promise<T> {
   const url = buildApiUrl(endpoint)
   
@@ -56,17 +28,21 @@ export async function apiClient<T>(
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        ...options?.headers,
+        ...options.headers,
       },
     })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new ApiError(
-        errorData.message || 'An error occurred',
+        errorData.message || 'Ocorreu um erro na requisição',
         response.status,
         errorData
       )
+    }
+
+    if (response.status === 204) {
+      return undefined as T
     }
 
     return response.json()
@@ -74,6 +50,6 @@ export async function apiClient<T>(
     if (error instanceof ApiError) {
       throw error
     }
-    throw new ApiError('Network error', 0, error)
+    throw new ApiError('Erro de rede', 0, error)
   }
 }
