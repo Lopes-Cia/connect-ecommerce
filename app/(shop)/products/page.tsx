@@ -140,7 +140,7 @@ export default function ProductsPage() {
             {(selectedCategory || searchTerm) && (
               <button
                 onClick={handleClearFilter}
-                className="h-10.5 px-4 bg-tints-ruby-red-100 text-white font-montserrat font-semibold text-sm rounded-md hover:opacity-90 transition-opacity"
+                className="h-10.5 px-4 bg-tints-french-blue text-white font-montserrat font-semibold text-sm rounded-md hover:opacity-90 transition-opacity"
               >
                 Limpar Filtros
               </button>

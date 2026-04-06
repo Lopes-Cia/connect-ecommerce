@@ -6,7 +6,7 @@ interface CategoryLineProps {
 
 export default function CategoryLine({
   title = "Título da Categoria",
-  bgColor = "bg-tints-ruby-red-100",
+  bgColor = "bg-tints-french-blue/90",
   verticalLineColor = "bg-tints-bright-lemon"
 }: CategoryLineProps) {
   return (

@@ -50,7 +50,7 @@ export default function CartSidebarMenu() {
       >
         <ShoppingCart size={24} color="white" />
         {totalItems > 0 && (
-          <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-tints-ruby-red-100 text-white text-[11px] font-bold flex items-center justify-center">
+          <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-tints-french-blue text-white text-[11px] font-bold flex items-center justify-center">
             {totalItems}
           </span>
         )}

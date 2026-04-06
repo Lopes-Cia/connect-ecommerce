@@ -37,9 +37,9 @@ export default function DashboardSidebar() {
   }
 
   return (
-    <div className="hidden md:flex w-64 h-screen bg-[#7d1a1a] flex-col text-white sticky top-0 overflow-hidden">
+    <div className="hidden md:flex w-56 h-screen bg-tints-french-blue flex-col text-white sticky top-0 overflow-hidden">
       <div className="flex flex-col items-center pt-4 pb-3 px-4 shrink-0">
-        <div className="w-14 h-14 rounded-full bg-[#5d1414] flex items-center justify-center text-white text-xl font-semibold mb-2">
+        <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-tints-french-blue text-xl font-semibold mb-2">
           {userInitial}
         </div>
         <div className="text-white text-base font-medium truncate max-w-full">{userName}</div>

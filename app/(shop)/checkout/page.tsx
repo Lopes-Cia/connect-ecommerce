@@ -93,7 +93,7 @@ export default function CheckoutPage() {
                     </p>
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="text-xs text-tints-ruby-red-100 hover:underline"
+                      className="text-xs text-tints-french-blue hover:underline"
                     >
                       Remover
                     </button>

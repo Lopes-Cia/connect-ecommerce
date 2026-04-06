@@ -108,13 +108,12 @@ function ShopHeader() {
 
 function DashboardHeader() {
   return (
-    <header className="w-full max-h-fit flex justify-between items-center bg-tints-french-blue py-4 px-6 gap-2">
+    <header className="w-full h-16 max-h-fit flex justify-between items-center bg-tints-french-blue py-4 px-2 xs:px-8 gap-2">
       <Link href="/">
-        <Image src="/logo.png" alt="Newbread Logo" width={100} height={400} />
+        <Image src="/logo.png" alt="Newbread Logo" width={95} height={380} />
       </Link>
       <div className="w-fit flex flex-row items-center gap-6">
         <CartSidebarMenu />
-        <SidebarMenu />
       </div>
     </header>
   );
