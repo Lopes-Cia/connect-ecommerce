@@ -7,17 +7,25 @@ function getIsMobile() {
   return window.innerWidth <= 768;
 }
 
-export default function useCheckIsMobile() {
-  const [isMobile, setIsMobile] = useState(getIsMobile);
+function resolveIsMobile(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
 
-  const handleResize = useCallback(() => {
-    setIsMobile(getIsMobile());
-  }, []);
+  return window.innerWidth <= 768;
+}
+
+export default function useCheckIsMobile() {
+  const [isMobile, setIsMobile] = useState(resolveIsMobile);
 
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(resolveIsMobile());
+    };
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [handleResize]);
+  }, []);
 
   return isMobile;
 }
