@@ -7,6 +7,7 @@ interface IntegrationEnvConfig {
   integrationUrlApi: string
   idIntegradora: number
   codCli: number
+  key: string
 }
 
 let cachedConfig: IntegrationEnvConfig | null = null
@@ -66,6 +67,7 @@ export function getIntegrationEnvConfig(): IntegrationEnvConfig {
     integrationUrlApi: normalizeBaseUrl(readFirstEnv(['INTEGRATION_URL_API'])),
     idIntegradora: parseRequiredNumber(['ID_INTEGRADORA', 'IDINTEGRADORA']),
     codCli: parseRequiredNumber(['COD_CLI', 'CODCLI']),
+    key: readFirstEnv(['KEY']),
   }
 
   return cachedConfig

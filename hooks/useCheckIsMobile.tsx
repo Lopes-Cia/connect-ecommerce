@@ -1,21 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+function getIsMobile() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return window.innerWidth <= 768;
+}
 
 export default function useCheckIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(getIsMobile);
 
-  function updateIsMobile() {
-    if (window.innerWidth <= 768) {
-      setIsMobile(true);
-    } else {
-      setIsMobile(false);
-    }
-  }
+  const handleResize = useCallback(() => {
+    setIsMobile(getIsMobile());
+  }, []);
 
   useEffect(() => {
-    updateIsMobile();
-    window.addEventListener("resize", updateIsMobile);
-    return () => window.removeEventListener("resize", updateIsMobile);
-  }, []);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
 
   return isMobile;
 }

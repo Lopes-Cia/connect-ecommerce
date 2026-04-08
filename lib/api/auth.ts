@@ -3,11 +3,11 @@ import type {
   AuthResponse,
   OperadorPayload,
   RegisterUserInput,
-  Session,
   SendLoginTokenInput,
   VerifyLoginTokenInput,
   VerifyTokenPayload,
 } from '@/lib/types/auth'
+import type { Session } from '@/lib/auth/session'
 
 export async function registerUser(
   payload: RegisterUserInput

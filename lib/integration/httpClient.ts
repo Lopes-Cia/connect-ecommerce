@@ -5,6 +5,7 @@ import type { AuthStateBundle } from '@/lib/types/integration'
 import { ensureAuthReady } from './authService'
 import { logWarn } from './logger'
 import { fetchWithRetry, HttpError, readResponseData } from './network'
+import { toRawToken } from './token'
 
 interface BusinessRequestOptions extends Omit<RequestInit, 'body' | 'headers'> {
   path: string
@@ -13,11 +14,7 @@ interface BusinessRequestOptions extends Omit<RequestInit, 'body' | 'headers'> {
   body?: unknown
 }
 
-function toRawToken(hashToken: string): string {
-  return hashToken.toLowerCase().startsWith('bearer ')
-    ? hashToken.slice(7).trim()
-    : hashToken
-}
+
 
 function buildBusinessUrl(
   baseUrl: string,

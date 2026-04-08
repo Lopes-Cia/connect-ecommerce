@@ -10,7 +10,7 @@ import {
 } from "react";
 
 import { getCurrentSession, logout } from "@/lib/api/auth";
-import type { Session } from "@/lib/types/auth";
+import type { Session } from "@/lib/auth/session";
 
 interface AuthContextValue {
   user: Session | null;

@@ -11,6 +11,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import OrderCard from "../_components/OrderCard";
+import { formatCurrency } from "@/lib/formatting";
 
 const mockOrders = [
   {
@@ -113,12 +114,7 @@ export default function OrdersPage() {
   const processingCount = filteredOrders.filter((order) => order.status === "Processando").length;
   const pendingCount = filteredOrders.filter((order) => order.status === "Pendente").length;
 
-  const formatCurrency = (value: number) =>
-    value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      maximumFractionDigits: 0,
-    });
+
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f6f7f9_0%,#ffffff_34%,#ffffff_100%)] p-3 sm:p-5 lg:p-8">

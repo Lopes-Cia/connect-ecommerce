@@ -3,17 +3,14 @@ import { NextResponse } from 'next/server'
 import { getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
 import { ensureAuthReady } from '@/lib/integration/authService'
 import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
+import { toRawToken } from '@/lib/integration/token'
 
 interface SendTokenRequestBody {
   email?: string
   whatsapp?: string
 }
 
-function toRawToken(hashToken: string): string {
-  return hashToken.toLowerCase().startsWith('bearer ')
-    ? hashToken.slice(7).trim()
-    : hashToken
-}
+
 
 export async function POST(request: Request) {
   try {

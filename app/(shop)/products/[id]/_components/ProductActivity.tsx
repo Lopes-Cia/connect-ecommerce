@@ -5,6 +5,7 @@ import { Truck, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
+import { formatCurrency } from "@/lib/formatting";
 
 interface ProductActivityProps {
   price: number;
@@ -21,12 +22,7 @@ interface ProductActivityProps {
   onBuyNow?: (quantity: number) => void;
 }
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
+
 
 export default function ProductActivity({
   price,

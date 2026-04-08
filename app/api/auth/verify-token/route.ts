@@ -4,6 +4,7 @@ import { setSession } from '@/lib/auth/session'
 import { getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
 import { ensureAuthReady } from '@/lib/integration/authService'
 import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
+import { toRawToken } from '@/lib/integration/token'
 
 interface VerifyTokenRequestBody {
   token: string
@@ -29,11 +30,7 @@ interface OperadorResponse {
   [key: string]: unknown
 }
 
-function toRawToken(hashToken: string): string {
-  return hashToken.toLowerCase().startsWith('bearer ')
-    ? hashToken.slice(7).trim()
-    : hashToken
-}
+
 
 export async function POST(request: Request) {
   try {

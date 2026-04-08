@@ -4,7 +4,8 @@ import type { AuthStateBundle, IntegrationConfig, KeyBean, TokenResponse } from 
 
 import { getIntegrationEnvConfig } from './config'
 import { logError, logInfo, logWarn } from './logger'
-import { fetchWithRetry, HttpError, readResponseData } from './network'
+import { fetchWithRetry, getErrorMessage, HttpError, readResponseData } from './network'
+import { toRawToken } from './token'
 import {
   getIntegrationAuthBundle,
   getIntegrationAuthState,
@@ -23,11 +24,7 @@ const TOKEN_REFRESH_SAFETY_WINDOW_MS = 10 * 60 * 1000
 let bootPromise: Promise<AuthStateBundle> | null = null
 let refreshPromise: Promise<TokenResponse> | null = null
 
-function toRawToken(hashToken: string): string {
-  return hashToken.toLowerCase().startsWith('bearer ')
-    ? hashToken.slice(7).trim()
-    : hashToken
-}
+
 
 function parseExpiration(dtExpira: string): number {
   const direct = Date.parse(dtExpira)
@@ -54,13 +51,7 @@ function isTokenExpiringSoon(token: TokenResponse): boolean {
   return expiresAt <= Date.now() + TOKEN_REFRESH_SAFETY_WINDOW_MS
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
 
-  return String(error)
-}
 
 function ensureObject<T extends object>(value: unknown, fallbackMessage: string): T {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
