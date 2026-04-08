@@ -9,7 +9,7 @@ import {
   ShoppingCart,
   TrendingUp,
 } from "lucide-react";
-import { requireAuth } from "@/lib/auth/protected";
+import { getSession } from "@/lib/auth/session";
 
 // Mock order data for beverage distributor
 const mockOrders = [
@@ -48,8 +48,8 @@ const mockOrders = [
 ];
 
 export default async function DashboardPage() {
-  const session = await requireAuth();
-  const displayName = session.name?.trim() || session.email || "Cliente";
+  const session = await getSession();
+  const displayName = session?.name?.trim() || session?.email || "Cliente";
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7f8_0%,#ffffff_28%,#ffffff_100%)] p-3 sm:p-5 lg:p-8">

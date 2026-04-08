@@ -1,4 +1,5 @@
 import type { Product } from '@/lib/types/product'
+import { formatCurrency } from '@/lib/formatting'
 
 export type ProductCardType =
   | 'standard'
@@ -79,12 +80,7 @@ function toCategory(product: Product): string {
   return normalizeText(product.categoria) || normalizeText(product.departamento) || 'Sem categoria'
 }
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  })
-}
+
 
 function toStockStatus(product: Product): string {
   return (product.qtEstoque ?? 0) > 0 ? 'Em estoque' : 'Indisponivel'

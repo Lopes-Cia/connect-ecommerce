@@ -16,7 +16,7 @@ function sleep(ms: number): Promise<void> {
   })
 }
 
-function getErrorMessage(error: unknown): string {
+export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     const details: string[] = [error.message]
 

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Zap } from "lucide-react";
 import { cn, slugify } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
+import { formatCurrency } from "@/lib/formatting";
 
 type ProductCardType =
   | "standard"
@@ -27,12 +28,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
+
 
 export default function ProductCard({ type, product }: ProductCardProps) {
   const { addItem } = useCart();

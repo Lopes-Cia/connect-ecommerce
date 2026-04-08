@@ -1,9 +1,3 @@
-export interface User {
-  id: string
-  email: string
-  name?: string
-}
-
 export interface RegisterUserInput {
   responsavel: string
   cnpj: string
@@ -44,21 +38,4 @@ export interface AuthResponse<T = unknown> {
   success: boolean
   data?: T
   message?: string
-}
-
-export interface LoginCredentials {
-  email: string
-  password: string
-}
-
-export interface TwoFactorVerification {
-  sessionToken: string
-  code: string
-}
-
-export interface Session {
-  userId: string
-  email: string
-  token: string
-  name?: string
 }

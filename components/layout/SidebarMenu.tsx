@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Menu,
   Home,
@@ -17,11 +18,11 @@ import {
 import { useState, useRef, useEffect } from "react";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import { cn } from "@/lib/utils";
-
-// TODO: Replace with real auth check once authentication is implemented
-const isLoggedIn = true;
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SidebarMenu() {
+  const { user, isAuthenticated, logoutUser } = useAuth();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -46,13 +47,14 @@ export default function SidebarMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // Logout handler placeholder
   async function handleLogout() {
-    // TODO: Implement logout logic
-    // Clear session/tokens here
-    // Redirect to login page
-    console.log("Logout clicked - implement actual logout logic");
+    await logoutUser();
+    setIsOpen(false);
+    router.push("/login");
   }
+
+  const displayName = user?.name?.trim() || user?.email || "Usuário";
+  const displayInitial = displayName.charAt(0).toUpperCase();
 
   return (
     <div className="relative flex items-center">
@@ -60,11 +62,13 @@ export default function SidebarMenu() {
         <Menu size={24} color="white" />
       </button>
       {isOpen && (
-        isLoggedIn ? (
+        isAuthenticated ? (
           <AuthenticatedSidebar
             sidebarRef={sidebarRef}
             onClose={() => setIsOpen(false)}
             handleLogout={handleLogout}
+            displayName={displayName}
+            displayInitial={displayInitial}
           />
         ) : (
           <GuestSidebar
@@ -84,6 +88,8 @@ interface BaseSidebarProps {
 
 interface AuthenticatedSidebarProps extends BaseSidebarProps {
   handleLogout: () => void;
+  displayName: string;
+  displayInitial: string;
 }
 
 function GuestSidebar({ sidebarRef, onClose }: BaseSidebarProps) {
@@ -127,15 +133,8 @@ function GuestSidebar({ sidebarRef, onClose }: BaseSidebarProps) {
   );
 }
 
-function AuthenticatedSidebar({ sidebarRef, onClose, handleLogout }: AuthenticatedSidebarProps) {
+function AuthenticatedSidebar({ sidebarRef, onClose, handleLogout, displayName, displayInitial }: AuthenticatedSidebarProps) {
   const isMobile = useCheckIsMobile();
-
-  // User placeholder data
-  const user = {
-    initial: "D",
-    name: "Daniel",
-    role: "Distribuidor",
-  };
 
   return (
     <div
@@ -155,10 +154,9 @@ function AuthenticatedSidebar({ sidebarRef, onClose, handleLogout }: Authenticat
 
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
         <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-tints-french-blue text-2xl font-semibold mb-3">
-          {user.initial}
+          {displayInitial}
         </div>
-        <div className="text-white text-lg font-medium">{user.name}</div>
-        <div className="text-white/70 text-sm">{user.role}</div>
+        <div className="text-white text-lg font-medium">{displayName}</div>
       </div>
 
       <nav className="flex-1 flex flex-col px-6 space-y-2">

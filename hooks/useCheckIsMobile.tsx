@@ -1,4 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+function getIsMobile() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return window.innerWidth <= 768;
+}
 
 function resolveIsMobile(): boolean {
   if (typeof window === "undefined") {

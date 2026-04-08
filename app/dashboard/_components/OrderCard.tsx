@@ -11,6 +11,7 @@ import {
   Package2,
   Ticket,
 } from "lucide-react";
+import { formatCurrency } from "@/lib/formatting";
 
 interface OrderItem {
   quantity: number;
@@ -60,12 +61,7 @@ export default function OrderCard({
     return labels[status] || status;
   };
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  };
+
 
   return (
     <div
