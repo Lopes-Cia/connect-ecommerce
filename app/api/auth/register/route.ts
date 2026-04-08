@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { getActivationKey, getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
 import { ensureAuthReady } from '@/lib/integration/authService'
 import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
+import { toRawToken } from '@/lib/integration/token'
 
 interface RegisterRequestBody {
   responsavel: string
@@ -11,11 +12,7 @@ interface RegisterRequestBody {
   whatsapp: string
 }
 
-function toRawToken(hashToken: string): string {
-  return hashToken.toLowerCase().startsWith('bearer ')
-    ? hashToken.slice(7).trim()
-    : hashToken
-}
+
 
 export async function POST(request: Request) {
   try {

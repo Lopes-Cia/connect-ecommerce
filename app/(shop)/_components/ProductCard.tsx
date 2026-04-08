@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, slugify } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
+import { formatCurrency } from "@/lib/formatting";
 
 type ProductCardType =
   | "standard"
@@ -27,12 +28,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
+
 
 export default function ProductCard({ type, product }: ProductCardProps) {
   const { addItem } = useCart();
@@ -40,6 +36,8 @@ export default function ProductCard({ type, product }: ProductCardProps) {
   const hasDiscount = type === "discount" || type === "highlighted-discount";
   const isHighlighted =
     type === "highlighted" || type === "highlighted-discount";
+  const productSlug = slugify(product.name) || "produto";
+  const productHref = `/products/${product.id}/${productSlug}`;
 
   const handleAddToCart = () => {
     if (isComingSoon) {
@@ -64,7 +62,7 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         </div>
       )}
 
-      <Link href={isComingSoon ? "#" : `/products/${product.id}`}>
+      <Link href={isComingSoon ? "#" : productHref}>
         <div
           className={`mb-4 h-56 shrink-0 flex items-center justify-center border border-black/10 rounded-xs ${isComingSoon ? "opacity-50" : ""}`}
         >
@@ -83,7 +81,7 @@ export default function ProductCard({ type, product }: ProductCardProps) {
           className={`h-8 overflow-hidden line-clamp-2 font-montserrat text-[14px] font-black leading-tight ${isComingSoon ? "opacity-50" : ""}`}
           style={{ color: "#192227" }}
         >
-          <Link href={isComingSoon ? "#" : `/products/${product.id}`}>
+          <Link href={isComingSoon ? "#" : productHref}>
             {product.name}
           </Link>
         </h3>

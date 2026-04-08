@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { sendLoginToken, verifyLoginToken } from "@/lib/api/auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 function onlyDigits(value: string): string {
   return value.replace(/\D/g, "");
@@ -70,6 +71,7 @@ type VerifyOutput = z.output<typeof verifySchema>;
 
 export default function LoginForm() {
   const router = useRouter();
+  const { refreshSession } = useAuth();
   const [step, setStep] = useState<"send" | "verify">("send");
   const [isLoading, setIsLoading] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -150,8 +152,8 @@ export default function LoginForm() {
 
       setFeedbackSuccess(true);
       setFeedbackMessage("Login validado com sucesso. Redirecionando...");
-      router.push("/dashboard");
-      router.refresh();
+      await refreshSession();
+      router.push("/");
     } catch (error) {
       setFeedbackMessage(
         error instanceof Error ? error.message : "Erro inesperado ao validar token."

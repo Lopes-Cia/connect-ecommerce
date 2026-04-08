@@ -4,13 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { useCart } from "@/contexts/CartContext";
+import { formatCurrency } from "@/lib/formatting";
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
+
 
 export default function CheckoutPage() {
   const { items, totalAmount, totalItems, setItemQuantity, removeItem } = useCart();

@@ -2,16 +2,13 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Check for session cookie
   const session = request.cookies.get('session')
-  
-  // If accessing dashboard without session, redirect to login
-  // if (!session) {
-  //   const loginUrl = new URL('/login', request.url)
-  //   return NextResponse.redirect(loginUrl)
-  // }
-  
-  // Allow request to proceed
+
+  if (!session) {
+    const loginUrl = new URL('/login', request.url)
+    return NextResponse.redirect(loginUrl)
+  }
+
   return NextResponse.next()
 }
 

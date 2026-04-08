@@ -7,13 +7,9 @@ import Image from "next/image";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
+import { formatCurrency } from "@/lib/formatting";
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
+
 
 export default function CartSidebarMenu() {
   const { totalItems } = useCart();

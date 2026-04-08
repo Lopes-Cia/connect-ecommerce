@@ -186,16 +186,6 @@ export default function Home() {
           <ProductCarousel products={carouselProducts} />
         </div>
       </section>
-      <section aria-label="Cervejas">
-        <CategoryLine
-          title="CERVEJAS"
-          bgColor="bg-tints-french-blue"
-          verticalLineColor="bg-white"
-        />
-        <div className="w-full flex justify-center py-10 px-4">
-          <ProductCarousel products={carouselProducts} />
-        </div>
-      </section>
       <Unidades />
     </div>
   );
