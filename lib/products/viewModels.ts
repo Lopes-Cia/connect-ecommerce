@@ -50,8 +50,25 @@ function normalizeText(value: unknown): string {
   return value.trim()
 }
 
+function sanitizeUrl(value: string): string {
+  let sanitized = value.trim()
+
+  if (!sanitized) {
+    return ''
+  }
+
+  if (sanitized.startsWith('(') && sanitized.endsWith(')')) {
+    sanitized = sanitized.slice(1, -1).trim()
+  }
+
+  sanitized = sanitized.replace(/^[<"'\[\s]+/, '').replace(/[>"'\]\s]+$/, '')
+  sanitized = sanitized.replace(/[),.;]+$/g, '')
+
+  return sanitized.trim()
+}
+
 function toImageUrl(value: unknown): string {
-  const normalized = normalizeText(value)
+  const normalized = typeof value === 'string' ? sanitizeUrl(value) : normalizeText(value)
 
   if (!normalized) {
     return FALLBACK_IMAGE
