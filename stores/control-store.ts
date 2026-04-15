@@ -10,6 +10,7 @@ export type ControlState = {
   CLIENTESSTORE: typeof useClientesStore;
   PEDIDOSSTORE: typeof usePedidosStore;
   ECOMMERCESTORE: typeof useEcommerceStore;
+  live: () => string;
 };
 
 export const useControlStore = create<ControlState>(() => ({
@@ -17,4 +18,5 @@ export const useControlStore = create<ControlState>(() => ({
   CLIENTESSTORE: useClientesStore,
   PEDIDOSSTORE: usePedidosStore,
   ECOMMERCESTORE: useEcommerceStore,
+  live: () => "store live",
 }));

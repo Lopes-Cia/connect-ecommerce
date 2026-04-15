@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
+import { useControlStore } from "@/stores/control-store";
 
 export default function CategoryHeader() {
   const isMobile = useCheckIsMobile();
+  const live = useControlStore((state) => state.live);
 
   if (isMobile) {
     return (
@@ -22,9 +24,18 @@ export default function CategoryHeader() {
   return (
     <div className="flex justify-center items-center h-12 bg-black/90">
       <nav className="max-w-[var(--width-content-md)] lg:max-w-[var(--width-content-lg)] mx-auto flex gap-8 justify-center items-center text-white font-montserrat font-medium text-[0.78em] uppercase">
-        <a href="#" className="hover:underline">
-          Todas as categorias
-        </a>
+        <div className="flex items-center gap-3">
+          <a href="#" className="hover:underline">
+            Todas as categorias
+          </a>
+          <button
+            type="button"
+            onClick={() => console.log(live())}
+            className="hover:underline"
+          >
+            TEST API
+          </button>
+        </div>
         <a href="#" className="hover:underline">
           Promoções
         </a>
