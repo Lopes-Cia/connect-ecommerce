@@ -2,13 +2,15 @@
 
 import { ShoppingCart, X, Trash2, Plus, Minus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatting";
+import { slugify } from "@/lib/utils";
 
+const CART_IMAGE_FALLBACK = "/logo.png";
 
 
 export default function CartSidebarMenu() {
@@ -89,7 +91,7 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
 
   const handleCheckout = () => {
     onClose();
-    router.push("/checkout");
+    router.push("/cart");
   };
 
   const handleContinueShopping = () => {
@@ -134,6 +136,8 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
         ) : (
           items.map((item) => {
             const subtotal = item.unitPrice * item.quantity;
+            const itemSlug = slugify(item.name) || encodeURIComponent(item.id);
+            const productHref = `/produtos/${itemSlug}`;
 
             return (
             <div
@@ -142,18 +146,24 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1 flex items-start gap-3">
-                  <div className="w-14 h-14 rounded border border-gray-200 bg-gray-50 shrink-0 flex items-center justify-center overflow-hidden">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.name}
-                      width={56}
-                      height={56}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
+                  <Link href={productHref} className="w-14 h-14 shrink-0">
+                    <div className="w-14 h-14 rounded border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={item.imageUrl || CART_IMAGE_FALLBACK}
+                        alt={item.name}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                        onError={(event) => {
+                          const img = event.currentTarget;
+                          if (img.src.endsWith(CART_IMAGE_FALLBACK)) return;
+                          img.src = CART_IMAGE_FALLBACK;
+                        }}
+                      />
+                    </div>
+                  </Link>
                   <div>
-                  <h3 className="text-sm font-medium text-gray-900">
-                    {item.name}
+                  <h3 className="text-sm font-medium text-gray-900 hover:underline">
+                    <Link href={productHref}>{item.name}</Link>
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">
                     {item.category}

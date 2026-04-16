@@ -3,7 +3,7 @@ import 'server-only'
 import { getIntegrationEnvConfig } from './config'
 import { fetchWithRetry, HttpError, readResponseData } from './network'
 
-import type { Brand, BrandByIdPayload, Categoria, CategoriaNode, ProdutoV2 } from '@/lib/types/produtos'
+import type { Brand, BrandByIdPayload, Categoria, CategoriaNode, Produto } from '@/lib/types/produtos'
 
 type SuccessResponse<T> = {
   success: true
@@ -103,7 +103,7 @@ export async function getProdutosByCategoria(
   idCategoria: number,
   options?: { includeDescendants?: 0 | 1; page?: number; pageSize?: number }
 ): Promise<
-  SuccessResponse<ProdutoV2[]> & {
+  SuccessResponse<Produto[]> & {
     page: number
     pageSize: number
     total: number
@@ -122,7 +122,7 @@ export async function getProdutosByCategoria(
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     return {
       success: true,
-      data: (payload ?? []) as ProdutoV2[],
+      data: (payload ?? []) as Produto[],
       page: options?.page ?? 1,
       pageSize: options?.pageSize ?? 24,
       total: Array.isArray(payload) ? payload.length : 0,
@@ -131,7 +131,7 @@ export async function getProdutosByCategoria(
   }
 
   const obj = payload as Record<string, unknown>
-  const data = (obj.data ?? []) as ProdutoV2[]
+  const data = (obj.data ?? []) as Produto[]
   return {
     success: true,
     data,
@@ -142,16 +142,16 @@ export async function getProdutosByCategoria(
   }
 }
 
-export async function getProdutoById(idProduto: number): Promise<SuccessResponse<ProdutoV2>> {
+export async function getProdutoById(idProduto: number): Promise<SuccessResponse<Produto>> {
   const payload = await integrationGet<unknown>(`/Servidor/webservice/integration/produtos/by-id/${idProduto}`)
-  const data = unwrapData<ProdutoV2>(payload)
+  const data = unwrapData<Produto>(payload)
   return { success: true, data }
 }
 
-export async function getProdutoBySlug(slug: string): Promise<SuccessResponse<ProdutoV2>> {
+export async function getProdutoBySlug(slug: string): Promise<SuccessResponse<Produto>> {
   const safeSlug = encodeURIComponent(slug)
   const payload = await integrationGet<unknown>(`/Servidor/webservice/integration/produtos/by-slug/${safeSlug}`)
-  const data = unwrapData<ProdutoV2>(payload)
+  const data = unwrapData<Produto>(payload)
   return { success: true, data }
 }
 

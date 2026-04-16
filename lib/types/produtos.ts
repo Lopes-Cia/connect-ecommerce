@@ -11,7 +11,7 @@ export type CategoriaNode = Categoria & {
   children: CategoriaNode[]
 }
 
-export type ProdutoV2 = {
+export type Produto = {
   id: number
   sku: string
   name: string
@@ -28,6 +28,8 @@ export type ProdutoV2 = {
   inStock: boolean
 }
 
+export type ProdutoV2 = Produto
+
 export type Brand = {
   id: number
   name: string
@@ -38,7 +40,7 @@ export type Brand = {
 export type BrandByIdPayload = {
   brand: Brand
   products: {
-    data: ProdutoV2[]
+    data: Produto[]
     page: number
     pageSize: number
     total: number
@@ -57,4 +59,3 @@ export type ApiFailure = {
 }
 
 export type ApiResponse<T> = ApiSuccess<T> | ApiFailure
-

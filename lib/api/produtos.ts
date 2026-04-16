@@ -6,13 +6,13 @@ import type {
   BrandByIdPayload,
   Categoria,
   CategoriaNode,
-  ProdutoV2,
+  Produto,
 } from '@/lib/types/produtos'
 
 export type CategoriaByIdResponse = ApiSuccess<{ category: Categoria; children: Categoria[] }>
 export type CategoriaBySlugResponse = ApiSuccess<{ category: CategoriaNode }>
 
-export type ProdutosByCategoriaResponse = ApiSuccess<ProdutoV2[]> & {
+export type ProdutosByCategoriaResponse = ApiSuccess<Produto[]> & {
   page: number
   pageSize: number
   total: number
@@ -66,12 +66,12 @@ export async function getProdutosByCategoria(
   return apiClient<ProdutosByCategoriaResponse>(endpoint)
 }
 
-export async function getProdutoById(idProduto: number): Promise<ProdutoV2> {
-  const response = await apiClient<ApiSuccess<ProdutoV2>>(`/produtos/by-id/${idProduto}`)
+export async function getProdutoById(idProduto: number): Promise<Produto> {
+  const response = await apiClient<ApiSuccess<Produto>>(`/produtos/by-id/${idProduto}`)
   return response.data
 }
 
-export async function getProdutoBySlug(slug: string): Promise<ProdutoV2> {
+export async function getProdutoBySlug(slug: string): Promise<Produto> {
   const raw = String(slug ?? '').trim()
   const withoutLeading = raw.startsWith('/') ? raw.slice(1) : raw
   const baseSlug = withoutLeading.startsWith('produtos/')
@@ -79,7 +79,7 @@ export async function getProdutoBySlug(slug: string): Promise<ProdutoV2> {
     : withoutLeading
 
   const safeSlug = encodeURIComponent(baseSlug)
-  const response = await apiClient<ApiSuccess<ProdutoV2>>(`/produtos/by-slug/${safeSlug}`)
+  const response = await apiClient<ApiSuccess<Produto>>(`/produtos/by-slug/${safeSlug}`)
   return response.data
 }
 

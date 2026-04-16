@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ApiError } from "@/lib/api/client";
+import { useClientesStore } from "@/stores/clientes-store";
 import { useControlStore } from "@/stores/control-store";
 
 type RouteResult = {
   url: string;
+  method: string;
   status: number;
   ok: boolean;
   payload: unknown;
@@ -23,6 +26,7 @@ function encodeSlugPath(value: string): string {
 
 export default function DevPage() {
   const live = useControlStore((s) => s.live);
+  const loginCliente = useClientesStore((s) => s.login);
   const didRun = useRef(false);
   const [idCategoria, setIdCategoria] = useState("10");
   const [categoriaSlug, setCategoriaSlug] = useState("/categoria/bebidas");
@@ -31,6 +35,8 @@ export default function DevPage() {
   const [idIntegradora, setIdIntegradora] = useState("1");
   const [slug, setSlug] = useState("/produtos/heineken-lata-269ml");
   const [idBrand, setIdBrand] = useState("871013969");
+  const [clienteEmail, setClienteEmail] = useState("teste@exemplo.com");
+  const [clienteSenha, setClienteSenha] = useState("123456");
   const [lastResult, setLastResult] = useState<RouteResult | null>(null);
   const [loadingUrl, setLoadingUrl] = useState<string | null>(null);
 
@@ -64,13 +70,14 @@ export default function DevPage() {
     [idCategoria, categoriaSlug, idProduto, codProd, idIntegradora, slug, idBrand]
   );
 
-  async function callRoute(url: string) {
+  async function callRoute(url: string, init?: RequestInit) {
     setLoadingUrl(url);
     try {
-      const response = await fetch(url, { cache: "no-store" });
+      const response = await fetch(url, { cache: "no-store", ...(init ?? {}) });
       const payload = await response.json().catch(() => null);
       const result: RouteResult = {
         url,
+        method: String(init?.method ?? "GET").toUpperCase(),
         status: response.status,
         ok: response.ok,
         payload,
@@ -80,9 +87,44 @@ export default function DevPage() {
     } catch (error) {
       const result: RouteResult = {
         url,
+        method: String(init?.method ?? "GET").toUpperCase(),
         status: 0,
         ok: false,
         payload: { message: error instanceof Error ? error.message : String(error) },
+      };
+      setLastResult(result);
+      console.error("[dev-route]", result);
+    } finally {
+      setLoadingUrl(null);
+    }
+  }
+
+  async function callClientesLogin() {
+    const url = "/api/clientes/login";
+    setLoadingUrl(url);
+    try {
+      const data = await loginCliente({ email: clienteEmail, senha: clienteSenha });
+      const result: RouteResult = {
+        url,
+        method: "POST",
+        status: 200,
+        ok: true,
+        payload: { success: true, data },
+      };
+      setLastResult(result);
+      console.log("[dev-route]", result);
+    } catch (error) {
+      const status = error instanceof ApiError ? error.status : 0;
+      const payload =
+        error instanceof ApiError
+          ? error.data ?? { message: error.message }
+          : { message: error instanceof Error ? error.message : String(error) };
+      const result: RouteResult = {
+        url,
+        method: "POST",
+        status,
+        ok: false,
+        payload,
       };
       setLastResult(result);
       console.error("[dev-route]", result);
@@ -138,6 +180,18 @@ export default function DevPage() {
           onChange={(e) => setIdBrand(e.target.value)}
           placeholder="idBrand"
         />
+        <input
+          className="border rounded px-3 py-2 text-sm"
+          value={clienteEmail}
+          onChange={(e) => setClienteEmail(e.target.value)}
+          placeholder="cliente email"
+        />
+        <input
+          className="border rounded px-3 py-2 text-sm"
+          value={clienteSenha}
+          onChange={(e) => setClienteSenha(e.target.value)}
+          placeholder="cliente senha"
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -153,6 +207,15 @@ export default function DevPage() {
             <div className="text-xs text-gray-600 break-all">{item.url}</div>
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => void callClientesLogin()}
+          className="border rounded px-4 py-3 text-left hover:bg-gray-50 transition"
+          disabled={loadingUrl === "/api/clientes/login"}
+        >
+          <div className="font-semibold text-sm text-black">Clientes Login (POST)</div>
+          <div className="text-xs text-gray-600 break-all">/api/clientes/login</div>
+        </button>
       </div>
 
       <div className="mt-8 border rounded p-4 bg-gray-50">

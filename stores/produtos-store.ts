@@ -11,7 +11,7 @@ import {
   getProdutoBySlug,
   getProdutosByCategoria,
 } from "@/lib/api/produtos";
-import type { Brand, BrandByIdPayload, Categoria, CategoriaNode, ProdutoV2 } from "@/lib/types/produtos";
+import type { Brand, BrandByIdPayload, Categoria, CategoriaNode, Produto } from "@/lib/types/produtos";
 import type { ProdutosByCategoriaResponse } from "@/lib/api/produtos";
 
 type LoadStatus = "idle" | "loading" | "success" | "error";
@@ -81,12 +81,12 @@ export type ProdutosState = {
     force?: boolean;
   }) => Promise<ProdutosByCategoriaResponse>;
 
-  produtoById: Record<number, ProdutoV2 | undefined>;
-  produtoBySlug: Record<string, ProdutoV2 | undefined>;
+  produtoById: Record<number, Produto | undefined>;
+  produtoBySlug: Record<string, Produto | undefined>;
   produtoStatus: Record<string, LoadStatus | undefined>;
   produtoError: Record<string, string | null | undefined>;
-  loadProdutoById: (input: { idProduto: number; force?: boolean }) => Promise<ProdutoV2>;
-  loadProdutoBySlug: (input: { slug: string; force?: boolean }) => Promise<ProdutoV2>;
+  loadProdutoById: (input: { idProduto: number; force?: boolean }) => Promise<Produto>;
+  loadProdutoBySlug: (input: { slug: string; force?: boolean }) => Promise<Produto>;
 
   reset: () => void;
 };
