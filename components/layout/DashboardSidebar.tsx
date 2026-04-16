@@ -64,11 +64,11 @@ export default function DashboardSidebar() {
         </Link>
 
         <Link
-          href="/products"
+          href="/categorias"
           className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
         >
           <PackageSearch size={18} />
-          <span>Produtos</span>
+          <span>Categorias</span>
         </Link>
 
 

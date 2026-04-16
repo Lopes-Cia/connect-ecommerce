@@ -15,6 +15,7 @@ export interface ProductCardViewModel {
   price: number
   discountPrice?: number
   image_url: string
+  slug?: string
   cardType?: ProductCardType
 }
 

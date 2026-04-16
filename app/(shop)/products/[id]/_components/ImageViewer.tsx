@@ -9,6 +9,58 @@ interface ImageViewerProps {
   productName: string;
 }
 
+function shouldDisableOptimization(src: string): boolean {
+  const value = String(src ?? "").trim();
+  if (!value) return false;
+
+  // Handle both absolute URLs and relative inputs safely.
+  try {
+    const parsed = new URL(value, "http://localhost");
+    const hostWithPort = `${parsed.hostname}:${parsed.port || (parsed.protocol === "https:" ? "443" : "80")}`;
+    return hostWithPort === "localhost:4000" || hostWithPort === "127.0.0.1:4000";
+  } catch {
+    return value.includes("localhost:4000") || value.includes("127.0.0.1:4000");
+  }
+}
+
+type SmartImageProps = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  className?: string;
+  sizes?: string;
+  priority?: boolean;
+};
+
+function SmartImage({ src, alt, width, height, className, sizes, priority }: SmartImageProps) {
+  if (shouldDisableOptimization(src)) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className={className}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+      />
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      sizes={sizes}
+      priority={priority}
+    />
+  );
+}
+
 export default function ImageViewer({ images, productName }: ImageViewerProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -30,12 +82,13 @@ export default function ImageViewer({ images, productName }: ImageViewerProps) {
                   : "border-custom-light-400 hover:border-custom-light-500"
               }`}
             >
-              <Image
+              <SmartImage
                 src={image}
                 alt={`${productName} - Imagem ${index + 1}`}
                 width={56}
                 height={56}
                 className="w-full h-full object-contain"
+                sizes="56px"
               />
             </button>
           ))}
@@ -47,12 +100,14 @@ export default function ImageViewer({ images, productName }: ImageViewerProps) {
             onClick={() => setIsZoomed(true)}
             className="w-full h-64 md:w-100 md:h-100 bg-white rounded border border-custom-light-400 flex items-center justify-center cursor-zoom-in"
           >
-            <Image
+            <SmartImage
               src={currentImage}
               alt={productName}
               width={380}
               height={380}
               className="max-w-full max-h-full object-contain"
+              sizes="(max-width: 768px) 100vw, 400px"
+              priority
             />
           </div>
           <p className="text-custom-light-600 font-montserrat text-xs mt-2">
@@ -82,12 +137,13 @@ export default function ImageViewer({ images, productName }: ImageViewerProps) {
               className="absolute inset-0 flex items-center justify-center p-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <Image
+              <SmartImage
                 src={currentImage}
                 alt={productName}
                 width={600}
                 height={600}
                 className="max-w-full max-h-full object-contain"
+                sizes="100vw"
               />
             </div>
           </div>

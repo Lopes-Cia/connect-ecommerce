@@ -12,16 +12,12 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 
-const banners = [
-  { src: "/assets/banner-1.webp", alt: "Banner 1" },
-  { src: "/assets/banner-2.webp", alt: "Banner 2" },
-  { src: "/assets/banner-3.webp", alt: "Banner 3" },
-  { src: "/assets/banner-4.webp", alt: "Banner 4" },
-];
+export type BannerCarouselItem = { id?: string | number; src: string; alt: string; link?: string };
 
-export default function BannerCarousel() {
+export default function BannerCarousel({ items }: { items: BannerCarouselItem[] }) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const banners = items;
 
   const onSelect = useCallback((api: CarouselApi) => {
     if (!api) return;
@@ -49,7 +45,7 @@ export default function BannerCarousel() {
       >
         <CarouselContent className="ml-0">
           {banners.map((banner, index) => (
-            <CarouselItem key={index} className="pl-0">
+            <CarouselItem key={String(banner.id ?? index)} className="pl-0">
               <div className="relative w-full aspect-4/1">
                 <Image
                   src={banner.src}
@@ -58,6 +54,10 @@ export default function BannerCarousel() {
                   className="object-cover rounded-lg"
                   priority={index === 0}
                   sizes="(max-width: 768px) 100vw, 90rem"
+                  unoptimized={
+                    banner.src.startsWith("http://localhost:4000") ||
+                    banner.src.startsWith("http://127.0.0.1:4000")
+                  }
                 />
               </div>
             </CarouselItem>

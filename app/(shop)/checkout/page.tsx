@@ -18,10 +18,10 @@ export default function CheckoutPage() {
         <div className="rounded-lg border border-custom-light-400 bg-white p-8 text-center">
           <p className="text-gray-700 mb-4">Seu carrinho esta vazio.</p>
           <Link
-            href="/products"
+            href="/categorias"
             className="inline-flex px-4 py-2 rounded bg-tints-french-blue text-white font-medium hover:opacity-90"
           >
-            Ir para produtos
+            Ir para categorias
           </Link>
         </div>
       </div>

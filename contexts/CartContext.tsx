@@ -50,31 +50,32 @@ function normalizeQuantity(value: number | undefined): number {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") {
-      return [];
-    }
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [hasHydratedStorage, setHasHydratedStorage] = useState(false);
 
+  useEffect(() => {
     try {
       const raw = window.localStorage.getItem(CART_STORAGE_KEY);
       if (!raw) {
-        return [];
+        setHasHydratedStorage(true);
+        return;
       }
 
       const parsed = JSON.parse(raw) as CartItem[];
       if (Array.isArray(parsed)) {
-        return parsed;
+        setItems(parsed);
       }
-
-      return [];
     } catch {
-      return [];
+      // ignore malformed localStorage payload and keep empty cart
+    } finally {
+      setHasHydratedStorage(true);
     }
-  });
+  }, []);
 
   useEffect(() => {
+    if (!hasHydratedStorage) return;
     window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+  }, [hasHydratedStorage, items]);
 
   const addItem = useCallback((input: AddCartItemInput) => {
     setItems((current) => {

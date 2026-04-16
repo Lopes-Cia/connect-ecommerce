@@ -170,12 +170,12 @@ function AuthenticatedSidebar({ sidebarRef, onClose, handleLogout, displayName, 
         </Link>
 
         <Link
-          href="/products"
+          href="/categorias"
           onClick={onClose}
           className="flex items-center gap-3 px-4 py-2 text-white hover:bg-white/10 rounded transition-colors"
         >
           <PackageSearch size={20} />
-          <span>Produtos</span>
+          <span>Categorias</span>
         </Link>
 
         <Link

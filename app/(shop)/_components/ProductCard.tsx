@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
-import { cn, slugify } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatting";
 
@@ -21,11 +21,39 @@ interface Product {
   price: number;
   discountPrice?: number;
   image_url: string;
+  slug?: string;
 }
 
 interface ProductCardProps {
   type: ProductCardType;
   product: Product;
+}
+
+function normalizeProductHref(value: unknown): string | null {
+  const raw = typeof value === "string" ? value.trim() : "";
+  if (!raw) return null;
+
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  if (raw.startsWith("/produtos/")) return raw;
+
+  if (raw.startsWith("/products/")) {
+    const parts = raw.split("/").filter(Boolean);
+    const last = parts.at(-1) ?? "";
+    if (!last || last === "products") return null;
+    return `/produtos/${last}`;
+  }
+
+  if (raw.startsWith("/")) return raw;
+  if (raw.startsWith("produtos/")) return `/${raw}`;
+
+  if (raw.startsWith("products/")) {
+    const parts = raw.split("/").filter(Boolean);
+    const last = parts.at(-1) ?? "";
+    if (!last || last === "products") return null;
+    return `/produtos/${last}`;
+  }
+
+  return `/produtos/${raw}`;
 }
 
 
@@ -36,8 +64,7 @@ export default function ProductCard({ type, product }: ProductCardProps) {
   const hasDiscount = type === "discount" || type === "highlighted-discount";
   const isHighlighted =
     type === "highlighted" || type === "highlighted-discount";
-  const productSlug = slugify(product.name) || "produto";
-  const productHref = `/products/${product.id}/${productSlug}`;
+  const productHref = normalizeProductHref(product.slug) ?? "#";
 
   const handleAddToCart = () => {
     if (isComingSoon) {
@@ -72,6 +99,10 @@ export default function ProductCard({ type, product }: ProductCardProps) {
             width={120}
             height={135}
             className="h-full w-6/10 object-contain"
+            unoptimized={
+              (product.image_url ?? "").startsWith("http://localhost:4000") ||
+              (product.image_url ?? "").startsWith("http://127.0.0.1:4000")
+            }
           />
         </div>
       </Link>
