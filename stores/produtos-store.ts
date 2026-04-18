@@ -44,6 +44,7 @@ export type ProdutosState = {
   categoriasTreeStatus: LoadStatus;
   categoriasTreeError: string | null;
   loadCategoriasTree: (opts?: { force?: boolean }) => Promise<CategoriaNode[]>;
+  live: () => Promise<string>;
 
   categoriaById: Record<number, { category: Categoria; children: Categoria[] } | undefined>;
   categoriaByIdStatus: Record<number, LoadStatus | undefined>;
@@ -149,6 +150,11 @@ const INITIAL: Pick<
 
 export const useProdutosStore = create<ProdutosState>((set, get) => ({
   ...INITIAL,
+
+  live: async () => {
+    const response = await fetch("/api/lopes/categorias", { cache: "no-store" })
+    return await response.text()
+  },
 
   loadCategoriasTree: async (opts) => {
     const { categoriasTree, categoriasTreeStatus } = get();

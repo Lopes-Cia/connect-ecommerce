@@ -9,7 +9,8 @@ import SidebarMenu from "./SidebarMenu";
 import { Button } from "../ui/button";
 import { LayoutDashboard, LogOut, ShieldUser } from "lucide-react";
 
-import { useAuth } from "@/contexts/AuthContext";
+import { useClientesStore } from "@/stores/clientes-store";
+import { frontModal } from "@/stores/front-modal-store";
 
 export default function Header() {
   const pathname = usePathname();
@@ -24,10 +25,21 @@ export default function Header() {
 
 function ShopHeader() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, logoutUser } = useAuth();
+  const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const logout = useClientesStore((s) => s.logout);
 
   async function handleLogout() {
-    await logoutUser();
+    const confirmed = await frontModal.confirm({
+      title: "Sair da conta",
+      description: "Tem certeza que deseja sair?",
+      confirmText: "Sair",
+      cancelText: "Cancelar",
+      confirmVariant: "destructive",
+    });
+
+    if (!confirmed) return;
+
+    logout();
     router.push("/login");
     router.refresh();
   }
@@ -53,19 +65,9 @@ function ShopHeader() {
 
         <div className="hidden md:flex flex-row items-center gap-6">
           <CartSidebarMenu />
-          {isLoading ? (
-            <Button
-              variant="outline"
-              size="default"
-              disabled
-              className="cursor-default rounded-xs"
-            >
-              <ShieldUser />
-              Carregando
-            </Button>
-          ) : isAuthenticated ? (
+          {isLoggedIn ? (
             <>
-              <Link href="/dashboard">
+              <Link href="/cliente/painel">
                 <Button
                   variant="outline"
                   size="default"

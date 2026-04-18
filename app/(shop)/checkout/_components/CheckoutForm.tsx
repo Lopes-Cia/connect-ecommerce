@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatting";
 import { slugify } from "@/lib/utils";
 import { useClientesStore } from "@/stores/clientes-store";
+import { frontModal } from "@/stores/front-modal-store";
 import { usePedidosStore } from "@/stores/pedidos-store";
+import { useControlStore } from "@/stores/control-store";
 
 const PRODUCT_IMAGE_FALLBACK = "/logo.png";
 
@@ -36,7 +37,10 @@ function toEnderecoLabel(value: unknown): string {
 }
 
 export default function CheckoutForm() {
-  const { items, totalAmount, totalItems } = useCart();
+  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
+  const items = useCarrinhoStore((s) => s.items);
+  const totalAmount = useCarrinhoStore((s) => s.totalAmount);
+  const totalItems = useCarrinhoStore((s) => s.totalItems);
   const loginData = useClientesStore((s) => s.loginData);
 
   const checkoutStatus = usePedidosStore((s) => s.checkoutStatus);
@@ -45,16 +49,16 @@ export default function CheckoutForm() {
   const enderecoMode = usePedidosStore((s) => s.enderecoMode);
   const selectedEnderecoIndex = usePedidosStore((s) => s.selectedEnderecoIndex);
   const setCheckoutField = usePedidosStore((s) => s.setCheckoutField);
-  const hydrateCheckoutFromCliente = usePedidosStore((s) => s.hydrateCheckoutFromCliente);
-  const selectEnderecoFromCliente = usePedidosStore((s) => s.selectEnderecoFromCliente);
+  const hydrateCheckoutFromLoginData = usePedidosStore((s) => s.hydrateCheckoutFromLoginData);
+  const selectEnderecoFromLoginData = usePedidosStore((s) => s.selectEnderecoFromLoginData);
   const setEnderecoMode = usePedidosStore((s) => s.setEnderecoMode);
   const submitCheckout = usePedidosStore((s) => s.submitCheckout);
 
   const [uiMessage, setUiMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    hydrateCheckoutFromCliente(loginData);
-  }, [hydrateCheckoutFromCliente, loginData]);
+    hydrateCheckoutFromLoginData(loginData);
+  }, [hydrateCheckoutFromLoginData, loginData]);
 
   const summary = useMemo(() => {
     return {
@@ -73,17 +77,24 @@ export default function CheckoutForm() {
     setUiMessage(null);
     try {
       const draft = await submitCheckout({
-        clienteData: loginData,
+        loginData,
         items,
-        totalItems,
-        totalAmount,
       });
-      setUiMessage("Checkout gerado com sucesso. Confira o resultado no alert.");
-      alert(JSON.stringify({ success: true, data: draft }, null, 2));
+      const payload = draft && typeof draft === "object" && !Array.isArray(draft) ? (draft as Record<string, unknown>) : null;
+      const pedidoId = payload ? String(payload.pedidoId ?? "") : "";
+
+      setUiMessage(pedidoId ? `Pedido ${pedidoId} criado com sucesso.` : "Pedido criado com sucesso.");
+      void frontModal.success({
+        title: "Pedido criado",
+        description: pedidoId ? `Pedido ${pedidoId} criado com sucesso.` : "Pedido criado com sucesso.",
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Erro inesperado ao finalizar checkout.";
       setUiMessage(message);
-      alert(JSON.stringify({ success: false, message }, null, 2));
+      void frontModal.error({
+        title: "Erro ao finalizar checkout",
+        description: message,
+      });
     }
   }
 
@@ -149,7 +160,7 @@ export default function CheckoutForm() {
                       setEnderecoMode("new");
                       return;
                     }
-                    selectEnderecoFromCliente(loginData, nextIndex);
+                    selectEnderecoFromLoginData(loginData, nextIndex);
                   }}
                   className="mt-1 w-full rounded border border-custom-light-400 px-3 py-2 text-sm bg-white"
                 >

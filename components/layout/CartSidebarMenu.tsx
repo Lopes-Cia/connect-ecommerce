@@ -6,15 +6,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import { cn } from "@/lib/utils";
-import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatting";
 import { slugify } from "@/lib/utils";
+import { frontModal } from "@/stores/front-modal-store";
+import { useControlStore } from "@/stores/control-store";
 
 const CART_IMAGE_FALLBACK = "/logo.png";
 
 
 export default function CartSidebarMenu() {
-  const { totalItems } = useCart();
+  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
+  const totalItems = useCarrinhoStore((s) => s.totalItems);
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -71,22 +73,29 @@ interface CartSidebarProps {
 function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
   const router = useRouter();
   const isMobile = useCheckIsMobile();
-  const {
-    items,
-    totalItems,
-    totalAmount,
-    setItemQuantity,
-    removeItem,
-    clearCart,
-  } = useCart();
+  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
+  const items = useCarrinhoStore((s) => s.items);
+  const totalItems = useCarrinhoStore((s) => s.totalItems);
+  const totalAmount = useCarrinhoStore((s) => s.totalAmount);
+  const setItemQuantity = useCarrinhoStore((s) => s.setItemQuantity);
+  const removeItem = useCarrinhoStore((s) => s.removeItem);
+  const clearCart = useCarrinhoStore((s) => s.clearCart);
 
-  const updateQuantity = (id: string, delta: number) => {
+  const updateQuantity = async (id: string, delta: number) => {
     const item = items.find((entry) => entry.id === id);
     if (!item) {
       return;
     }
 
-    setItemQuantity(id, Math.max(1, item.quantity + delta));
+    try {
+      await setItemQuantity(id, Math.max(1, item.quantity + delta));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro inesperado ao atualizar quantidade.";
+      void frontModal.error({
+        title: "Erro no carrinho",
+        description: message,
+      });
+    }
   };
 
   const handleCheckout = () => {
@@ -171,7 +180,26 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
                   </div>
                 </div>
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={async () => {
+                    const ok = await frontModal.confirm({
+                      title: "Confirmar remoção",
+                      description: "Tem certeza que deseja remover o produto do seu carrinho?",
+                      confirmText: "Remover",
+                      cancelText: "Cancelar",
+                      confirmVariant: "destructive",
+                    });
+
+                    if (!ok) return;
+                    try {
+                      await removeItem(item.id);
+                    } catch (error) {
+                      const message = error instanceof Error ? error.message : "Erro inesperado ao remover item.";
+                      void frontModal.error({
+                        title: "Erro no carrinho",
+                        description: message,
+                      });
+                    }
+                  }}
                   className="p-1 hover:bg-red-50 rounded transition-colors cursor-pointer"
                   aria-label="Remove item"
                 >
@@ -182,7 +210,7 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 border border-gray-300 rounded">
                   <button
-                    onClick={() => updateQuantity(item.id, -1)}
+                    onClick={() => void updateQuantity(item.id, -1)}
                     className="p-1 hover:bg-gray-100 cursor-pointer"
                     aria-label="Decrease quantity"
                   >
@@ -192,7 +220,7 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
                     {item.quantity}
                   </span>
                   <button
-                    onClick={() => updateQuantity(item.id, 1)}
+                    onClick={() => void updateQuantity(item.id, 1)}
                     className="p-1 hover:bg-gray-100 cursor-pointer"
                     aria-label="Increase quantity"
                   >
@@ -227,7 +255,26 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
           </button>
 
           <button
-            onClick={clearCart}
+            onClick={async () => {
+              const ok = await frontModal.confirm({
+                title: "Limpar carrinho",
+                description: "Tem certeza que deseja remover todos os produtos do seu carrinho?",
+                confirmText: "Limpar",
+                cancelText: "Cancelar",
+                confirmVariant: "destructive",
+              });
+
+              if (!ok) return;
+              try {
+                await clearCart();
+              } catch (error) {
+                const message = error instanceof Error ? error.message : "Erro inesperado ao limpar carrinho.";
+                void frontModal.error({
+                  title: "Erro no carrinho",
+                  description: message,
+                });
+              }
+            }}
             className="w-full bg-white text-gray-900 py-3 rounded font-medium border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
           >
             Limpar carrinho

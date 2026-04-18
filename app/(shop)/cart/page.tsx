@@ -2,14 +2,44 @@
 
 import Link from "next/link";
 
-import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatting";
 import { slugify } from "@/lib/utils";
+import { frontModal } from "@/stores/front-modal-store";
+import { useControlStore } from "@/stores/control-store";
 
 const PRODUCT_IMAGE_FALLBACK = "/logo.png";
 
 export default function CartPage() {
-  const { items, totalAmount, totalItems, setItemQuantity, removeItem } = useCart();
+  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
+  const items = useCarrinhoStore((s) => s.items);
+  const totalAmount = useCarrinhoStore((s) => s.totalAmount);
+  const totalItems = useCarrinhoStore((s) => s.totalItems);
+  const setItemQuantity = useCarrinhoStore((s) => s.setItemQuantity);
+  const removeItem = useCarrinhoStore((s) => s.removeItem);
+
+  const safeSetItemQuantity = async (id: string, quantity: number) => {
+    try {
+      await setItemQuantity(id, quantity);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro inesperado ao atualizar quantidade.";
+      void frontModal.error({
+        title: "Erro no carrinho",
+        description: message,
+      });
+    }
+  };
+
+  const safeRemoveItem = async (id: string) => {
+    try {
+      await removeItem(id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro inesperado ao remover item.";
+      void frontModal.error({
+        title: "Erro no carrinho",
+        description: message,
+      });
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -78,7 +108,7 @@ export default function CartPage() {
 
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setItemQuantity(item.id, item.quantity - 1)}
+                      onClick={() => void safeSetItemQuantity(item.id, item.quantity - 1)}
                       className="w-8 h-8 rounded border border-custom-light-400 hover:bg-custom-light-100"
                       aria-label="Diminuir quantidade"
                     >
@@ -86,7 +116,7 @@ export default function CartPage() {
                     </button>
                     <span className="w-8 text-center">{item.quantity}</span>
                     <button
-                      onClick={() => setItemQuantity(item.id, item.quantity + 1)}
+                      onClick={() => void safeSetItemQuantity(item.id, item.quantity + 1)}
                       className="w-8 h-8 rounded border border-custom-light-400 hover:bg-custom-light-100"
                       aria-label="Aumentar quantidade"
                     >
@@ -99,7 +129,7 @@ export default function CartPage() {
                       {formatCurrency(subtotal)}
                     </p>
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => void safeRemoveItem(item.id)}
                       className="text-xs text-tints-french-blue hover:underline"
                     >
                       Remover

@@ -18,10 +18,13 @@ import {
 import { useState, useRef, useEffect } from "react";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { pickMeusDados, useClientesStore } from "@/stores/clientes-store";
+import { frontModal } from "@/stores/front-modal-store";
 
 export default function SidebarMenu() {
-  const { user, isAuthenticated, logoutUser } = useAuth();
+  const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const loginData = useClientesStore((s) => s.loginData);
+  const logout = useClientesStore((s) => s.logout);
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -48,12 +51,24 @@ export default function SidebarMenu() {
   }, [isOpen]);
 
   async function handleLogout() {
-    await logoutUser();
+    const confirmed = await frontModal.confirm({
+      title: "Sair da conta",
+      description: "Tem certeza que deseja sair?",
+      confirmText: "Sair",
+      cancelText: "Cancelar",
+      confirmVariant: "destructive",
+    });
+
+    if (!confirmed) return;
+
+    logout();
     setIsOpen(false);
     router.push("/login");
   }
 
-  const displayName = user?.name?.trim() || user?.email || "Usuário";
+  const cliente = pickMeusDados(loginData);
+  const displayName =
+    String(cliente?.nome ?? cliente?.name ?? loginData?.email ?? "Usuário").trim() || "Usuário";
   const displayInitial = displayName.charAt(0).toUpperCase();
 
   return (
@@ -62,7 +77,7 @@ export default function SidebarMenu() {
         <Menu size={24} color="white" />
       </button>
       {isOpen && (
-        isAuthenticated ? (
+        isLoggedIn ? (
           <AuthenticatedSidebar
             sidebarRef={sidebarRef}
             onClose={() => setIsOpen(false)}
@@ -179,15 +194,15 @@ function AuthenticatedSidebar({ sidebarRef, onClose, handleLogout, displayName, 
         </Link>
 
         <Link
-          href="/dashboard"
+          href="/cliente/painel"
           className="flex items-center gap-3 px-4 py-2 text-white hover:bg-white/10 rounded transition-colors"
         >
           <LayoutDashboard size={20} />
-          <span>Dashboard</span>
+          <span>Painel</span>
         </Link>
 
         <Link
-          href="/dashboard/orders"
+          href="/cliente/meus-pedidos"
           className="flex items-center gap-3 px-4 py-2 text-white hover:bg-white/10 rounded transition-colors"
         >
           <ShoppingBasket size={20} />
@@ -195,7 +210,7 @@ function AuthenticatedSidebar({ sidebarRef, onClose, handleLogout, displayName, 
         </Link>
 
         <Link
-          href="/dashboard/profile"
+          href="/cliente/meus-dados"
           className="flex items-center gap-3 px-4 py-2 text-white hover:bg-white/10 rounded transition-colors"
         >
           <User size={20} />
@@ -203,11 +218,11 @@ function AuthenticatedSidebar({ sidebarRef, onClose, handleLogout, displayName, 
         </Link>
 
         <Link
-          href="/dashboard/automations"
+          href="/cliente/privacidade"
           className="flex items-center gap-3 px-4 py-2 text-white hover:bg-white/10 rounded transition-colors"
         >
           <Settings size={20} />
-          <span>Automações</span>
+          <span>Privacidade</span>
         </Link>
       </nav>
 

@@ -4,6 +4,11 @@ import { ApiError, apiClient } from "@/lib/api/client";
 
 type LoadStatus = "idle" | "loading" | "success" | "error";
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
 function getApiErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     const data = error.data as { message?: unknown; error?: unknown } | undefined;
@@ -17,11 +22,28 @@ function getApiErrorMessage(error: unknown): string {
 
 export type ClienteLoginData = {
   token?: string;
-  cliente?: unknown;
+  /**
+   * Contrato novo (connect): dados do cliente ficam aqui.
+   * Ex.: { id, nome, email, whatsapp, ... }
+   */
+  meus_dados?: unknown;
   enderecos?: unknown;
   privacidade?: unknown;
   [key: string]: unknown;
 };
+
+export function pickMeusDados(loginData: ClienteLoginData | null): Record<string, unknown> | null {
+  return asRecord(loginData?.meus_dados) ?? null;
+}
+
+export function pickPrivacidade(loginData: ClienteLoginData | null): Record<string, unknown> | null {
+  return asRecord(loginData?.privacidade) ?? null;
+}
+
+export function pickDoisFatores(loginData: ClienteLoginData | null): Record<string, unknown> | null {
+  const privacidade = asRecord(loginData?.privacidade);
+  return asRecord(privacidade?.doisFatores) ?? null;
+}
 
 export type ClientesState = {
   loginStatus: LoadStatus;
@@ -29,6 +51,12 @@ export type ClientesState = {
   loginData: ClienteLoginData | null;
   isLoggedIn: boolean;
   login: (input: { email: string; senha: string }) => Promise<ClienteLoginData>;
+  updateMeusDados: (patch: Record<string, unknown>) => Promise<ClienteLoginData>;
+  updatePrivacidade: (patch: Record<string, unknown>) => Promise<ClienteLoginData>;
+  listEnderecos: () => Promise<unknown[]>;
+  createEndereco: (endereco: Record<string, unknown>) => Promise<unknown[]>;
+  updateEndereco: (enderecoId: number, patch: Record<string, unknown>) => Promise<unknown[]>;
+  deleteEndereco: (enderecoId: number) => Promise<unknown[]>;
   logout: () => void;
   reset: () => void;
 };
@@ -40,7 +68,27 @@ const INITIAL: Pick<ClientesState, "loginStatus" | "loginError" | "loginData" | 
   isLoggedIn: false,
 };
 
-export const useClientesStore = create<ClientesState>((set) => ({
+function getClienteIdFromLoginData(loginData: ClienteLoginData | null): number | null {
+  const meus = asRecord(loginData?.meus_dados);
+  const id = Number.parseInt(String(meus?.id ?? "").trim(), 10);
+  return Number.isFinite(id) ? id : null;
+}
+
+function ensureLoggedIn(loginData: ClienteLoginData | null): number {
+  const clienteId = getClienteIdFromLoginData(loginData);
+  if (!clienteId) throw new Error("Cliente não identificado. Faça login novamente.");
+  return clienteId;
+}
+
+function mergeLoginData(
+  current: ClienteLoginData | null,
+  patch: Partial<ClienteLoginData>
+): ClienteLoginData | null {
+  if (!current) return current;
+  return { ...current, ...patch };
+}
+
+export const useClientesStore = create<ClientesState>((set, get) => ({
   ...INITIAL,
 
   login: async ({ email, senha }) => {
@@ -59,13 +107,149 @@ export const useClientesStore = create<ClientesState>((set) => ({
         body: JSON.stringify({ email: safeEmail, senha: safeSenha }),
       });
 
-      const data = result?.data ?? null;
+      const data = (result?.data ?? null) as ClienteLoginData | null;
       set({ loginStatus: "success", loginData: data, isLoggedIn: Boolean(data?.token) });
       return data ?? {};
     } catch (error) {
       const message = getApiErrorMessage(error);
       set({ loginStatus: "error", loginError: message, loginData: null, isLoggedIn: false });
       throw error;
+    }
+  },
+
+  updateMeusDados: async (patch) => {
+    const state = get();
+    const clienteId = ensureLoggedIn(state.loginData);
+
+    try {
+      const result = await apiClient<{ success: true; data: unknown }>("clientes/meus-dados", {
+        method: "PUT",
+        body: JSON.stringify({ clienteId, patch }),
+      });
+
+      const payload = asRecord(result?.data);
+      const next = mergeLoginData(state.loginData, {
+        ...(payload?.meus_dados !== undefined ? { meus_dados: payload.meus_dados } : {}),
+        ...(payload?.enderecos !== undefined ? { enderecos: payload.enderecos } : {}),
+        ...(payload?.privacidade !== undefined ? { privacidade: payload.privacidade } : {}),
+      });
+
+      set({ loginData: next });
+      return next ?? {};
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      throw new Error(message);
+    }
+  },
+
+  updatePrivacidade: async (patch) => {
+    const state = get();
+    const clienteId = ensureLoggedIn(state.loginData);
+
+    try {
+      const result = await apiClient<{ success: true; data: unknown }>("clientes/privacidade", {
+        method: "PUT",
+        body: JSON.stringify({ clienteId, patch }),
+      });
+
+      const payload = asRecord(result?.data);
+      const privacidade = payload?.privacidade ?? result?.data;
+      const next = mergeLoginData(state.loginData, { privacidade });
+      set({ loginData: next });
+      return next ?? {};
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      throw new Error(message);
+    }
+  },
+
+  listEnderecos: async () => {
+    const state = get();
+    const clienteId = ensureLoggedIn(state.loginData);
+
+    try {
+      const result = await apiClient<{ success: true; data: unknown }>(
+        `clientes/enderecos/cliente/${encodeURIComponent(String(clienteId))}`,
+        { method: "GET" }
+      );
+
+      const list = Array.isArray(result?.data) ? result.data : [];
+      const next = mergeLoginData(state.loginData, { enderecos: list });
+      set({ loginData: next });
+      return list;
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      throw new Error(message);
+    }
+  },
+
+  createEndereco: async (endereco) => {
+    const state = get();
+    const clienteId = ensureLoggedIn(state.loginData);
+
+    try {
+      const result = await apiClient<{ success: true; data: unknown }>("clientes/enderecos", {
+        method: "POST",
+        body: JSON.stringify({ clienteId, endereco }),
+      });
+
+      const list = Array.isArray(result?.data) ? result.data : [];
+      const next = mergeLoginData(state.loginData, { enderecos: list });
+      set({ loginData: next });
+      return list;
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      throw new Error(message);
+    }
+  },
+
+  updateEndereco: async (enderecoId, patch) => {
+    const state = get();
+    const clienteId = ensureLoggedIn(state.loginData);
+
+    if (!Number.isFinite(enderecoId)) throw new Error("enderecoId inválido.");
+
+    try {
+      const result = await apiClient<{ success: true; data: unknown }>(
+        `clientes/enderecos/${encodeURIComponent(String(enderecoId))}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ clienteId, patch }),
+        }
+      );
+
+      const list = Array.isArray(result?.data) ? result.data : [];
+      const next = mergeLoginData(state.loginData, { enderecos: list });
+      set({ loginData: next });
+      return list;
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      throw new Error(message);
+    }
+  },
+
+  deleteEndereco: async (enderecoId) => {
+    const state = get();
+    const clienteId = ensureLoggedIn(state.loginData);
+
+    if (!Number.isFinite(enderecoId)) throw new Error("enderecoId inválido.");
+
+    try {
+      const result = await apiClient<{ success: true; data: unknown }>(
+        `clientes/enderecos/${encodeURIComponent(String(enderecoId))}`,
+        {
+          method: "DELETE",
+          body: JSON.stringify({ clienteId }),
+        }
+      );
+
+      const list = Array.isArray(result?.data) ? result.data : [];
+      const next = mergeLoginData(state.loginData, { enderecos: list });
+      set({ loginData: next });
+      return list;
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      throw new Error(message);
     }
   },
 

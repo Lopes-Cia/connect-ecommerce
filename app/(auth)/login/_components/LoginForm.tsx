@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useClientesStore } from "@/stores/clientes-store";
+import { frontModal } from "@/stores/front-modal-store";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Informe o e-mail").email("Digite um e-mail válido"),
@@ -52,19 +53,29 @@ export default function LoginForm() {
       const result = await loginCliente({ email: data.email, senha: data.senha });
       const hasToken = Boolean(result?.token);
       if (!hasToken) {
-        setFeedbackMessage("Login retornou sucesso, mas sem token. Verifique a resposta do backend.");
-        alert(JSON.stringify({ success: true, data: result }, null, 2));
+        setFeedbackMessage("Login retornou sucesso, mas sem token. Verifique a resposta do backend e tente novamente.");
+        await frontModal.warning({
+          title: "Login incompleto (sem token)",
+          description:
+            "O backend retornou sucesso, mas não enviou o token de autenticação. Verifique o contrato/response do endpoint de login e tente novamente.",
+        });
         return;
       }
 
       setFeedbackSuccess(true);
-      setFeedbackMessage("Login realizado. Confira o resultado no alert.");
-      alert(JSON.stringify({ success: true, data: result }, null, 2));
+      setFeedbackMessage("Login realizado com sucesso.");
+      await frontModal.success({
+        title: "Login realizado",
+        description: "Você será redirecionado para o painel do cliente.",
+      });
       router.push("/cliente/painel");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Erro inesperado ao fazer login.";
       setFeedbackMessage(message);
-      alert(JSON.stringify({ success: false, message }, null, 2));
+      await frontModal.error({
+        title: "Erro ao fazer login",
+        description: message,
+      });
     } finally {
       setIsLoading(false);
     }

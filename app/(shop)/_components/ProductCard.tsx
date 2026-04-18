@@ -4,8 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatting";
+import { frontModal } from "@/stores/front-modal-store";
+import { useControlStore } from "@/stores/control-store";
 
 type ProductCardType =
   | "standard"
@@ -59,26 +60,43 @@ function normalizeProductHref(value: unknown): string | null {
 
 
 export default function ProductCard({ type, product }: ProductCardProps) {
-  const { addItem } = useCart();
+  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
+  const items = useCarrinhoStore((s) => s.items);
+  const addItem = useCarrinhoStore((s) => s.addItem);
   const isComingSoon = type === "coming-soon";
   const hasDiscount = type === "discount" || type === "highlighted-discount";
   const isHighlighted =
     type === "highlighted" || type === "highlighted-discount";
   const productHref = normalizeProductHref(product.slug) ?? "#";
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (isComingSoon) {
       return;
     }
 
-    addItem({
-      id: product.id,
-      name: product.name,
-      category: product.category,
-      imageUrl: product.image_url,
-      unitPrice: product.discountPrice ?? product.price,
-      quantity: 1,
-    });
+    const existed = items.some((x) => x.id === product.id);
+    try {
+      await addItem({
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        imageUrl: product.image_url,
+        unitPrice: product.discountPrice ?? product.price,
+        quantity: 1,
+      });
+      void frontModal.success({
+        title: existed ? "Quantidade atualizada" : "Adicionado ao carrinho",
+        description: existed
+          ? `${product.name} teve a quantidade atualizada no seu carrinho.`
+          : `${product.name} foi adicionado no seu carrinho.`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro inesperado ao adicionar no carrinho.";
+      void frontModal.error({
+        title: "Erro no carrinho",
+        description: message,
+      });
+    }
   };
 
   return (
@@ -161,7 +179,7 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         </p>
 
         <button
-          onClick={handleAddToCart}
+          onClick={() => void handleAddToCart()}
           className={cn(
             "mt-1.5 w-full rounded-xs py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed",
             isComingSoon ? "bg-tints-french-blue/60 cursor-not-allowed" : "bg-tints-french-blue cursor-pointer"

@@ -2,12 +2,13 @@
 
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from "react";
+import { frontModal } from "@/stores/front-modal-store";
+import { useCarrinhoStore } from "@/stores/carrinho-store";
+import { useClientesStore } from "@/stores/clientes-store";
 
 export interface CartItem {
   id: string;
@@ -50,98 +51,62 @@ function normalizeQuantity(value: number | undefined): number {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [hasHydratedStorage, setHasHydratedStorage] = useState(false);
+  const items = useCarrinhoStore((s) => s.items) as CartItem[];
+  const totalItems = useCarrinhoStore((s) => s.totalItems);
+  const totalAmount = useCarrinhoStore((s) => s.totalAmount);
+  const hydrateFromStorage = useCarrinhoStore((s) => s.hydrateFromStorage);
+  const persistToStorage = useCarrinhoStore((s) => s.persistToStorage);
+  const switchToServerIfLoggedIn = useCarrinhoStore((s) => s.switchToServerIfLoggedIn);
+  const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const addItemStore = useCarrinhoStore((s) => s.addItem);
+  const removeItemStore = useCarrinhoStore((s) => s.removeItem);
+  const setItemQuantityStore = useCarrinhoStore((s) => s.setItemQuantity);
+  const clearCartStore = useCarrinhoStore((s) => s.clearCart);
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
-      if (!raw) {
-        setHasHydratedStorage(true);
-        return;
-      }
-
-      const parsed = JSON.parse(raw) as CartItem[];
-      if (Array.isArray(parsed)) {
-        setItems(parsed);
-      }
-    } catch {
-      // ignore malformed localStorage payload and keep empty cart
-    } finally {
-      setHasHydratedStorage(true);
-    }
+    void hydrateFromStorage();
   }, []);
 
   useEffect(() => {
-    if (!hasHydratedStorage) return;
-    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-  }, [hasHydratedStorage, items]);
+    void persistToStorage();
+  }, [items, persistToStorage]);
 
-  const addItem = useCallback((input: AddCartItemInput) => {
-    setItems((current) => {
-      const quantity = normalizeQuantity(input.quantity);
-      const existing = current.find((item) => item.id === input.id);
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    void switchToServerIfLoggedIn();
+  }, [isLoggedIn, switchToServerIfLoggedIn]);
 
-      if (existing) {
-        return current.map((item) =>
-          item.id === input.id
-            ? {
-                ...item,
-                quantity: item.quantity + quantity,
-              }
-            : item
-        );
-      }
-
-      return [
-        ...current,
-        {
-          id: input.id,
-          name: input.name,
-          category: input.category ?? "Sem categoria",
-          imageUrl: input.imageUrl ?? "/placeholder.svg",
-          unitPrice: Number.isFinite(input.unitPrice) ? input.unitPrice : 0,
-          quantity,
-        },
-      ];
+  async function addItem(input: AddCartItemInput) {
+    const quantity = normalizeQuantity(input.quantity);
+    const existed = items.some((x) => x.id === input.id);
+    await addItemStore({
+      id: input.id,
+      name: input.name,
+      category: input.category ?? "Sem categoria",
+      imageUrl: input.imageUrl ?? "/placeholder.svg",
+      unitPrice: input.unitPrice,
+      quantity,
     });
-  }, []);
+    void frontModal.success({
+      title: existed ? "Quantidade atualizada" : "Adicionado ao carrinho",
+      description: existed
+        ? `${input.name} teve a quantidade atualizada no seu carrinho.`
+        : `${input.name} foi adicionado no seu carrinho.`,
+    });
+  }
 
-  const removeItem = useCallback((id: string) => {
-    setItems((current) => current.filter((item) => item.id !== id));
-  }, []);
+  async function removeItem(id: string) {
+    await removeItemStore(id);
+  }
 
-  const setItemQuantity = useCallback((id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(id);
-      return;
-    }
+  async function setItemQuantity(id: string, quantity: number) {
+    await setItemQuantityStore(id, quantity);
+  }
 
-    setItems((current) =>
-      current.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: Math.floor(quantity),
-            }
-          : item
-      )
-    );
-  }, [removeItem]);
-
-  const clearCart = useCallback(() => {
-    setItems([]);
-  }, []);
-
-  const totalItems = useMemo(
-    () => items.reduce((acc, item) => acc + item.quantity, 0),
-    [items]
-  );
-
-  const totalAmount = useMemo(
-    () => items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0),
-    [items]
-  );
+  async function clearCart() {
+    await clearCartStore();
+    if (typeof window !== "undefined") window.localStorage.removeItem(CART_STORAGE_KEY);
+  }
 
   const value = useMemo<CartContextValue>(
     () => ({

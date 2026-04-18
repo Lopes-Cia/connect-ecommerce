@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Truck, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/lib/formatting";
+import { frontModal } from "@/stores/front-modal-store";
+import { useControlStore } from "@/stores/control-store";
 
 interface ProductActivityProps {
   price: number;
@@ -37,7 +38,9 @@ export default function ProductActivity({
   onBuyNow,
 }: ProductActivityProps) {
   const router = useRouter();
-  const { addItem } = useCart();
+  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
+  const items = useCarrinhoStore((s) => s.items);
+  const addItem = useCarrinhoStore((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
   const [cep, setCep] = useState("");
 
@@ -47,37 +50,52 @@ export default function ProductActivity({
     console.log("Consulting CEP:", cep);
   };
 
-  const addCurrentProductToCart = (selectedQuantity: number) => {
+  const addCurrentProductToCart = async (selectedQuantity: number) => {
     if (!productId || !productName) {
       return;
     }
 
-    addItem({
-      id: productId,
-      name: productName,
-      category: productCategory,
-      imageUrl: productImageUrl,
-      unitPrice: price,
-      quantity: selectedQuantity,
-    });
+    const existed = items.some((x) => x.id === productId);
+    try {
+      await addItem({
+        id: productId,
+        name: productName,
+        category: productCategory,
+        imageUrl: productImageUrl,
+        unitPrice: price,
+        quantity: selectedQuantity,
+      });
+      void frontModal.success({
+        title: existed ? "Quantidade atualizada" : "Adicionado ao carrinho",
+        description: existed
+          ? `${productName} teve a quantidade atualizada no seu carrinho.`
+          : `${productName} foi adicionado no seu carrinho.`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro inesperado ao adicionar no carrinho.";
+      void frontModal.error({
+        title: "Erro no carrinho",
+        description: message,
+      });
+    }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (onAddToCart) {
       onAddToCart(quantity);
       return;
     }
 
-    addCurrentProductToCart(quantity);
+    await addCurrentProductToCart(quantity);
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (onBuyNow) {
       onBuyNow(quantity);
       return;
     }
 
-    addCurrentProductToCart(quantity);
+    await addCurrentProductToCart(quantity);
     router.push("/checkout");
   };
 
@@ -129,14 +147,14 @@ export default function ProductActivity({
 
       <div className="flex flex-col gap-2 mt-2">
         <button
-          onClick={handleAddToCart}
+          onClick={() => void handleAddToCart()}
           disabled={!inStock}
           className="w-full py-2.5 bg-tints-french-blue cursor-pointer text-white font-montserrat font-semibold text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Adicionar ao carrinho
         </button>
         <button
-          onClick={handleBuyNow}
+          onClick={() => void handleBuyNow()}
           disabled={!inStock}
           className="w-full py-2.5 bg-tints-french-blue cursor-pointer text-white font-montserrat font-semibold text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >

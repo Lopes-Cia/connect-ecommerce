@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import { useClientesStore } from "./clientes-store";
+import { useCarrinhoStore } from "./carrinho-store";
 import { useEcommerceStore } from "./ecommerce-store";
 import { usePedidosStore } from "./pedidos-store";
 import { useProdutosStore } from "./produtos-store";
@@ -9,6 +10,7 @@ export type ControlState = {
   PRODUTOSSTORE: typeof useProdutosStore;
   CLIENTESSTORE: typeof useClientesStore;
   PEDIDOSSTORE: typeof usePedidosStore;
+  CARRINHOSTORE: typeof useCarrinhoStore;
   ECOMMERCESTORE: typeof useEcommerceStore;
   live: () => string;
 };
@@ -17,6 +19,7 @@ export const useControlStore = create<ControlState>(() => ({
   PRODUTOSSTORE: useProdutosStore,
   CLIENTESSTORE: useClientesStore,
   PEDIDOSSTORE: usePedidosStore,
+  CARRINHOSTORE: useCarrinhoStore,
   ECOMMERCESTORE: useEcommerceStore,
   live: () => {
     fetch("/api/produtos/categorias", { cache: "no-store" })
