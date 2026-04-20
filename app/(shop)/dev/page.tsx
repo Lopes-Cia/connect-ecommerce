@@ -103,7 +103,6 @@ export default function DevPage() {
       { label: "Categorias (tree)", url: "/api/produtos/categorias" },
       { label: "Lopes Produtos Categorias (tree-json)", url: "/api/lopes/produtos/categorias" },
       { label: "Lopes Produtos Categoria por ID (json)", url: `/api/lopes/produtos/categorias/${idCategoria}` },
-      { label: "Lopes Produtos Categoria por ID (json)", url: `/api/lopes/produtos/categorias/${idCategoria}` },
       {
         label: "Lopes Produtos Categoria por Slug (json)",
         url: `/api/lopes/produtos/categorias/by-slug/${encodeSlugPath(categoriaSlug)}`,
@@ -582,7 +581,7 @@ export default function DevPage() {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
         {routes.map((item) => (
           <button
-            key={item.label}
+            key={item.url}
             type="button"
             onClick={() => void callRoute(item.url)}
             className="border rounded px-4 py-3 text-left hover:bg-gray-50 transition"
