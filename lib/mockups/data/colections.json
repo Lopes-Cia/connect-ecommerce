@@ -1,0 +1,1447 @@
+{
+  "home": {
+    "banners_1": [
+      {
+        "id": 1,
+        "image": "http://localhost:4000/assets/images/banners/banner-1.webp",
+        "link": ""
+      },
+      {
+        "id": 2,
+        "image": "http://localhost:4000/assets/images/banners/banner-2.webp",
+        "link": ""
+      },
+      {
+        "id": 3,
+        "image": "http://localhost:4000/assets/images/banners/banner-3.webp",
+        "link": ""
+      },
+      {
+        "id": 4,
+        "image": "http://localhost:4000/assets/images/banners/banner-4.webp",
+        "link": ""
+      }
+    ],
+    "categorias_destaque": [
+      {
+        "id": 35,
+        "name": "Seco",
+        "slug": "/categoria/vinhos/tintos/seco",
+        "parentId": 31,
+        "image": "http://localhost:4000/assets/images/categorias/seco-fc3ba0.jpg",
+        "order": 35
+      },
+      {
+        "id": 60,
+        "name": "Branco",
+        "slug": "/categoria/destilados/rum/branco",
+        "parentId": 50,
+        "image": "http://localhost:4000/assets/images/categorias/branco-4b37ae.png",
+        "order": 60
+      },
+      {
+        "id": 31,
+        "name": "Tintos",
+        "slug": "/categoria/vinhos/tintos",
+        "parentId": 11,
+        "image": "http://localhost:4000/assets/images/categorias/tintos-4c55cf.jpg",
+        "order": 31
+      },
+      {
+        "id": 33,
+        "name": "Espumantes",
+        "slug": "/categoria/vinhos/espumantes",
+        "parentId": 11,
+        "image": "http://localhost:4000/assets/images/categorias/espumantes-a45408.jpg",
+        "order": 33
+      },
+      {
+        "id": 75,
+        "name": "Isotônico",
+        "slug": "/categoria/nao-alcoolicas/aguas-isotonicos/isotonico",
+        "parentId": 65,
+        "image": "http://localhost:4000/assets/images/categorias/isotonico-58d8e5.jpg",
+        "order": 75
+      },
+      {
+        "id": 32,
+        "name": "Brancos",
+        "slug": "/categoria/vinhos/brancos",
+        "parentId": 11,
+        "image": "http://localhost:4000/assets/images/categorias/brancos-dc4ea0.jpg",
+        "order": 32
+      }
+    ],
+    "produtos_maisvendidos": {
+      "slug": "mais-vendidos",
+      "data": [
+        {
+          "id": 1050,
+          "sku": "BALLANTINE-S-WHISKY-BALLANTINE-S-BLENDED-1L-1L",
+          "name": "Whisky Ballantine's Blended 1L",
+          "slug": "/produtos/whisky-ballantine-s-blended-1l",
+          "unitLabel": "garrafa",
+          "sizeLabel": "1L",
+          "price": 124.45,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 171,
+          "inStock": true,
+          "category": {
+            "id": 51,
+            "name": "Blended",
+            "slug": "/categoria/destilados/whisky/blended",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 47,
+                "name": "Whisky",
+                "slug": "/categoria/destilados/whisky"
+              },
+              {
+                "id": 51,
+                "name": "Blended",
+                "slug": "/categoria/destilados/whisky/blended"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1709002083,
+            "name": "Ballantine's",
+            "slug": "/marca/ballantine-s",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1061,
+          "sku": "TANQUERAY-GIN-TANQUERAY-LONDON-DRY-750ML-750ML",
+          "name": "Gin Tanqueray London Dry 750ml",
+          "slug": "/produtos/gin-tanqueray-london-dry-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 150.17,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/gin-tanqueray-london-dry-750ml-09e432.png",
+          "stock": 105,
+          "inStock": true,
+          "category": {
+            "id": 57,
+            "name": "London Dry",
+            "slug": "/categoria/destilados/gin/london-dry",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 49,
+                "name": "Gin",
+                "slug": "/categoria/destilados/gin"
+              },
+              {
+                "id": 57,
+                "name": "London Dry",
+                "slug": "/categoria/destilados/gin/london-dry"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1909697191,
+            "name": "Tanqueray",
+            "slug": "/marca/tanqueray",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1055,
+          "sku": "SMIRNOFF-VODKA-SMIRNOFF-TRADICIONAL-1L-1L",
+          "name": "Vodka Smirnoff Tradicional 1L",
+          "slug": "/produtos/vodka-smirnoff-tradicional-1l",
+          "unitLabel": "garrafa",
+          "sizeLabel": "1L",
+          "price": 64.54,
+          "compareAtPrice": 74.22,
+          "badges": [
+            "promo"
+          ],
+          "image": "http://localhost:4000/assets/images/produtos/vodka-smirnoff-tradicional-1l-e7fff0.jpg",
+          "stock": 18,
+          "inStock": true,
+          "category": {
+            "id": 54,
+            "name": "Tradicional",
+            "slug": "/categoria/destilados/vodka/tradicional",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 48,
+                "name": "Vodka",
+                "slug": "/categoria/destilados/vodka"
+              },
+              {
+                "id": 54,
+                "name": "Tradicional",
+                "slug": "/categoria/destilados/vodka/tradicional"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1284966993,
+            "name": "Smirnoff",
+            "slug": "/marca/smirnoff",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1038,
+          "sku": "CASA-PERINI-ESPUMANTE-BRUT-750ML-750ML",
+          "name": "Espumante Brut 750ml",
+          "slug": "/produtos/espumante-brut-750ml-casa-perini",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 79.89,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 58,
+          "inStock": true,
+          "category": {
+            "id": 41,
+            "name": "Brut",
+            "slug": "/categoria/vinhos/espumantes/brut",
+            "familia": [
+              {
+                "id": 11,
+                "name": "Vinhos",
+                "slug": "/categoria/vinhos"
+              },
+              {
+                "id": 33,
+                "name": "Espumantes",
+                "slug": "/categoria/vinhos/espumantes"
+              },
+              {
+                "id": 41,
+                "name": "Brut",
+                "slug": "/categoria/vinhos/espumantes/brut"
+              }
+            ]
+          },
+          "brand": {
+            "id": 4222076832,
+            "name": "Casa Perini",
+            "slug": "/marca/casa-perini",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1072,
+          "sku": "RUM-RUM-ENVELHECIDO-750ML-3-750ML",
+          "name": "Rum Envelhecido 750ml 3",
+          "slug": "/produtos/rum-envelhecido-750ml-3",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 82.92,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/rum-envelhecido-750ml-3-76c049.png",
+          "stock": 11,
+          "inStock": true,
+          "category": {
+            "id": 62,
+            "name": "Envelhecido",
+            "slug": "/categoria/destilados/rum/envelhecido",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 50,
+                "name": "Rum",
+                "slug": "/categoria/destilados/rum"
+              },
+              {
+                "id": 62,
+                "name": "Envelhecido",
+                "slug": "/categoria/destilados/rum/envelhecido"
+              }
+            ]
+          },
+          "brand": {
+            "id": 2354570455,
+            "name": "Rum",
+            "slug": "/marca/rum",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1064,
+          "sku": "BEEFEATER-GIN-BEEFEATER-AROMATIZADO-750ML-750ML",
+          "name": "Gin Beefeater Aromatizado 750ml",
+          "slug": "/produtos/gin-beefeater-aromatizado-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 127.05,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/gin-beefeater-aromatizado-750ml-c315e5.jpg",
+          "stock": 28,
+          "inStock": true,
+          "category": {
+            "id": 58,
+            "name": "Aromatizado",
+            "slug": "/categoria/destilados/gin/aromatizado",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 49,
+                "name": "Gin",
+                "slug": "/categoria/destilados/gin"
+              },
+              {
+                "id": 58,
+                "name": "Aromatizado",
+                "slug": "/categoria/destilados/gin/aromatizado"
+              }
+            ]
+          },
+          "brand": {
+            "id": 4170688548,
+            "name": "Beefeater",
+            "slug": "/marca/beefeater",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1098,
+          "sku": "GELO-GELO-SACO-5KG-5KG",
+          "name": "Gelo Saco 5kg",
+          "slug": "/produtos/gelo-saco-5kg",
+          "unitLabel": "saco",
+          "sizeLabel": "5kg",
+          "price": 19.31,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/gelo-saco-5kg-80be7a.jpg",
+          "stock": 28,
+          "inStock": true,
+          "category": {
+            "id": 83,
+            "name": "Saco 2kg",
+            "slug": "/categoria/conveniencia/gelo/saco-2kg",
+            "familia": [
+              {
+                "id": 14,
+                "name": "Conveniência",
+                "slug": "/categoria/conveniencia"
+              },
+              {
+                "id": 79,
+                "name": "Gelo",
+                "slug": "/categoria/conveniencia/gelo"
+              },
+              {
+                "id": 83,
+                "name": "Saco 2kg",
+                "slug": "/categoria/conveniencia/gelo/saco-2kg"
+              }
+            ]
+          },
+          "brand": {
+            "id": 3895226784,
+            "name": "Gelo",
+            "slug": "/marca/gelo",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1029,
+          "sku": "MIOLO-VINHO-TINTO-RESERVA-750ML-750ML",
+          "name": "Vinho Tinto Reserva 750ml",
+          "slug": "/produtos/vinho-tinto-reserva-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 89.7,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 84,
+          "inStock": true,
+          "category": {
+            "id": 37,
+            "name": "Reserva",
+            "slug": "/categoria/vinhos/tintos/reserva",
+            "familia": [
+              {
+                "id": 11,
+                "name": "Vinhos",
+                "slug": "/categoria/vinhos"
+              },
+              {
+                "id": 31,
+                "name": "Tintos",
+                "slug": "/categoria/vinhos/tintos"
+              },
+              {
+                "id": 37,
+                "name": "Reserva",
+                "slug": "/categoria/vinhos/tintos/reserva"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1900825813,
+            "name": "Miolo",
+            "slug": "/marca/miolo",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1042,
+          "sku": "CASA-PERINI-ESPUMANTE-DEMI-SEC-750ML-750ML",
+          "name": "Espumante Demi-sec 750ml",
+          "slug": "/produtos/espumante-demi-sec-750ml-casa-perini",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 84.54,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/espumante-demi-sec-750ml-casa-perini-55cb69.jpg",
+          "stock": 101,
+          "inStock": true,
+          "category": {
+            "id": 43,
+            "name": "Demi-sec",
+            "slug": "/categoria/vinhos/espumantes/demi-sec",
+            "familia": [
+              {
+                "id": 11,
+                "name": "Vinhos",
+                "slug": "/categoria/vinhos"
+              },
+              {
+                "id": 33,
+                "name": "Espumantes",
+                "slug": "/categoria/vinhos/espumantes"
+              },
+              {
+                "id": 43,
+                "name": "Demi-sec",
+                "slug": "/categoria/vinhos/espumantes/demi-sec"
+              }
+            ]
+          },
+          "brand": {
+            "id": 4222076832,
+            "name": "Casa Perini",
+            "slug": "/marca/casa-perini",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1025,
+          "sku": "MIOLO-VINHO-TINTO-SECO-750ML-750ML",
+          "name": "Vinho Tinto Seco 750ml",
+          "slug": "/produtos/vinho-tinto-seco-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 74.38,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/vinho-tinto-seco-750ml-bd9acf.jpg",
+          "stock": 152,
+          "inStock": true,
+          "category": {
+            "id": 35,
+            "name": "Seco",
+            "slug": "/categoria/vinhos/tintos/seco",
+            "familia": [
+              {
+                "id": 11,
+                "name": "Vinhos",
+                "slug": "/categoria/vinhos"
+              },
+              {
+                "id": 31,
+                "name": "Tintos",
+                "slug": "/categoria/vinhos/tintos"
+              },
+              {
+                "id": 35,
+                "name": "Seco",
+                "slug": "/categoria/vinhos/tintos/seco"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1900825813,
+            "name": "Miolo",
+            "slug": "/marca/miolo",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1096,
+          "sku": "SELECAO-SUCOS-MACA-1L-3-1L",
+          "name": "Sucos Maçã 1L 3",
+          "slug": "/produtos/sucos-maca-1l-3",
+          "unitLabel": "garrafa",
+          "sizeLabel": "1L",
+          "price": 8.36,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/sucos-maca-1l-3-026c2f.jpg",
+          "stock": 46,
+          "inStock": true,
+          "category": {
+            "id": 78,
+            "name": "Maçã",
+            "slug": "/categoria/nao-alcoolicas/sucos/maca",
+            "familia": [
+              {
+                "id": 13,
+                "name": "Não alcoólicas",
+                "slug": "/categoria/nao-alcoolicas"
+              },
+              {
+                "id": 66,
+                "name": "Sucos",
+                "slug": "/categoria/nao-alcoolicas/sucos"
+              },
+              {
+                "id": 78,
+                "name": "Maçã",
+                "slug": "/categoria/nao-alcoolicas/sucos/maca"
+              }
+            ]
+          },
+          "brand": {
+            "id": 3668623785,
+            "name": "Seleção",
+            "slug": "/marca/selecao",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1112,
+          "sku": "ACESSORIOS-COPO-LONG-DRINK-1-UN",
+          "name": "Copo Long Drink",
+          "slug": "/produtos/copo-long-drink-acessorios",
+          "unitLabel": "unidade",
+          "sizeLabel": "1 un",
+          "price": 13.11,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/copo-long-drink-acessorios-dc4420.jpg",
+          "stock": 127,
+          "inStock": true,
+          "category": {
+            "id": 90,
+            "name": "Abridor",
+            "slug": "/categoria/conveniencia/acessorios/abridor",
+            "familia": [
+              {
+                "id": 14,
+                "name": "Conveniência",
+                "slug": "/categoria/conveniencia"
+              },
+              {
+                "id": 81,
+                "name": "Acessórios",
+                "slug": "/categoria/conveniencia/acessorios"
+              },
+              {
+                "id": 90,
+                "name": "Abridor",
+                "slug": "/categoria/conveniencia/acessorios/abridor"
+              }
+            ]
+          },
+          "brand": {
+            "id": 3582257716,
+            "name": "Acessórios",
+            "slug": "/marca/acessorios",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        }
+      ]
+    },
+    "produtos_promocao": {
+      "slug": "promocao",
+      "data": [
+        {
+          "id": 1087,
+          "sku": "BONAFONT-AGUA-MINERAL-COM-GAS-500ML-500ML",
+          "name": "Água Mineral Com gás 500ml",
+          "slug": "/produtos/agua-mineral-com-gas-500ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "500ml",
+          "price": 2.63,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/agua-mineral-com-gas-500ml-832d76.jpg",
+          "stock": 134,
+          "inStock": true,
+          "category": {
+            "id": 74,
+            "name": "Com gás",
+            "slug": "/categoria/nao-alcoolicas/aguas-isotonicos/com-gas",
+            "familia": [
+              {
+                "id": 13,
+                "name": "Não alcoólicas",
+                "slug": "/categoria/nao-alcoolicas"
+              },
+              {
+                "id": 65,
+                "name": "Águas & Isotônicos",
+                "slug": "/categoria/nao-alcoolicas/aguas-isotonicos"
+              },
+              {
+                "id": 74,
+                "name": "Com gás",
+                "slug": "/categoria/nao-alcoolicas/aguas-isotonicos/com-gas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1046477162,
+            "name": "Bonafont",
+            "slug": "/marca/bonafont",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1029,
+          "sku": "MIOLO-VINHO-TINTO-RESERVA-750ML-750ML",
+          "name": "Vinho Tinto Reserva 750ml",
+          "slug": "/produtos/vinho-tinto-reserva-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 89.7,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 84,
+          "inStock": true,
+          "category": {
+            "id": 37,
+            "name": "Reserva",
+            "slug": "/categoria/vinhos/tintos/reserva",
+            "familia": [
+              {
+                "id": 11,
+                "name": "Vinhos",
+                "slug": "/categoria/vinhos"
+              },
+              {
+                "id": 31,
+                "name": "Tintos",
+                "slug": "/categoria/vinhos/tintos"
+              },
+              {
+                "id": 37,
+                "name": "Reserva",
+                "slug": "/categoria/vinhos/tintos/reserva"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1900825813,
+            "name": "Miolo",
+            "slug": "/marca/miolo",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1063,
+          "sku": "TANQUERAY-GIN-TANQUERAY-AROMATIZADO-750ML-750ML",
+          "name": "Gin Tanqueray Aromatizado 750ml",
+          "slug": "/produtos/gin-tanqueray-aromatizado-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 149.48,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/gin-tanqueray-aromatizado-750ml-3748be.jpg",
+          "stock": 41,
+          "inStock": true,
+          "category": {
+            "id": 58,
+            "name": "Aromatizado",
+            "slug": "/categoria/destilados/gin/aromatizado",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 49,
+                "name": "Gin",
+                "slug": "/categoria/destilados/gin"
+              },
+              {
+                "id": 58,
+                "name": "Aromatizado",
+                "slug": "/categoria/destilados/gin/aromatizado"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1909697191,
+            "name": "Tanqueray",
+            "slug": "/marca/tanqueray",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1075,
+          "sku": "RED-BULL-RED-BULL-ZERO-250ML-250ML",
+          "name": "Red Bull Zero 250ml",
+          "slug": "/produtos/red-bull-zero-250ml",
+          "unitLabel": "lata",
+          "sizeLabel": "250ml",
+          "price": 10.55,
+          "compareAtPrice": 12.13,
+          "badges": [
+            "gelada",
+            "promo"
+          ],
+          "image": "http://localhost:4000/assets/images/produtos/red-bull-zero-250ml-ff6d89.jpg",
+          "stock": 32,
+          "inStock": true,
+          "category": {
+            "id": 68,
+            "name": "Zero",
+            "slug": "/categoria/nao-alcoolicas/energeticos/zero",
+            "familia": [
+              {
+                "id": 13,
+                "name": "Não alcoólicas",
+                "slug": "/categoria/nao-alcoolicas"
+              },
+              {
+                "id": 63,
+                "name": "Energéticos",
+                "slug": "/categoria/nao-alcoolicas/energeticos"
+              },
+              {
+                "id": 68,
+                "name": "Zero",
+                "slug": "/categoria/nao-alcoolicas/energeticos/zero"
+              }
+            ]
+          },
+          "brand": {
+            "id": 2747053077,
+            "name": "Red Bull",
+            "slug": "/marca/red-bull",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1004,
+          "sku": "HEINEKEN-HEINEKEN-LATA-350ML-350ML",
+          "name": "Heineken Lata 350ml",
+          "slug": "/produtos/heineken-lata-350ml-heineken",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 4.72,
+          "compareAtPrice": null,
+          "badges": [
+            "gelada"
+          ],
+          "image": "http://localhost:4000/assets/images/produtos/heineken-lata-350ml-heineken-4f3bf3.jpg",
+          "stock": 15,
+          "inStock": true,
+          "category": {
+            "id": 20,
+            "name": "IPA",
+            "slug": "/categoria/bebidas/cervejas/ipa",
+            "familia": [
+              {
+                "id": 10,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              },
+              {
+                "id": 15,
+                "name": "Cervejas",
+                "slug": "/categoria/bebidas/cervejas"
+              },
+              {
+                "id": 20,
+                "name": "IPA",
+                "slug": "/categoria/bebidas/cervejas/ipa"
+              }
+            ]
+          },
+          "brand": {
+            "id": 2028873282,
+            "name": "Heineken",
+            "slug": "/marca/heineken",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1082,
+          "sku": "GUARANA-GUARANA-GUARANA-LATA-350ML-350ML",
+          "name": "Guaraná Guaraná Lata 350ml",
+          "slug": "/produtos/guarana-guarana-lata-350ml",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 4.17,
+          "compareAtPrice": null,
+          "badges": [
+            "gelada"
+          ],
+          "image": "http://localhost:4000/assets/images/produtos/guarana-guarana-lata-350ml-3e0427.jpg",
+          "stock": 92,
+          "inStock": true,
+          "category": {
+            "id": 71,
+            "name": "Guaraná",
+            "slug": "/categoria/nao-alcoolicas/refrigerantes/guarana",
+            "familia": [
+              {
+                "id": 13,
+                "name": "Não alcoólicas",
+                "slug": "/categoria/nao-alcoolicas"
+              },
+              {
+                "id": 64,
+                "name": "Refrigerantes",
+                "slug": "/categoria/nao-alcoolicas/refrigerantes"
+              },
+              {
+                "id": 71,
+                "name": "Guaraná",
+                "slug": "/categoria/nao-alcoolicas/refrigerantes/guarana"
+              }
+            ]
+          },
+          "brand": {
+            "id": 3433190152,
+            "name": "Guaraná",
+            "slug": "/marca/guarana",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1011,
+          "sku": "CHOPP-CHOPP-PILSEN-1L-1L",
+          "name": "Chopp Pilsen 1L",
+          "slug": "/produtos/chopp-pilsen-1l-chopp-1011",
+          "unitLabel": "growler",
+          "sizeLabel": "1L",
+          "price": 22.02,
+          "compareAtPrice": null,
+          "badges": [
+            "gelada"
+          ],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 171,
+          "inStock": true,
+          "category": {
+            "id": 24,
+            "name": "Artesanal",
+            "slug": "/categoria/bebidas/chopp/artesanal",
+            "familia": [
+              {
+                "id": 10,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              },
+              {
+                "id": 16,
+                "name": "Chopp",
+                "slug": "/categoria/bebidas/chopp"
+              },
+              {
+                "id": 24,
+                "name": "Artesanal",
+                "slug": "/categoria/bebidas/chopp/artesanal"
+              }
+            ]
+          },
+          "brand": {
+            "id": 138155915,
+            "name": "Chopp",
+            "slug": "/marca/chopp",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1070,
+          "sku": "RUM-RUM-DOURADO-750ML-3-750ML",
+          "name": "Rum Dourado 750ml 3",
+          "slug": "/produtos/rum-dourado-750ml-3",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 89.97,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/rum-dourado-750ml-3-4b0873.jpg",
+          "stock": 97,
+          "inStock": true,
+          "category": {
+            "id": 61,
+            "name": "Dourado",
+            "slug": "/categoria/destilados/rum/dourado",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 50,
+                "name": "Rum",
+                "slug": "/categoria/destilados/rum"
+              },
+              {
+                "id": 61,
+                "name": "Dourado",
+                "slug": "/categoria/destilados/rum/dourado"
+              }
+            ]
+          },
+          "brand": {
+            "id": 2354570455,
+            "name": "Rum",
+            "slug": "/marca/rum",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1092,
+          "sku": "SELECAO-SUCOS-UVA-1L-3-1L",
+          "name": "Sucos Uva 1L 3",
+          "slug": "/produtos/sucos-uva-1l-3",
+          "unitLabel": "garrafa",
+          "sizeLabel": "1L",
+          "price": 7.47,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/sucos-uva-1l-3-665cec.jpg",
+          "stock": 107,
+          "inStock": true,
+          "category": {
+            "id": 76,
+            "name": "Uva",
+            "slug": "/categoria/nao-alcoolicas/sucos/uva",
+            "familia": [
+              {
+                "id": 13,
+                "name": "Não alcoólicas",
+                "slug": "/categoria/nao-alcoolicas"
+              },
+              {
+                "id": 66,
+                "name": "Sucos",
+                "slug": "/categoria/nao-alcoolicas/sucos"
+              },
+              {
+                "id": 76,
+                "name": "Uva",
+                "slug": "/categoria/nao-alcoolicas/sucos/uva"
+              }
+            ]
+          },
+          "brand": {
+            "id": 3668623785,
+            "name": "Seleção",
+            "slug": "/marca/selecao",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1014,
+          "sku": "DRINKS-VODKA-ICE-LATA-269ML-269ML",
+          "name": "Vodka Ice Lata 269ml",
+          "slug": "/produtos/vodka-ice-lata-269ml",
+          "unitLabel": "lata",
+          "sizeLabel": "269ml",
+          "price": 9.55,
+          "compareAtPrice": null,
+          "badges": [
+            "gelada"
+          ],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 104,
+          "inStock": true,
+          "category": {
+            "id": 25,
+            "name": "Gin tônica",
+            "slug": "/categoria/bebidas/drinks-prontos/gin-tonica",
+            "familia": [
+              {
+                "id": 10,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              },
+              {
+                "id": 17,
+                "name": "Drinks prontos",
+                "slug": "/categoria/bebidas/drinks-prontos"
+              },
+              {
+                "id": 25,
+                "name": "Gin tônica",
+                "slug": "/categoria/bebidas/drinks-prontos/gin-tonica"
+              }
+            ]
+          },
+          "brand": {
+            "id": 2505821670,
+            "name": "Drinks",
+            "slug": "/marca/drinks",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1040,
+          "sku": "CASA-PERINI-ESPUMANTE-MOSCATEL-750ML-750ML",
+          "name": "Espumante Moscatel 750ml",
+          "slug": "/produtos/espumante-moscatel-750ml-casa-perini",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 75.14,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/espumante-moscatel-750ml-casa-perini-f16527.png",
+          "stock": 102,
+          "inStock": true,
+          "category": {
+            "id": 42,
+            "name": "Moscatel",
+            "slug": "/categoria/vinhos/espumantes/moscatel",
+            "familia": [
+              {
+                "id": 11,
+                "name": "Vinhos",
+                "slug": "/categoria/vinhos"
+              },
+              {
+                "id": 33,
+                "name": "Espumantes",
+                "slug": "/categoria/vinhos/espumantes"
+              },
+              {
+                "id": 42,
+                "name": "Moscatel",
+                "slug": "/categoria/vinhos/espumantes/moscatel"
+              }
+            ]
+          },
+          "brand": {
+            "id": 4222076832,
+            "name": "Casa Perini",
+            "slug": "/marca/casa-perini",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1012,
+          "sku": "CHOPP-CHOPP-PILSEN-2L-2L",
+          "name": "Chopp Pilsen 2L",
+          "slug": "/produtos/chopp-pilsen-2l-chopp-1012",
+          "unitLabel": "growler",
+          "sizeLabel": "2L",
+          "price": 42.29,
+          "compareAtPrice": null,
+          "badges": [
+            "gelada"
+          ],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 26,
+          "inStock": true,
+          "category": {
+            "id": 24,
+            "name": "Artesanal",
+            "slug": "/categoria/bebidas/chopp/artesanal",
+            "familia": [
+              {
+                "id": 10,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              },
+              {
+                "id": 16,
+                "name": "Chopp",
+                "slug": "/categoria/bebidas/chopp"
+              },
+              {
+                "id": 24,
+                "name": "Artesanal",
+                "slug": "/categoria/bebidas/chopp/artesanal"
+              }
+            ]
+          },
+          "brand": {
+            "id": 138155915,
+            "name": "Chopp",
+            "slug": "/marca/chopp",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1013,
+          "sku": "DRINKS-GIN-TONICA-LATA-269ML-269ML",
+          "name": "Gin Tônica Lata 269ml",
+          "slug": "/produtos/gin-tonica-lata-269ml",
+          "unitLabel": "lata",
+          "sizeLabel": "269ml",
+          "price": 10.98,
+          "compareAtPrice": null,
+          "badges": [
+            "gelada"
+          ],
+          "image": "http://localhost:4000/assets/images/produtos/gin-tonica-lata-269ml-fccd4f.jpg",
+          "stock": 10,
+          "inStock": true,
+          "category": {
+            "id": 25,
+            "name": "Gin tônica",
+            "slug": "/categoria/bebidas/drinks-prontos/gin-tonica",
+            "familia": [
+              {
+                "id": 10,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              },
+              {
+                "id": 17,
+                "name": "Drinks prontos",
+                "slug": "/categoria/bebidas/drinks-prontos"
+              },
+              {
+                "id": 25,
+                "name": "Gin tônica",
+                "slug": "/categoria/bebidas/drinks-prontos/gin-tonica"
+              }
+            ]
+          },
+          "brand": {
+            "id": 2505821670,
+            "name": "Drinks",
+            "slug": "/marca/drinks",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1048,
+          "sku": "SELECAO-VINHO-ROSES-FRISANTE-750ML-3-750ML",
+          "name": "Vinho Rosés Frisante 750ml 3",
+          "slug": "/produtos/vinho-roses-frisante-750ml-3",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 50.49,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/vinho-roses-frisante-750ml-3-dcb52a.jpg",
+          "stock": 59,
+          "inStock": true,
+          "category": {
+            "id": 46,
+            "name": "Frisante",
+            "slug": "/categoria/vinhos/roses/frisante",
+            "familia": [
+              {
+                "id": 11,
+                "name": "Vinhos",
+                "slug": "/categoria/vinhos"
+              },
+              {
+                "id": 34,
+                "name": "Rosés",
+                "slug": "/categoria/vinhos/roses"
+              },
+              {
+                "id": 46,
+                "name": "Frisante",
+                "slug": "/categoria/vinhos/roses/frisante"
+              }
+            ]
+          },
+          "brand": {
+            "id": 3668623785,
+            "name": "Seleção",
+            "slug": "/marca/selecao",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1041,
+          "sku": "CHANDON-ESPUMANTE-DEMI-SEC-750ML-750ML",
+          "name": "Espumante Demi-sec 750ml",
+          "slug": "/produtos/espumante-demi-sec-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 100.54,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 97,
+          "inStock": true,
+          "category": {
+            "id": 43,
+            "name": "Demi-sec",
+            "slug": "/categoria/vinhos/espumantes/demi-sec",
+            "familia": [
+              {
+                "id": 11,
+                "name": "Vinhos",
+                "slug": "/categoria/vinhos"
+              },
+              {
+                "id": 33,
+                "name": "Espumantes",
+                "slug": "/categoria/vinhos/espumantes"
+              },
+              {
+                "id": 43,
+                "name": "Demi-sec",
+                "slug": "/categoria/vinhos/espumantes/demi-sec"
+              }
+            ]
+          },
+          "brand": {
+            "id": 4117937138,
+            "name": "Chandon",
+            "slug": "/marca/chandon",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1062,
+          "sku": "BEEFEATER-GIN-BEEFEATER-LONDON-DRY-750ML-750ML",
+          "name": "Gin Beefeater London Dry 750ml",
+          "slug": "/produtos/gin-beefeater-london-dry-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 118.21,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/gin-beefeater-london-dry-750ml-f2f20a.jpg",
+          "stock": 94,
+          "inStock": true,
+          "category": {
+            "id": 57,
+            "name": "London Dry",
+            "slug": "/categoria/destilados/gin/london-dry",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 49,
+                "name": "Gin",
+                "slug": "/categoria/destilados/gin"
+              },
+              {
+                "id": 57,
+                "name": "London Dry",
+                "slug": "/categoria/destilados/gin/london-dry"
+              }
+            ]
+          },
+          "brand": {
+            "id": 4170688548,
+            "name": "Beefeater",
+            "slug": "/marca/beefeater",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1064,
+          "sku": "BEEFEATER-GIN-BEEFEATER-AROMATIZADO-750ML-750ML",
+          "name": "Gin Beefeater Aromatizado 750ml",
+          "slug": "/produtos/gin-beefeater-aromatizado-750ml",
+          "unitLabel": "garrafa",
+          "sizeLabel": "750ml",
+          "price": 127.05,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/gin-beefeater-aromatizado-750ml-c315e5.jpg",
+          "stock": 28,
+          "inStock": true,
+          "category": {
+            "id": 58,
+            "name": "Aromatizado",
+            "slug": "/categoria/destilados/gin/aromatizado",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 49,
+                "name": "Gin",
+                "slug": "/categoria/destilados/gin"
+              },
+              {
+                "id": 58,
+                "name": "Aromatizado",
+                "slug": "/categoria/destilados/gin/aromatizado"
+              }
+            ]
+          },
+          "brand": {
+            "id": 4170688548,
+            "name": "Beefeater",
+            "slug": "/marca/beefeater",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1050,
+          "sku": "BALLANTINE-S-WHISKY-BALLANTINE-S-BLENDED-1L-1L",
+          "name": "Whisky Ballantine's Blended 1L",
+          "slug": "/produtos/whisky-ballantine-s-blended-1l",
+          "unitLabel": "garrafa",
+          "sizeLabel": "1L",
+          "price": 124.45,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 171,
+          "inStock": true,
+          "category": {
+            "id": 51,
+            "name": "Blended",
+            "slug": "/categoria/destilados/whisky/blended",
+            "familia": [
+              {
+                "id": 12,
+                "name": "Destilados",
+                "slug": "/categoria/destilados"
+              },
+              {
+                "id": 47,
+                "name": "Whisky",
+                "slug": "/categoria/destilados/whisky"
+              },
+              {
+                "id": 51,
+                "name": "Blended",
+                "slug": "/categoria/destilados/whisky/blended"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1709002083,
+            "name": "Ballantine's",
+            "slug": "/marca/ballantine-s",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1120,
+          "sku": "CONVENIENCIA-TABACARIA-PITEIRAS-3-1-UN",
+          "name": "Tabacaria Piteiras 3",
+          "slug": "/produtos/tabacaria-piteiras-3",
+          "unitLabel": "unidade",
+          "sizeLabel": "1 un",
+          "price": 9.19,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/produtos/tabacaria-piteiras-3-c206d7.jpg",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 94,
+            "name": "Piteiras",
+            "slug": "/categoria/conveniencia/tabacaria/piteiras",
+            "familia": [
+              {
+                "id": 14,
+                "name": "Conveniência",
+                "slug": "/categoria/conveniencia"
+              },
+              {
+                "id": 82,
+                "name": "Tabacaria",
+                "slug": "/categoria/conveniencia/tabacaria"
+              },
+              {
+                "id": 94,
+                "name": "Piteiras",
+                "slug": "/categoria/conveniencia/tabacaria/piteiras"
+              }
+            ]
+          },
+          "brand": {
+            "id": 3168311026,
+            "name": "Conveniência",
+            "slug": "/marca/conveniencia",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 1103,
+          "sku": "SNACK-AMENDOIM-TORRADO-150G-150G",
+          "name": "Amendoim Torrado 150g",
+          "slug": "/produtos/amendoim-torrado-150g",
+          "unitLabel": "pacote",
+          "sizeLabel": "150g",
+          "price": 6.61,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "http://localhost:4000/assets/images/semImagem.png",
+          "stock": 17,
+          "inStock": true,
+          "category": {
+            "id": 86,
+            "name": "Salgadinhos",
+            "slug": "/categoria/conveniencia/snacks/salgadinhos",
+            "familia": [
+              {
+                "id": 14,
+                "name": "Conveniência",
+                "slug": "/categoria/conveniencia"
+              },
+              {
+                "id": 80,
+                "name": "Snacks",
+                "slug": "/categoria/conveniencia/snacks"
+              },
+              {
+                "id": 86,
+                "name": "Salgadinhos",
+                "slug": "/categoria/conveniencia/snacks/salgadinhos"
+              }
+            ]
+          },
+          "brand": {
+            "id": 1447089293,
+            "name": "Snack",
+            "slug": "/marca/snack",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        }
+      ]
+    }
+  }
+}
