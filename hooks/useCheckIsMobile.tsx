@@ -1,11 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-
-function getIsMobile() {
-  if (typeof window === "undefined") {
-    return false;
-  }
-  return window.innerWidth <= 768;
-}
+import { useState, useEffect } from "react";
 
 function resolveIsMobile(): boolean {
   if (typeof window === "undefined") {
