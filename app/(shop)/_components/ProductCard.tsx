@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
@@ -68,6 +69,14 @@ export default function ProductCard({ type, product }: ProductCardProps) {
   const isHighlighted =
     type === "highlighted" || type === "highlighted-discount";
   const productHref = normalizeProductHref(product.slug) ?? "#";
+  const [imageSrc, setImageSrc] = useState(product.image_url || "/placeholder.svg");
+
+  useEffect(() => {
+    setImageSrc(product.image_url || "/placeholder.svg");
+  }, [product.image_url]);
+
+  const shouldUseImgTag =
+    (imageSrc ?? "").startsWith("http://") || (imageSrc ?? "").startsWith("https://");
 
   const handleAddToCart = async () => {
     if (isComingSoon) {
@@ -111,17 +120,25 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         <div
           className={`mb-4 h-56 shrink-0 flex items-center justify-center border border-black/10 rounded-xs ${isComingSoon ? "opacity-50" : ""}`}
         >
-          <Image
-            src={product.image_url || "/placeholder.svg"}
-            alt={product.name}
-            width={120}
-            height={135}
-            className="h-full w-6/10 object-contain"
-            unoptimized={
-              (product.image_url ?? "").startsWith("http://localhost:4000") ||
-              (product.image_url ?? "").startsWith("http://127.0.0.1:4000")
-            }
-          />
+          {shouldUseImgTag ? (
+            <img
+              src={imageSrc}
+              alt={product.name}
+              width={120}
+              height={135}
+              className="h-full w-6/10 object-contain"
+              onError={() => setImageSrc("/placeholder.svg")}
+            />
+          ) : (
+            <Image
+              src={imageSrc}
+              alt={product.name}
+              width={120}
+              height={135}
+              className="h-full w-6/10 object-contain"
+              unoptimized
+            />
+          )}
         </div>
       </Link>
 

@@ -29,6 +29,7 @@ export default function DevPage() {
   const live = useControlStore((s) => s.live);
   const loginCliente = useClientesStore((s) => s.login);
   const produtosLive = useProdutosStore((s) => s.live);
+  const updateCategoriasJson = useProdutosStore((s) => s.updateCategoriasJson);
   const didRun = useRef(false);
   const [idCategoria, setIdCategoria] = useState("10");
   const [categoriaSlug, setCategoriaSlug] = useState("/categoria/bebidas");
@@ -85,9 +86,21 @@ export default function DevPage() {
     console.log("[dev] produtos-store live()", result);
   }
 
+  async function callUpdateCategoriasJson() {
+    const result = await updateCategoriasJson();
+    setProdutosStoreLiveResult(result);
+    console.log("[dev] update categorias.json", result);
+  }
+
   const routes = useMemo(
     () => [
       { label: "Categorias (tree)", url: "/api/produtos/categorias" },
+      { label: "Lopes Produtos Categorias (tree-json)", url: "/api/lopes/produtos/categorias" },
+      { label: "Lopes Produtos Categoria por ID (json)", url: `/api/lopes/produtos/categorias/${idCategoria}` },
+      {
+        label: "Lopes Produtos Categoria por Slug (json)",
+        url: `/api/lopes/produtos/categorias/by-slug/${encodeSlugPath(categoriaSlug)}`,
+      },
       { label: "Categoria por ID", url: `/api/produtos/categorias/${idCategoria}` },
       {
         label: "Categoria por Slug",
@@ -97,8 +110,14 @@ export default function DevPage() {
         label: "Produtos por Categoria",
         url: `/api/produtos/by-categoria/${idCategoria}?includeDescendants=1&page=1&pageSize=24`,
       },
+      {
+        label: "Lopes Produtos por Categoria",
+        url: `/api/lopes/produtos/by-categoria/${idCategoria}?includeDescendants=1&page=1&pageSize=24`,
+      },
       { label: "Produto por ID", url: `/api/produtos/by-id/${idProduto}` },
       { label: "Produto por Slug", url: `/api/produtos/by-slug/${encodeURIComponent(slug)}` },
+      { label: "Lopes Produto por ID", url: `/api/lopes/produtos/by-id/${idProduto}` },
+      { label: "Lopes Produto por Slug", url: `/api/lopes/produtos/by-slug/${encodeURIComponent(slug)}` },
       { label: "Brands", url: "/api/produtos/brands" },
       { label: "Brand por ID", url: `/api/produtos/brands/${idBrand}?page=1&pageSize=24` },
       { label: "Home", url: "/api/ecommerce/home" },
@@ -304,6 +323,13 @@ export default function DevPage() {
               className="border rounded px-4 py-2 text-left hover:bg-gray-50 transition"
             >
               <div className="font-semibold text-sm text-black">live</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => void callUpdateCategoriasJson()}
+              className="border rounded px-4 py-2 text-left hover:bg-gray-50 transition"
+            >
+              <div className="font-semibold text-sm text-black">atualizar categorias.json</div>
             </button>
           </div>
           <pre className="mt-3 text-xs overflow-auto whitespace-pre-wrap break-words border rounded bg-white p-3 max-h-64">
