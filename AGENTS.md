@@ -34,3 +34,8 @@ Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteado
 - Sempre produzir saída estruturada quando a tarefa for não-trivial: /plan e /spec.
 - Se faltar contexto crítico, assumir o caminho mais razoável e registrar a suposição; perguntar apenas quando a decisão mudar a execução de forma relevante.
 - Não executar comandos/testes longos por impulso; quando necessário, declarar o que será executado e por quê.
+
+
+
+
+PRESCISO EXECUTAR UMA CORREÇÃO CRITICA, quero que essa tarefa seja feita com cuidado e com segurança.
