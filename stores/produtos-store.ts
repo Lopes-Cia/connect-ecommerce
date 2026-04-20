@@ -54,6 +54,7 @@ export type ProdutosState = {
   loadCategoriasTree: (opts?: { force?: boolean; source?: CategoriasTreeSource }) => Promise<CategoriaNode[]>;
   live: () => Promise<string>;
   updateCategoriasJson: () => Promise<string>;
+  updateHomeJson: () => Promise<string>;
 
   categoriaById: Record<number, { category: Categoria; children: Categoria[] } | undefined>;
   categoriaByIdStatus: Record<number, LoadStatus | undefined>;
@@ -189,6 +190,11 @@ export const useProdutosStore = create<ProdutosState>((set, get) => ({
 
   updateCategoriasJson: async () => {
     const response = await fetch("/api/dev/categorias/update-json", { method: "POST", cache: "no-store" })
+    return await response.text()
+  },
+
+  updateHomeJson: async () => {
+    const response = await fetch("/api/dev/home/update-json", { method: "POST", cache: "no-store" })
     return await response.text()
   },
 

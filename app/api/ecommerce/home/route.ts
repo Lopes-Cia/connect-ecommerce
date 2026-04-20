@@ -7,6 +7,18 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
+    if (process.env.NEXT_PUBLIC_FONTE === 'lopes') {
+      const fs = await import('node:fs/promises')
+      const path = await import('node:path')
+      const filePath = path.join(process.cwd(), 'lib', 'mockups', 'data', 'colections.json')
+      const raw = await fs.readFile(filePath, 'utf8')
+      const parsed = JSON.parse(raw) as unknown
+      return NextResponse.json(
+        { success: true, data: parsed },
+        { headers: { 'x-data-source': 'colections.json (lopes)' } }
+      )
+    }
+
     const result = await getHome()
     return NextResponse.json(result)
   } catch (error) {
@@ -21,4 +33,3 @@ export async function GET() {
     return NextResponse.json({ success: false, message }, { status: 500 })
   }
 }
-

@@ -1,0 +1,582 @@
+{
+  "home": {
+    "banners_1": [
+      {
+        "id": 1,
+        "image": "http://localhost:4000/assets/images/banners/banner-1.webp",
+        "link": ""
+      },
+      {
+        "id": 2,
+        "image": "http://localhost:4000/assets/images/banners/banner-2.webp",
+        "link": ""
+      },
+      {
+        "id": 3,
+        "image": "http://localhost:4000/assets/images/banners/banner-3.webp",
+        "link": ""
+      },
+      {
+        "id": 4,
+        "image": "http://localhost:4000/assets/images/banners/banner-4.webp",
+        "link": ""
+      }
+    ],
+    "categorias_destaque": [
+      {
+        "id": 0,
+        "name": "sem categoria",
+        "slug": "/categoria/sem-categoria",
+        "parentId": 0,
+        "image": "http://localhost:4000/assets/images/semImagem.png",
+        "order": 0
+      },
+      {
+        "id": 4,
+        "name": "Cervejas Especiais",
+        "slug": "/categoria/bebidas/cervejas-especiais",
+        "parentId": 1,
+        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "order": 1
+      },
+      {
+        "id": 2,
+        "name": "Cervejas",
+        "slug": "/categoria/bebidas/cervejas",
+        "parentId": 1,
+        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "order": 1
+      },
+      {
+        "id": 1,
+        "name": "Bebidas",
+        "slug": "/categoria/bebidas",
+        "parentId": 0,
+        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "order": 1
+      }
+    ],
+    "produtos_maisvendidos": {
+      "slug": "mais-vendidos",
+      "data": [
+        {
+          "id": 58,
+          "sku": "7892840800000-58",
+          "name": "Refrigerante Pepsi Cola 2 L",
+          "slug": "/produtos/refrigerante-pepsi-cola-2-l-58",
+          "unitLabel": "un",
+          "sizeLabel": "2L",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/2f94e2fd426f945f12e047d77dea2216.png",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 10,
+          "sku": "7891991298827-10",
+          "name": "Cerveja Brahma Duplo Malte Lata 473 ml",
+          "slug": "/produtos/cerveja-brahma-duplo-malte-lata-473-ml-10",
+          "unitLabel": "lata",
+          "sizeLabel": "473ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/aaaf24af3d84fc3dcb3dbefef40f4c31.png",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 3,
+          "sku": "7891991000796-3",
+          "name": "Cerveja Antarctica Lata 350 ml",
+          "slug": "/produtos/cerveja-antarctica-lata-350-ml-3",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 2.89,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/fcada7e2d67a2d13931cb829577c343c.png",
+          "stock": 13783,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 49,
+          "sku": "7892840808020-49",
+          "name": "Isotônico Gatorade Laranja 500 ml",
+          "slug": "/produtos/isotonico-gatorade-laranja-500-ml-49",
+          "unitLabel": "un",
+          "sizeLabel": "500ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/0f198f95a51618c6ae2a3aa6d2103341.png",
+          "stock": 1764,
+          "inStock": true,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 26,
+          "sku": "7896045506248-26",
+          "name": "Cerveja Heineken Lata 473 ml",
+          "slug": "/produtos/cerveja-heineken-lata-473-ml-26",
+          "unitLabel": "lata",
+          "sizeLabel": "473ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://hnk-banco-de-imagens-2022-production.s3.amazonaws.com/thumbnail_Heineken_473ml_BAIXA_5e022ead95.png",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 71,
+          "sku": "7891991009171-71",
+          "name": "Cerveja Antarctica Pilsen Lata 473 ml, caixa com 12 unidades",
+          "slug": "/produtos/cerveja-antarctica-pilsen-lata-473-ml-caixa-com-12-unidades-71",
+          "unitLabel": "lata",
+          "sizeLabel": "473ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://img.megaboxatacado.com.br/produto/1000X1000/2019422_7891991009164.jpg",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 20,
+          "sku": "7891991010481-20",
+          "name": "Cerveja Budweiser Lata Sleek 350 ml",
+          "slug": "/produtos/cerveja-budweiser-lata-sleek-350-ml-20",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://redemix.vteximg.com.br/arquivos/ids/208794-500-500/7891991010481.jpg?v=638350601630000000",
+          "stock": 6721,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 46,
+          "sku": "7891991015462-46",
+          "name": "Cerveja Stella Artois Long Neck 330 ml",
+          "slug": "/produtos/cerveja-stella-artois-long-neck-330-ml-46",
+          "unitLabel": "long neck",
+          "sizeLabel": "330ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/fbfafb968145278d5a96a0ba62af356e.png",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        }
+      ]
+    },
+    "produtos_promocao": {
+      "slug": "promocao",
+      "data": [
+        {
+          "id": 24,
+          "sku": "7896045506590-24",
+          "name": "Cerveja Heineken Lata 269 ml",
+          "slug": "/produtos/cerveja-heineken-lata-269-ml-24",
+          "unitLabel": "lata",
+          "sizeLabel": "269ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://redemix.vteximg.com.br/arquivos/ids/214763-500-500/7896045506590.jpg?v=638357581132330000",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 12,
+          "sku": "7891991294942-12",
+          "name": "Cerveja Brahma Duplo Malte Lata 350 ml",
+          "slug": "/produtos/cerveja-brahma-duplo-malte-lata-350-ml-12",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 3.49,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://redemix.vteximg.com.br/arquivos/ids/211634-500-500/7891991294942.jpg?v=638350615015300000",
+          "stock": 2975,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 42,
+          "sku": "7891991297479-42",
+          "name": "Cerveja Spaten Long Neck 330 ml",
+          "slug": "/produtos/cerveja-spaten-long-neck-330-ml-42",
+          "unitLabel": "long neck",
+          "sizeLabel": "330ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://assets.instabuy.app.br/ib.item.image.large/l-9963bd30126c4047931a991c83321b9e.png",
+          "stock": 24,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 85,
+          "sku": "7891991297431-85",
+          "name": "Cerveja Spaten Lata Sleek 350 ml, caixa com 12 unidades",
+          "slug": "/produtos/cerveja-spaten-lata-sleek-350-ml-caixa-com-12-unidades-85",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://carrefourbrfood.vtexassets.com/arquivos/ids/190947017/cerveja-spaten-lata-sleek-350-ml-12-unidades-1.jpg?v=638814464033170000",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 78,
+          "sku": "47896098900251-78",
+          "name": "Lava-louças lí­quido Ypê Clear, frasco 500 ml, caixa com 24 unidades",
+          "slug": "/produtos/lava-loucas-li-quido-ype-clear-frasco-500-ml-caixa-com-24-unidades-78",
+          "unitLabel": "frasco",
+          "sizeLabel": "500ml",
+          "price": 1.94,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://cdn.leroymerlin.com.br/products/detergente_liquido_ype_lava_loucas_clear_500ml_embalagem_com_1570075211_3364_300x300.jpg",
+          "stock": 6048,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 87,
+          "sku": "47896098900220-87",
+          "name": "Lava-louças lí­quido Ypê Limão, frasco 500 ml, caixa com 24 unidades",
+          "slug": "/produtos/lava-loucas-li-quido-ype-limao-frasco-500-ml-caixa-com-24-unidades-87",
+          "unitLabel": "frasco",
+          "sizeLabel": "500ml",
+          "price": 1.94,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.comercialsouzaatacado.com.br/media/catalog/product/cache/1/small_image/200x200/9df78eab33525d08d6e5fb8d27136e95/0/0/00055504901_4.jpg",
+          "stock": 2016,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 62,
+          "sku": "7891991306188-62",
+          "name": "Skol Beats Tropical Long Neck 269 ml",
+          "slug": "/produtos/skol-beats-tropical-long-neck-269-ml-62",
+          "unitLabel": "long neck",
+          "sizeLabel": "269ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/32457dbc9bdaf6bef0e6cd3645753669.png",
+          "stock": 24,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        },
+        {
+          "id": 27,
+          "sku": "7896045506859-27",
+          "name": "Cerveja Heineken Zero Lata 269 ml",
+          "slug": "/produtos/cerveja-heineken-zero-lata-269-ml-27",
+          "unitLabel": "lata",
+          "sizeLabel": "269ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.piramidesdistribuidora.com.br/images/original/16551-heineken-lata-269ml-zero-8un.20251024104057.png",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "http://localhost:4000/assets/images/semImagem.png"
+          }
+        }
+      ]
+    }
+  }
+}

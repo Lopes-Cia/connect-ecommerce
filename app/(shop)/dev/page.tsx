@@ -30,6 +30,7 @@ export default function DevPage() {
   const loginCliente = useClientesStore((s) => s.login);
   const produtosLive = useProdutosStore((s) => s.live);
   const updateCategoriasJson = useProdutosStore((s) => s.updateCategoriasJson);
+  const updateHomeJson = useProdutosStore((s) => s.updateHomeJson);
   const didRun = useRef(false);
   const [idCategoria, setIdCategoria] = useState("10");
   const [categoriaSlug, setCategoriaSlug] = useState("/categoria/bebidas");
@@ -90,6 +91,12 @@ export default function DevPage() {
     const result = await updateCategoriasJson();
     setProdutosStoreLiveResult(result);
     console.log("[dev] update categorias.json", result);
+  }
+
+  async function callUpdateHomeJson() {
+    const result = await updateHomeJson();
+    setProdutosStoreLiveResult(result);
+    console.log("[dev] update colections.json (home)", result);
   }
 
   const routes = useMemo(
@@ -330,6 +337,13 @@ export default function DevPage() {
               className="border rounded px-4 py-2 text-left hover:bg-gray-50 transition"
             >
               <div className="font-semibold text-sm text-black">atualizar categorias.json</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => void callUpdateHomeJson()}
+              className="border rounded px-4 py-2 text-left hover:bg-gray-50 transition"
+            >
+              <div className="font-semibold text-sm text-black">atualizar home</div>
             </button>
           </div>
           <pre className="mt-3 text-xs overflow-auto whitespace-pre-wrap break-words border rounded bg-white p-3 max-h-64">
