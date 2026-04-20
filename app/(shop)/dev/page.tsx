@@ -98,11 +98,11 @@ export default function DevPage() {
     setProdutosStoreLiveResult(result);
     console.log("[dev] update colections.json (home)", result);
   }
-
   const routes = useMemo(
     () => [
       { label: "Categorias (tree)", url: "/api/produtos/categorias" },
       { label: "Lopes Produtos Categorias (tree-json)", url: "/api/lopes/produtos/categorias" },
+      { label: "Lopes Produtos Categoria por ID (json)", url: `/api/lopes/produtos/categorias/${idCategoria}` },
       { label: "Lopes Produtos Categoria por ID (json)", url: `/api/lopes/produtos/categorias/${idCategoria}` },
       {
         label: "Lopes Produtos Categoria por Slug (json)",

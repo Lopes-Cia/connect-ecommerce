@@ -197,7 +197,6 @@ export const useProdutosStore = create<ProdutosState>((set, get) => ({
     const response = await fetch("/api/dev/home/update-json", { method: "POST", cache: "no-store" })
     return await response.text()
   },
-
   loadCategoriaById: async ({ idCategoria, force }) => {
     const cached = get().categoriaById[idCategoria];
     const status = get().categoriaByIdStatus[idCategoria];
