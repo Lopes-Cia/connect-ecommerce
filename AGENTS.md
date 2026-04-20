@@ -2,7 +2,7 @@
 
 Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteador”: curto, direto e com links para as definições canônicas.
 
-## Onde está o conteúdo canônico
+## Onde está o conteúdo canônico erter
 
 - Índice geral: [IA/readme.md](file:///c:/LOPES/www/MDK-ELIS/IA/readme.md)
 - Regras globais: [INTERACAO.md](file:///c:/LOPES/www/MDK-ELIS/IA/RULES/INTERACAO.md)
