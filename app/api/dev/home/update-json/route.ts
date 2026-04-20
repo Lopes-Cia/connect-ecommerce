@@ -91,10 +91,20 @@ export async function POST() {
     const produtosMaisVendidos = randomUniqueItems(produtosTraduzidos, 8)
     const produtosPromocao = randomUniqueItems(produtosTraduzidos, 8)
 
+    const categoriasValidas = categorias.filter((categoria) => {
+      const id = toIntOrZero((categoria as unknown as { id?: unknown })?.id)
+      if (id <= 0) return false
+      const slug = (categoria as unknown as { slug?: unknown })?.slug
+      return typeof slug === "string" && slug.trim().length > 0
+    })
+
+    const categoriasDestaque = randomUniqueItems(categoriasValidas, 4) as unknown as CategoriaMock[]
+
     const nextCollections: CollectionsShape = {
       ...collections,
       home: {
         ...(collections.home ?? {}),
+        categorias_destaque: categoriasDestaque,
         produtos_maisvendidos: {
           ...(collections.home?.produtos_maisvendidos ?? {}),
           data: produtosMaisVendidos,
@@ -122,6 +132,10 @@ export async function POST() {
         produtos_promocao: {
           count: produtosPromocao.length,
           ids: pickIds(produtosPromocao as Array<Record<string, unknown>>),
+        },
+        categorias_destaque: {
+          count: categoriasDestaque.length,
+          ids: pickIds(categoriasDestaque as Array<Record<string, unknown>>),
         },
         wroteAt: new Date().toISOString(),
       },
