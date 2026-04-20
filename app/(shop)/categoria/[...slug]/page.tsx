@@ -196,7 +196,7 @@ export default function CategoriaPage({ params }: { params: Promise<{ slug: stri
 
         const result = await loadProdutosByCategoria({
           idCategoria: found.id,
-          includeDescendants: 1,
+          includeDescendants: 0,
           page,
           pageSize: 24,
         });
@@ -254,7 +254,8 @@ export default function CategoriaPage({ params }: { params: Promise<{ slug: stri
   const selectOptions = useMemo(() => {
     const tree = categoriasTree ?? [];
     const fromTree = buildCategoriaSelectOptions(tree);
-    if (fromTree.length > 0) return fromTree;
+    const semCategoriaOption = { value: "/categoria/sem-categoria", label: "Sem categoria" };
+    if (fromTree.length > 0) return [semCategoriaOption, ...fromTree];
 
     // Fallback (caso o tree ainda nao tenha carregado)
     if (!categoria) return [];
@@ -262,7 +263,7 @@ export default function CategoriaPage({ params }: { params: Promise<{ slug: stri
     const unique = [categoria, ...children].filter(
       (c, idx, arr) => arr.findIndex((it) => it.slug === c.slug) === idx
     );
-    return unique
+    return [semCategoriaOption, ...unique]
       .map((c) => ({
         label: c.name,
         value: normalizeSlugPath(c.slug) ?? "",

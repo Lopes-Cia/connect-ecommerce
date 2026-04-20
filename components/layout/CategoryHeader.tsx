@@ -63,6 +63,9 @@ export default function CategoryHeader() {
               <DropdownMenuItem asChild>
                 <Link href="/categorias">Ver todas as categorias</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/categoria/sem-categoria">Sem categoria</Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               {categoriasTreeStatus === "loading" && rootCategorias.length === 0 ? (
                 <div className="px-2 py-1.5 text-sm text-muted-foreground">Carregando...</div>

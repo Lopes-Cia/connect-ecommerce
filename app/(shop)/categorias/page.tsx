@@ -23,11 +23,25 @@ export default function CategoriasPage() {
     void loadCategoriasTree();
   }, [loadCategoriasTree]);
 
+  // useEffect(() => {
+  //   void loadCategoriasTree({ source: "lopes", force: true });
+  // }, [loadCategoriasTree]);
+
   const rootCategorias = useMemo(() => {
     const list = categoriasTree ?? [];
     const roots = list.filter((c) => c.parentId === 0);
     return roots.length > 0 ? roots : list;
   }, [categoriasTree]);
+
+  const semCategoria = useMemo(
+    () => ({
+      id: "0",
+      name: "sem categoria",
+      image: "http://localhost:4000/assets/images/semImagem.png",
+      href: "/categoria/sem-categoria",
+    }),
+    []
+  );
 
   return (
     <div className="px-4 md:px-20 py-10">
@@ -73,6 +87,13 @@ export default function CategoriasPage() {
 
         {rootCategorias.length > 0 && (
           <section className="mt-8 w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            <HomeCategoryCard
+              key={semCategoria.id}
+              id={semCategoria.id}
+              name={semCategoria.name}
+              image={semCategoria.image}
+              href={semCategoria.href}
+            />
             {rootCategorias.map((category) => (
               <HomeCategoryCard
                 key={String(category.id)}

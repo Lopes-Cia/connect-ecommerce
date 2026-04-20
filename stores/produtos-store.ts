@@ -15,6 +15,13 @@ import type { Brand, BrandByIdPayload, Categoria, CategoriaNode, Produto } from 
 import type { ProdutosByCategoriaResponse } from "@/lib/api/produtos";
 
 type LoadStatus = "idle" | "loading" | "success" | "error";
+type CategoriasTreeSource = "produtos" | "lopes";
+
+type LopesCategoriasResponse = {
+  success?: boolean;
+  data?: CategoriaNode[];
+  message?: string;
+};
 
 function getApiErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
@@ -41,10 +48,12 @@ function buildBrandKey(input: { idBrand: number; page?: number; pageSize?: numbe
 
 export type ProdutosState = {
   categoriasTree: CategoriaNode[] | null;
+  categoriasTreeSource: CategoriasTreeSource | null;
   categoriasTreeStatus: LoadStatus;
   categoriasTreeError: string | null;
-  loadCategoriasTree: (opts?: { force?: boolean }) => Promise<CategoriaNode[]>;
+  loadCategoriasTree: (opts?: { force?: boolean; source?: CategoriasTreeSource }) => Promise<CategoriaNode[]>;
   live: () => Promise<string>;
+  updateCategoriasJson: () => Promise<string>;
 
   categoriaById: Record<number, { category: Categoria; children: Categoria[] } | undefined>;
   categoriaByIdStatus: Record<number, LoadStatus | undefined>;
@@ -95,6 +104,7 @@ export type ProdutosState = {
 const INITIAL: Pick<
   ProdutosState,
   | "categoriasTree"
+  | "categoriasTreeSource"
   | "categoriasTreeStatus"
   | "categoriasTreeError"
   | "categoriaById"
@@ -119,6 +129,7 @@ const INITIAL: Pick<
   | "produtoError"
 > = {
   categoriasTree: null,
+  categoriasTreeSource: null,
   categoriasTreeStatus: "idle",
   categoriasTreeError: null,
 
@@ -151,25 +162,34 @@ const INITIAL: Pick<
 export const useProdutosStore = create<ProdutosState>((set, get) => ({
   ...INITIAL,
 
-  live: async () => {
-    const response = await fetch("/api/lopes/categorias", { cache: "no-store" })
-    return await response.text()
-  },
-
   loadCategoriasTree: async (opts) => {
-    const { categoriasTree, categoriasTreeStatus } = get();
-    if (!opts?.force && categoriasTree && categoriasTreeStatus === "success") return categoriasTree;
+    const source = opts?.source ?? "produtos";
+    const { categoriasTree, categoriasTreeSource, categoriasTreeStatus } = get();
+    if (!opts?.force && categoriasTree && categoriasTreeStatus === "success" && categoriasTreeSource === source) {
+      return categoriasTree;
+    }
 
     set({ categoriasTreeStatus: "loading", categoriasTreeError: null });
     try {
       const data = await getCategoriasTree();
-      set({ categoriasTree: data, categoriasTreeStatus: "success" });
+
+      set({ categoriasTree: data, categoriasTreeSource: source, categoriasTreeStatus: "success" });
       return data;
     } catch (error) {
       const message = getApiErrorMessage(error);
       set({ categoriasTreeStatus: "error", categoriasTreeError: message });
       throw error;
     }
+  },
+
+  live: async () => {
+    const response = await fetch("/api/lopes/categorias", { cache: "no-store" })
+    return await response.text()
+  },
+
+  updateCategoriasJson: async () => {
+    const response = await fetch("/api/dev/categorias/update-json", { method: "POST", cache: "no-store" })
+    return await response.text()
   },
 
   loadCategoriaById: async ({ idCategoria, force }) => {

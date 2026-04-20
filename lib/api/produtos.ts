@@ -21,13 +21,17 @@ export type ProdutosByCategoriaResponse = ApiSuccess<Produto[]> & {
 
 export type BrandByIdResponse = ApiSuccess<BrandByIdPayload>
 
+function produtosBasePath(): '/produtos' | '/lopes/produtos' {
+  return process.env.NEXT_PUBLIC_FONTE === 'lopes' ? '/lopes/produtos' : '/produtos'
+}
+
 export async function getCategoriasTree(): Promise<CategoriaNode[]> {
-  const response = await apiClient<ApiSuccess<CategoriaNode[]>>('/produtos/categorias')
+  const response = await apiClient<ApiSuccess<CategoriaNode[]>>(`${produtosBasePath()}/categorias`)
   return response.data
 }
 
 export async function getCategoriaById(idCategoria: number): Promise<CategoriaByIdResponse['data']> {
-  const response = await apiClient<CategoriaByIdResponse>(`/produtos/categorias/${idCategoria}`)
+  const response = await apiClient<CategoriaByIdResponse>(`${produtosBasePath()}/categorias/${idCategoria}`)
   return response.data
 }
 
@@ -40,7 +44,7 @@ export async function getCategoriaBySlug(slug: string): Promise<CategoriaBySlugR
     .filter(Boolean)
     .map((segment) => encodeURIComponent(segment))
     .join('/')
-  const response = await apiClient<CategoriaBySlugResponse>(`/produtos/categorias/by-slug/${safeSlug}`)
+  const response = await apiClient<CategoriaBySlugResponse>(`${produtosBasePath()}/categorias/by-slug/${safeSlug}`)
   return response.data
 }
 
@@ -61,13 +65,15 @@ export async function getProdutosByCategoria(
   }
 
   const query = queryParams.toString()
-  const endpoint = query ? `/produtos/by-categoria/${idCategoria}?${query}` : `/produtos/by-categoria/${idCategoria}`
+  const endpoint = query
+    ? `${produtosBasePath()}/by-categoria/${idCategoria}?${query}`
+    : `${produtosBasePath()}/by-categoria/${idCategoria}`
 
   return apiClient<ProdutosByCategoriaResponse>(endpoint)
 }
 
 export async function getProdutoById(idProduto: number): Promise<Produto> {
-  const response = await apiClient<ApiSuccess<Produto>>(`/produtos/by-id/${idProduto}`)
+  const response = await apiClient<ApiSuccess<Produto>>(`${produtosBasePath()}/by-id/${idProduto}`)
   return response.data
 }
 
@@ -79,12 +85,12 @@ export async function getProdutoBySlug(slug: string): Promise<Produto> {
     : withoutLeading
 
   const safeSlug = encodeURIComponent(baseSlug)
-  const response = await apiClient<ApiSuccess<Produto>>(`/produtos/by-slug/${safeSlug}`)
+  const response = await apiClient<ApiSuccess<Produto>>(`${produtosBasePath()}/by-slug/${safeSlug}`)
   return response.data
 }
 
 export async function getBrands(): Promise<Brand[]> {
-  const response = await apiClient<ApiSuccess<Brand[]>>('/produtos/brands')
+  const response = await apiClient<ApiSuccess<Brand[]>>(`${produtosBasePath()}/brands`)
   return response.data
 }
 
@@ -102,7 +108,9 @@ export async function getBrandById(
   }
 
   const query = queryParams.toString()
-  const endpoint = query ? `/produtos/brands/${idBrand}?${query}` : `/produtos/brands/${idBrand}`
+  const endpoint = query
+    ? `${produtosBasePath()}/brands/${idBrand}?${query}`
+    : `${produtosBasePath()}/brands/${idBrand}`
 
   const response = await apiClient<BrandByIdResponse>(endpoint)
   return response.data
