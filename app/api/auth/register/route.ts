@@ -12,8 +12,6 @@ interface RegisterRequestBody {
   whatsapp: string
 }
 
-
-
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Partial<RegisterRequestBody>
@@ -34,7 +32,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const url = `${getAuthWebserviceBaseUrl()}/postAutenteicaAplicativo`
+    const url = `${getAuthWebserviceBaseUrl()}/postAutenticaAplicativo`
     const auth = await ensureAuthReady({ backgroundRefresh: false })
     const authHeader = toRawToken(auth.token.hashToken)
 
