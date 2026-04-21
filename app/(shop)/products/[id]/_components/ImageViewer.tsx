@@ -23,6 +23,13 @@ function shouldDisableOptimization(src: string): boolean {
   }
 }
 
+function shouldUseImgElement(src: string): boolean {
+  const value = String(src ?? "").trim();
+  if (!value) return false;
+  if (/^https?:\/\//i.test(value)) return true;
+  return shouldDisableOptimization(value);
+}
+
 type SmartImageProps = {
   src: string;
   alt: string;
@@ -34,7 +41,7 @@ type SmartImageProps = {
 };
 
 function SmartImage({ src, alt, width, height, className, sizes, priority }: SmartImageProps) {
-  if (shouldDisableOptimization(src)) {
+  if (shouldUseImgElement(src)) {
     return (
       <img
         src={src}
@@ -44,6 +51,11 @@ function SmartImage({ src, alt, width, height, className, sizes, priority }: Sma
         className={className}
         loading={priority ? "eager" : "lazy"}
         decoding="async"
+        onError={(event) => {
+          const target = event.currentTarget;
+          if (target.src.includes("/logo.png")) return;
+          target.src = "/logo.png";
+        }}
       />
     );
   }
@@ -65,7 +77,7 @@ export default function ImageViewer({ images, productName }: ImageViewerProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
-  const currentImage = images[selectedIndex] || "/placeholder.svg";
+  const currentImage = images[selectedIndex] || "/logo.png";
 
   return (
     <>

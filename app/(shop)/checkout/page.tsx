@@ -9,15 +9,21 @@ import { frontModal } from "@/stores/front-modal-store";
 import { Button } from "@/components/ui/button";
 import CheckoutForm from "./_components/CheckoutForm";
 import { useControlStore } from "@/stores/control-store";
+import { useAuth } from "@/contexts/AuthContext";
+import { isBackendMode } from "@/lib/runtime/appMode";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const backendMode = isBackendMode();
   const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
   const items = useCarrinhoStore((s) => s.items);
-  const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const clientesIsLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const { isAuthenticated, isLoading } = useAuth();
+  const isLoggedIn = backendMode ? isAuthenticated : clientesIsLoggedIn;
   const openedLoginModalRef = useRef(false);
 
   useEffect(() => {
+    if (backendMode && isLoading) return;
     if (isLoggedIn) return;
     if (openedLoginModalRef.current) return;
     openedLoginModalRef.current = true;
@@ -31,10 +37,15 @@ export default function CheckoutPage() {
       });
 
       if (!confirmed) return;
-      if (useClientesStore.getState().isLoggedIn) return;
+      if (!backendMode && useClientesStore.getState().isLoggedIn) return;
       router.replace("/login");
+      router.refresh();
     })();
-  }, [isLoggedIn, router]);
+  }, [backendMode, isLoading, isLoggedIn, router]);
+
+  if (backendMode && isLoading) {
+    return null;
+  }
 
   if (!isLoggedIn) {
     return null;

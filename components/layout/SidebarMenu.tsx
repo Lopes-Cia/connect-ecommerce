@@ -20,11 +20,15 @@ import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import { cn } from "@/lib/utils";
 import { pickMeusDados, useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
+import { useAuth } from "@/contexts/AuthContext";
+import { isBackendMode } from "@/lib/runtime/appMode";
 
 export default function SidebarMenu() {
-  const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const backendMode = isBackendMode();
+  const clientesIsLoggedIn = useClientesStore((s) => s.isLoggedIn);
   const loginData = useClientesStore((s) => s.loginData);
-  const logout = useClientesStore((s) => s.logout);
+  const clientesLogout = useClientesStore((s) => s.logout);
+  const { user, isAuthenticated, logoutUser } = useAuth();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -61,15 +65,23 @@ export default function SidebarMenu() {
 
     if (!confirmed) return;
 
-    logout();
+    if (backendMode) {
+      await logoutUser();
+    } else {
+      clientesLogout();
+    }
     setIsOpen(false);
     router.push("/login");
+    router.refresh();
   }
 
   const cliente = pickMeusDados(loginData);
-  const displayName =
+  const storeDisplayName =
     String(cliente?.nome ?? cliente?.name ?? loginData?.email ?? "Usuário").trim() || "Usuário";
-  const displayInitial = displayName.charAt(0).toUpperCase();
+  const storeDisplayInitial = storeDisplayName.charAt(0).toUpperCase();
+  const authDisplayName = String(user?.name ?? user?.email ?? "Usuário").trim() || "Usuário";
+  const authDisplayInitial = authDisplayName.charAt(0).toUpperCase();
+  const isLoggedIn = backendMode ? isAuthenticated : clientesIsLoggedIn;
 
   return (
     <div className="relative flex items-center">
@@ -78,18 +90,25 @@ export default function SidebarMenu() {
       </button>
       {isOpen && (
         isLoggedIn ? (
-          <AuthenticatedSidebar
-            sidebarRef={sidebarRef}
-            onClose={() => setIsOpen(false)}
-            handleLogout={handleLogout}
-            displayName={displayName}
-            displayInitial={displayInitial}
-          />
+          backendMode ? (
+            <AuthenticatedSidebarBackend
+              sidebarRef={sidebarRef}
+              onClose={() => setIsOpen(false)}
+              handleLogout={handleLogout}
+              displayName={authDisplayName}
+              displayInitial={authDisplayInitial}
+            />
+          ) : (
+            <AuthenticatedSidebar
+              sidebarRef={sidebarRef}
+              onClose={() => setIsOpen(false)}
+              handleLogout={handleLogout}
+              displayName={storeDisplayName}
+              displayInitial={storeDisplayInitial}
+            />
+          )
         ) : (
-          <GuestSidebar
-            sidebarRef={sidebarRef}
-            onClose={() => setIsOpen(false)}
-          />
+          <GuestSidebar sidebarRef={sidebarRef} onClose={() => setIsOpen(false)} />
         )
       )}
     </div>
@@ -223,6 +242,71 @@ function AuthenticatedSidebar({ sidebarRef, onClose, handleLogout, displayName, 
         >
           <Settings size={20} />
           <span>Privacidade</span>
+        </Link>
+      </nav>
+
+      <div className="px-6 pb-6">
+        <button
+          onClick={handleLogout}
+          className="flex items-center cursor-pointer gap-3 w-full px-4 py-3 text-white hover:bg-white/10 rounded transition-colors"
+        >
+          <LogOut size={20} />
+          <span>Sair</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AuthenticatedSidebarBackend({
+  sidebarRef,
+  onClose,
+  handleLogout,
+  displayName,
+  displayInitial,
+}: AuthenticatedSidebarProps) {
+  const isMobile = useCheckIsMobile();
+
+  return (
+    <div
+      ref={sidebarRef}
+      className={cn(
+        "fixed top-0 h-full w-80 bg-tints-french-blue z-50 flex flex-col text-white",
+        isMobile ? "left-0" : "right-0",
+      )}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 left-4 p-2 hover:bg-white/10 rounded transition-colors cursor-pointer"
+        aria-label="Close sidebar"
+      >
+        <X size={24} color="white" />
+      </button>
+
+      <div className="flex flex-col items-center pt-16 pb-8 px-6">
+        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-tints-french-blue text-2xl font-semibold mb-3">
+          {displayInitial}
+        </div>
+        <div className="text-white text-lg font-medium">{displayName}</div>
+      </div>
+
+      <nav className="flex-1 flex flex-col px-6 space-y-2">
+        <Link
+          href="/"
+          onClick={onClose}
+          className="flex items-center gap-3 px-4 py-2 text-white hover:bg-white/10 rounded transition-colors"
+        >
+          <Home size={20} />
+          <span>Home</span>
+        </Link>
+
+        <Link
+          href="/dashboard"
+          onClick={onClose}
+          className="flex items-center gap-3 px-4 py-2 text-white hover:bg-white/10 rounded transition-colors"
+        >
+          <LayoutDashboard size={20} />
+          <span>Dashboard</span>
         </Link>
       </nav>
 

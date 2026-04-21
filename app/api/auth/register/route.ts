@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { getActivationKey, getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
-import { ensureAuthReady } from '@/lib/integration/authService'
+import { ensureAuthWebserviceToken } from '@/lib/integration/authWebserviceClient'
 import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
 import { toRawToken } from '@/lib/integration/token'
 
@@ -33,8 +33,8 @@ export async function POST(request: Request) {
     }
 
     const url = `${getAuthWebserviceBaseUrl()}/postAutenticaAplicativo`
-    const auth = await ensureAuthReady({ backgroundRefresh: false })
-    const authHeader = toRawToken(auth.token.hashToken)
+    const tokenResponse = await ensureAuthWebserviceToken({ backgroundRefresh: false })
+    const authHeader = toRawToken(tokenResponse.hashToken)
 
     const response = await fetchWithRetry(
       url,

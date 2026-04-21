@@ -11,6 +11,8 @@ import { LayoutDashboard, LogOut, ShieldUser } from "lucide-react";
 
 import { useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
+import { useAuth } from "@/contexts/AuthContext";
+import { isBackendMode } from "@/lib/runtime/appMode";
 
 export default function Header() {
   const pathname = usePathname();
@@ -25,8 +27,11 @@ export default function Header() {
 
 function ShopHeader() {
   const router = useRouter();
-  const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
-  const logout = useClientesStore((s) => s.logout);
+  const backendMode = isBackendMode();
+  const clientesIsLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const clientesLogout = useClientesStore((s) => s.logout);
+  const { isAuthenticated, logoutUser } = useAuth();
+  const isLoggedIn = backendMode ? isAuthenticated : clientesIsLoggedIn;
 
   async function handleLogout() {
     const confirmed = await frontModal.confirm({
@@ -39,7 +44,11 @@ function ShopHeader() {
 
     if (!confirmed) return;
 
-    logout();
+    if (backendMode) {
+      await logoutUser();
+    } else {
+      clientesLogout();
+    }
     router.push("/login");
     router.refresh();
   }
@@ -67,7 +76,7 @@ function ShopHeader() {
           <CartSidebarMenu />
           {isLoggedIn ? (
             <>
-              <Link href="/cliente/painel">
+              <Link href={backendMode ? "/dashboard" : "/cliente/painel"}>
                 <Button
                   variant="outline"
                   size="default"
