@@ -5,7 +5,7 @@ import { formatCurrency } from "@/lib/formatting";
 import { slugify } from "@/lib/utils";
 import { useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
-import { usePedidosStore } from "@/stores/pedidos-store";
+import { buildPedidoMockupFromCarrinho, usePedidosStore } from "@/stores/pedidos-store";
 import { useControlStore } from "@/stores/control-store";
 
 const PRODUCT_IMAGE_FALLBACK = "/logo.png";
@@ -43,8 +43,6 @@ export default function CheckoutForm() {
   const totalItems = useCarrinhoStore((s) => s.totalItems);
   const loginData = useClientesStore((s) => s.loginData);
 
-  const checkoutStatus = usePedidosStore((s) => s.checkoutStatus);
-  const checkoutError = usePedidosStore((s) => s.checkoutError);
   const checkoutForm = usePedidosStore((s) => s.checkoutForm);
   const enderecoMode = usePedidosStore((s) => s.enderecoMode);
   const selectedEnderecoIndex = usePedidosStore((s) => s.selectedEnderecoIndex);
@@ -52,9 +50,9 @@ export default function CheckoutForm() {
   const hydrateCheckoutFromLoginData = usePedidosStore((s) => s.hydrateCheckoutFromLoginData);
   const selectEnderecoFromLoginData = usePedidosStore((s) => s.selectEnderecoFromLoginData);
   const setEnderecoMode = usePedidosStore((s) => s.setEnderecoMode);
-  const submitCheckout = usePedidosStore((s) => s.submitCheckout);
 
   const [uiMessage, setUiMessage] = useState<string | null>(null);
+  const [isSendingGp, setIsSendingGp] = useState(false);
 
   useEffect(() => {
     hydrateCheckoutFromLoginData(loginData);
@@ -75,19 +73,40 @@ export default function CheckoutForm() {
 
   async function onConfirm() {
     setUiMessage(null);
+    setIsSendingGp(true);
     try {
-      const draft = await submitCheckout({
-        loginData,
-        items,
-      });
-      const payload = draft && typeof draft === "object" && !Array.isArray(draft) ? (draft as Record<string, unknown>) : null;
-      const pedidoId = payload ? String(payload.pedidoId ?? "") : "";
+      const pedido = buildPedidoMockupFromCarrinho(items);
+      console.log(pedido);
 
-      setUiMessage(pedidoId ? `Pedido ${pedidoId} criado com sucesso.` : "Pedido criado com sucesso.");
-      void frontModal.success({
-        title: "Pedido criado",
-        description: pedidoId ? `Pedido ${pedidoId} criado com sucesso.` : "Pedido criado com sucesso.",
+      const url = "/api/dev/insert-dado-integration";
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idIntegradora: pedido.idIntegradora,
+          tipo: pedido.tipo,
+          orderId: pedido.orderId,
+          payload: JSON.stringify(pedido.payload),
+          integrado: pedido.integrado,
+        }),
       });
+      const responsePayload = await response.json().catch(() => null);
+      const result = { url, method: "POST", status: response.status, ok: response.ok, payload: responsePayload };
+
+      if (response.ok) {
+        await useCarrinhoStore.getState().clearCart();
+        void frontModal.success({
+          title: "insertDadoIntegration (GP)",
+          description: JSON.stringify(result, null, 2),
+        });
+        setUiMessage("Enviado para insertDadoIntegration (GP).");
+      } else {
+        void frontModal.error({
+          title: "insertDadoIntegration (GP)",
+          description: JSON.stringify(result, null, 2),
+        });
+        setUiMessage("Falha ao enviar para insertDadoIntegration (GP).");
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Erro inesperado ao finalizar checkout.";
       setUiMessage(message);
@@ -95,6 +114,8 @@ export default function CheckoutForm() {
         title: "Erro ao finalizar checkout",
         description: message,
       });
+    } finally {
+      setIsSendingGp(false);
     }
   }
 
@@ -259,9 +280,9 @@ export default function CheckoutForm() {
           </div>
         </div>
 
-        {(uiMessage || checkoutError) && (
+        {uiMessage && (
           <div className="rounded-lg border border-custom-light-400 bg-white p-4">
-            <div className="text-sm text-custom-dark-1000">{uiMessage ?? checkoutError}</div>
+            <div className="text-sm text-custom-dark-1000">{uiMessage}</div>
           </div>
         )}
       </section>
@@ -330,9 +351,9 @@ export default function CheckoutForm() {
           type="button"
           className="mt-4 w-full py-3 rounded bg-tints-french-blue text-white font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => void onConfirm()}
-          disabled={checkoutStatus === "loading" || items.length === 0}
+          disabled={isSendingGp || items.length === 0}
         >
-          {checkoutStatus === "loading" ? "Finalizando..." : "Finalizar pedido"}
+          {isSendingGp ? "Enviando..." : "Finalizar pedido"}
         </button>
 
         <Link

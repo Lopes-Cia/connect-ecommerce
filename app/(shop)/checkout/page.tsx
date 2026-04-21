@@ -1,55 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 
-import { useClientesStore } from "@/stores/clientes-store";
-import { frontModal } from "@/stores/front-modal-store";
 import { Button } from "@/components/ui/button";
 import CheckoutForm from "./_components/CheckoutForm";
 import { useControlStore } from "@/stores/control-store";
-import { useAuth } from "@/contexts/AuthContext";
-import { isBackendMode } from "@/lib/runtime/appMode";
 
 export default function CheckoutPage() {
-  const router = useRouter();
-  const backendMode = isBackendMode();
   const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
   const items = useCarrinhoStore((s) => s.items);
-  const clientesIsLoggedIn = useClientesStore((s) => s.isLoggedIn);
-  const { isAuthenticated, isLoading } = useAuth();
-  const isLoggedIn = backendMode ? isAuthenticated : clientesIsLoggedIn;
-  const openedLoginModalRef = useRef(false);
-
-  useEffect(() => {
-    if (backendMode && isLoading) return;
-    if (isLoggedIn) return;
-    if (openedLoginModalRef.current) return;
-    openedLoginModalRef.current = true;
-
-    void (async () => {
-      const confirmed = await frontModal.confirm({
-        title: "Login necessário",
-        description: "Faça login para continuar.",
-        confirmText: "Ir para login",
-        cancelText: "Cancelar",
-      });
-
-      if (!confirmed) return;
-      if (!backendMode && useClientesStore.getState().isLoggedIn) return;
-      router.replace("/login");
-      router.refresh();
-    })();
-  }, [backendMode, isLoading, isLoggedIn, router]);
-
-  if (backendMode && isLoading) {
-    return null;
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
 
   if (items.length === 0) {
     return (

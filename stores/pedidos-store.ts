@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 import { ApiError, apiClient } from "@/lib/api/client";
-import { useCarrinhoStore } from "@/stores/carrinho-store";
+import { useCarrinhoStore, type CartItem } from "@/stores/carrinho-store";
 
 type LoadStatus = "idle" | "loading" | "success" | "error";
 
@@ -104,18 +104,149 @@ export type PedidosState = {
   }) => Promise<PedidoDraft>;
 };
 
+const pedido_itens_mockup = [
+  {
+    codProd: 9,
+    produto: "Cerveja Brahma Chopp Lata 473 ml",
+    brinde: "N",
+    qt: 5,
+    valorUnitario: 14.99,
+    desconto: 0,
+    subTotal: 74.95,
+  },
+  {
+    codProd: 94,
+    produto: "Lava-roupas em pó Tixan Ypê Maciez, caixa com 9 unidades de 2,2 kg",
+    brinde: "N",
+    qt: 25,
+    valorUnitario: 14.99,
+    desconto: 0,
+    subTotal: 374.75,
+  },
+] as const;
+
+export const pedido_mockup = {
+  idIntegradora: 8,
+  tipo: "OrderLopes",
+  orderId: "009200417042026",
+  payload: {
+    orderId: "008200417042026",
+    orderMarketplace: null,
+    tipo: "OrderLopes",
+    dateOrder: "2026-04-20 17:04:20",
+    cliente: {
+      nome: "COMERCIO DE BEBIDAS FICTICIO (TESTE)",
+      fantasia: "BEBIDAS FICTICIO",
+      CPFCNPJ: "25231575000146",
+      inscRg: "258076992",
+      email: "smbebidas91@gmail.com",
+      bairro: "PACHECOS",
+      CEP: "88135010",
+      cidade: "PALHOCA",
+      complemento: null,
+      endereco: "RODOVIA BR-101",
+      fone: "48988088888",
+      numero: null,
+      UF: "SC",
+    },
+    itens: pedido_itens_mockup,
+    idTransp: 5,
+    transportadora: "Transportadora retira",
+    planoCodigo: "PIX",
+    planoDescricao: "A VISTA",
+    valor: 449.7,
+    valorDesconto: 0,
+    valorFrete: 0,
+    valorTaxas: 0,
+    posicao: "Aguardando Pagamento",
+    pagamento: {
+      codAutorizacao: null,
+      nsu: null,
+      dataPagamento: "2026-04-20 17:05:20",
+      valorPago: 449.7,
+    },
+  },
+  integrado: "N",
+} as const;
+
+export function buildPedidoItensFromCarrinho(items: CartItem[]) {
+  const list = Array.isArray(items) ? items : [];
+  if (list.length === 0) return pedido_itens_mockup.map((item) => ({ ...item, desconto: 0 }));
+
+  return list.map((item, index) => {
+    const fallback = pedido_itens_mockup[Math.min(index, pedido_itens_mockup.length - 1)];
+
+    const codProdCandidate = Number.parseInt(String(item.id ?? "").trim(), 10);
+    const codProd = Number.isFinite(codProdCandidate) ? codProdCandidate : fallback.codProd;
+
+    const produto = String(item.name ?? "").trim() || fallback.produto;
+
+    const qtCandidate = Number(item.quantity);
+    const qt = Number.isFinite(qtCandidate) && qtCandidate > 0 ? Math.floor(qtCandidate) : fallback.qt;
+
+    const valorUnitarioCandidate = Number(item.unitPrice);
+    const valorUnitario = Number.isFinite(valorUnitarioCandidate) ? valorUnitarioCandidate : fallback.valorUnitario;
+
+    const subtotalCandidate = valorUnitario * qt;
+    const subTotal = Number.isFinite(subtotalCandidate) ? Number(subtotalCandidate.toFixed(2)) : fallback.subTotal;
+
+    return {
+      ...fallback,
+      codProd,
+      produto,
+      qt,
+      valorUnitario,
+      desconto: 0,
+      subTotal,
+    };
+  });
+}
+
+function sumPedidoItensTotal(itens: Array<{ subTotal?: unknown }>): number {
+  const total = itens.reduce((acc, item) => {
+    const value = Number((item as { subTotal?: unknown }).subTotal);
+    if (!Number.isFinite(value)) return acc;
+    return acc + value;
+  }, 0);
+  return Number.isFinite(total) ? Number(total.toFixed(2)) : 0;
+}
+
+export function buildPedidoMockupFromCarrinho(items: CartItem[]) {
+  const itens = buildPedidoItensFromCarrinho(items);
+  const total = sumPedidoItensTotal(itens);
+
+  return {
+    ...pedido_mockup,
+    payload: {
+      ...pedido_mockup.payload,
+      itens,
+      valor: total,
+      valorDesconto: 0,
+      pagamento: {
+        ...pedido_mockup.payload.pagamento,
+        valorPago: total,
+      },
+    },
+  };
+}
+
+export function getPedidoMockupFromCarrinho() {
+  const carrinhoItems = useCarrinhoStore.getState().items;
+  return buildPedidoMockupFromCarrinho(carrinhoItems);
+}
+
 const INITIAL_FORM: CheckoutFormData = {
-  nome: "",
-  email: "",
-  telefone: "",
+  nome: pedido_mockup.payload.cliente.nome,
+  email: pedido_mockup.payload.cliente.email,
+  telefone: pedido_mockup.payload.cliente.fone,
   endereco: {
-    cep: "",
-    rua: "",
-    numero: "",
-    complemento: "",
-    bairro: "",
-    cidade: "",
-    uf: "",
+    cep: pedido_mockup.payload.cliente.CEP,
+    rua: pedido_mockup.payload.cliente.endereco,
+    numero: pedido_mockup.payload.cliente.numero ?? "",
+    complemento: pedido_mockup.payload.cliente.complemento ?? "",
+    bairro: pedido_mockup.payload.cliente.bairro,
+    cidade: pedido_mockup.payload.cliente.cidade,
+    uf: pedido_mockup.payload.cliente.UF,
   },
   pagamento: {
     metodo: "pix",
@@ -710,4 +841,3 @@ export const usePedidosStore = create<PedidosState>((set, get) => ({
     }
   },
 }));
-
