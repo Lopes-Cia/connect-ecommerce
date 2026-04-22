@@ -17,6 +17,44 @@ type ErrorResponse = {
   message?: string
 }
 
+function isMockFonte(): boolean {
+  return String(process.env.NEXT_PUBLIC_FONTE ?? '').toLowerCase() === 'mock'
+}
+
+function rewriteMockAssetUrl(value: unknown): unknown {
+  if (!isMockFonte()) return value
+  if (typeof value !== 'string' || !value) return value
+  let parsed: URL
+  try {
+    parsed = new URL(value)
+  } catch {
+    return value
+  }
+  if (parsed.hostname !== 'localhost' || parsed.port !== '4000') return value
+  const { integrationUrlApi } = getIntegrationEnvConfig()
+  let base: URL
+  try {
+    base = new URL(integrationUrlApi)
+  } catch {
+    return value
+  }
+  parsed.protocol = base.protocol
+  parsed.hostname = base.hostname
+  parsed.port = base.port
+  return parsed.toString()
+}
+
+function rewriteMockCategoriaNode(node: CategoriaNode): CategoriaNode {
+  const children = Array.isArray((node as unknown as { children?: unknown }).children)
+    ? (((node as unknown as { children: unknown[] }).children as unknown[]).filter(Boolean) as CategoriaNode[])
+    : []
+  return {
+    ...node,
+    image: rewriteMockAssetUrl((node as unknown as { image?: unknown }).image) as string,
+    children: children.map(rewriteMockCategoriaNode),
+  }
+}
+
 function unwrapData<T>(payload: unknown): T {
   if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
     const obj = payload as Record<string, unknown>
@@ -56,13 +94,13 @@ async function integrationGet<T>(
   query?: Record<string, string | number | boolean | null | undefined>
 ): Promise<T> {
   const { integrationUrlApi } = getIntegrationEnvConfig()
-  const token = await ensureAuthWebserviceToken({ backgroundRefresh: true })
   const url = buildIntegrationUrl(integrationUrlApi, path, query)
-  const response = await fetchWithRetry(
-    url,
-    { method: 'GET', headers: { Accept: 'application/json', Authorization: toRawToken(token.hashToken) } },
-    { maxAttempts: 3 }
-  )
+  const headers: Record<string, string> = { Accept: 'application/json' }
+  if (!isMockFonte()) {
+    const token = await ensureAuthWebserviceToken({ backgroundRefresh: true })
+    headers.Authorization = toRawToken(token.hashToken)
+  }
+  const response = await fetchWithRetry(url, { method: 'GET', headers }, { maxAttempts: 3 })
   const data = await readResponseData<T>(response)
 
   if (!response.ok) {
@@ -73,19 +111,33 @@ async function integrationGet<T>(
 }
 
 export async function getCategoriasTree(): Promise<SuccessResponse<CategoriaNode[]>> {
-  const payload = await integrationGet<unknown>('/Servidor/webservice/integration/produtos/categorias')
+  const payload = await integrationGet<unknown>(
+    isMockFonte() ? '/produtos/categorias' : '/Servidor/webservice/integration/produtos/categorias'
+  )
   const data = unwrapData<CategoriaNode[]>(payload)
-  return { success: true, data }
+  const normalized = isMockFonte() ? data.map(rewriteMockCategoriaNode) : data
+  return { success: true, data: normalized }
 }
 
 export async function getCategoriaByIdWithChildren(
   idCategoria: number
 ): Promise<SuccessResponse<{ category: Categoria; children: Categoria[] }>> {
   const payload = await integrationGet<unknown>(
-    `/Servidor/webservice/integration/produtos/categorias/${idCategoria}`
+    isMockFonte()
+      ? `/produtos/categorias/${idCategoria}`
+      : `/Servidor/webservice/integration/produtos/categorias/${idCategoria}`
   )
   const data = unwrapData<{ category: Categoria; children: Categoria[] }>(payload)
-  return { success: true, data }
+  if (!isMockFonte()) return { success: true, data }
+  const category = {
+    ...data.category,
+    image: rewriteMockAssetUrl((data.category as unknown as { image?: unknown }).image) as string,
+  }
+  const children = data.children.map((c) => ({
+    ...c,
+    image: rewriteMockAssetUrl((c as unknown as { image?: unknown }).image) as string,
+  }))
+  return { success: true, data: { category, children } }
 }
 
 export async function getCategoriaBySlug(
@@ -100,10 +152,13 @@ export async function getCategoriaBySlug(
     .map((segment) => encodeURIComponent(segment))
     .join('/')
   const payload = await integrationGet<unknown>(
-    `/Servidor/webservice/integration/produtos/categorias/by-slug/${safeSlug}`
+    isMockFonte()
+      ? `/produtos/categorias/by-slug/${safeSlug}`
+      : `/Servidor/webservice/integration/produtos/categorias/by-slug/${safeSlug}`
   )
   const data = unwrapData<{ category: CategoriaNode }>(payload)
-  return { success: true, data }
+  const normalized = isMockFonte() ? { category: rewriteMockCategoriaNode(data.category) } : data
+  return { success: true, data: normalized }
 }
 
 export async function getProdutosByCategoria(
@@ -118,7 +173,9 @@ export async function getProdutosByCategoria(
   }
 > {
   const payload = await integrationGet<unknown>(
-    `/Servidor/webservice/integration/produtos/by-categoria/${idCategoria}`,
+    isMockFonte()
+      ? `/produtos/by-categoria/${idCategoria}`
+      : `/Servidor/webservice/integration/produtos/by-categoria/${idCategoria}`,
     {
       includeDescendants: options?.includeDescendants ?? 1,
       page: options?.page ?? 1,
@@ -150,20 +207,28 @@ export async function getProdutosByCategoria(
 }
 
 export async function getProdutoById(idProduto: number): Promise<SuccessResponse<Produto>> {
-  const payload = await integrationGet<unknown>(`/Servidor/webservice/integration/produtos/by-id/${idProduto}`)
+  const payload = await integrationGet<unknown>(
+    isMockFonte() ? `/produtos/by-id/${idProduto}` : `/Servidor/webservice/integration/produtos/by-id/${idProduto}`
+  )
   const data = unwrapData<Produto>(payload)
   return { success: true, data }
 }
 
 export async function getProdutoBySlug(slug: string): Promise<SuccessResponse<Produto>> {
   const safeSlug = encodeURIComponent(slug)
-  const payload = await integrationGet<unknown>(`/Servidor/webservice/integration/produtos/by-slug/${safeSlug}`)
+  const payload = await integrationGet<unknown>(
+    isMockFonte()
+      ? `/produtos/by-slug/${safeSlug}`
+      : `/Servidor/webservice/integration/produtos/by-slug/${safeSlug}`
+  )
   const data = unwrapData<Produto>(payload)
   return { success: true, data }
 }
 
 export async function getBrands(): Promise<SuccessResponse<Brand[]>> {
-  const payload = await integrationGet<unknown>('/Servidor/webservice/integration/produtos/brands')
+  const payload = await integrationGet<unknown>(
+    isMockFonte() ? '/produtos/brands' : '/Servidor/webservice/integration/produtos/brands'
+  )
   const data = unwrapData<Brand[]>(payload)
   return { success: true, data }
 }
@@ -172,10 +237,10 @@ export async function getBrandById(
   idBrand: number,
   options?: { page?: number; pageSize?: number }
 ): Promise<SuccessResponse<BrandByIdPayload>> {
-  const payload = await integrationGet<unknown>(`/Servidor/webservice/integration/produtos/brands/${idBrand}`, {
-    page: options?.page ?? 1,
-    pageSize: options?.pageSize ?? 24,
-  })
+  const payload = await integrationGet<unknown>(
+    isMockFonte() ? `/produtos/brands/${idBrand}` : `/Servidor/webservice/integration/produtos/brands/${idBrand}`,
+    { page: options?.page ?? 1, pageSize: options?.pageSize ?? 24 }
+  )
   const data = unwrapData<BrandByIdPayload>(payload)
   return { success: true, data }
 }

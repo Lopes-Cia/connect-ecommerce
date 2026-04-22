@@ -37,7 +37,7 @@ export default function CategoriasPage() {
     () => ({
       id: "0",
       name: "sem categoria",
-      image: "http://localhost:4000/assets/images/semImagem.png",
+      image: "/logo.png",
       href: "/categoria/sem-categoria",
     }),
     []

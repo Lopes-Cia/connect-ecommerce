@@ -17,6 +17,18 @@ import {
   toHomePromocaoProducts,
 } from "@/lib/ecommerce/homeViewModels";
 
+function isLocalhostUrl(value: string): boolean {
+  const src = String(value ?? "").trim();
+  if (!src) return false;
+  if (!/^https?:\/\//i.test(src)) return false;
+  try {
+    const parsed = new URL(src);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "::1";
+  } catch {
+    return false;
+  }
+}
+
 export default function Home() {
   const isMobile = useCheckIsMobile();
   const useEcommerceStore = useControlStore((s) => s.ECOMMERCESTORE);
@@ -52,17 +64,25 @@ export default function Home() {
     <div>
       {isMobile ? (
         <div className="w-full flex justify-center">
-          <Image
-            src={mobileBannerSrc}
-            alt="Banner Mobile"
-            width={375}
-            height={200}
-            className="max-w-100 h-auto"
-            unoptimized={
-              mobileBannerSrc.startsWith("http://localhost:4000") ||
-              mobileBannerSrc.startsWith("http://127.0.0.1:4000")
-            }
-          />
+          {isLocalhostUrl(mobileBannerSrc) ? (
+            <img
+              src={mobileBannerSrc}
+              alt="Banner Mobile"
+              width={375}
+              height={200}
+              className="max-w-100 h-auto"
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <Image
+              src={mobileBannerSrc}
+              alt="Banner Mobile"
+              width={375}
+              height={200}
+              className="max-w-100 h-auto"
+            />
+          )}
         </div>
       ) : (
         <BannerCarousel items={bannerItems} />

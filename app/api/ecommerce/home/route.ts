@@ -5,17 +5,40 @@ import { getHome } from '@/lib/integration/ecommerceService'
 
 export const dynamic = 'force-dynamic'
 
+function rewriteMockLocalhostAssetUrls(value: unknown): unknown {
+  if (typeof value === 'string') {
+    if (value === 'http://localhost:4000/assets/images/semImagem.png') return '/logo.png'
+    if (value.startsWith('http://localhost:4000/assets/images/banners/banner-')) {
+      const match = value.match(/banner-(\d+)\.webp$/)
+      if (match?.[1]) return `/assets/banner-${match[1]}.webp`
+    }
+    return value
+  }
+
+  if (Array.isArray(value)) return value.map(rewriteMockLocalhostAssetUrls)
+
+  if (value && typeof value === 'object') {
+    const obj = value as Record<string, unknown>
+    const next: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(obj)) next[k] = rewriteMockLocalhostAssetUrls(v)
+    return next
+  }
+
+  return value
+}
+
 export async function GET() {
   try {
-    if (process.env.NEXT_PUBLIC_FONTE === 'lopes') {
+    const fonte = String(process.env.NEXT_PUBLIC_FONTE ?? '').toLowerCase()
+    if (fonte === 'lopes' || fonte === 'mock') {
       const fs = await import('node:fs/promises')
       const path = await import('node:path')
       const filePath = path.join(process.cwd(), 'lib', 'mockups', 'data', 'colections.json')
       const raw = await fs.readFile(filePath, 'utf8')
-      const parsed = JSON.parse(raw) as unknown
+      const parsed = rewriteMockLocalhostAssetUrls(JSON.parse(raw) as unknown)
       return NextResponse.json(
         { success: true, data: parsed },
-        { headers: { 'x-data-source': 'colections.json (lopes)' } }
+        { headers: { 'x-data-source': `colections.json (${fonte})` } }
       )
     }
 

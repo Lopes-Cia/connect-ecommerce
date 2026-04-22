@@ -62,7 +62,9 @@ export function getIntegrationEnvConfig(): IntegrationEnvConfig {
 
   const fonte = normalizeString(process.env.NEXT_PUBLIC_FONTE).toLowerCase()
   const integrationUrlKeys =
-    fonte === 'lopes' ? ['INTEGRATION_URL_API_MOCK'] : ['INTEGRATION_URL_API']
+    fonte === 'mock'
+      ? ['INTEGRATION_URL_API_MOCK']
+      : ['INTEGRATION_URL_API_BACK', 'INTEGRATION_URL_API']
 
   cachedConfig = {
     authBaseUrl: normalizeBaseUrl(readFirstEnv(['AUTH_BASE_URL'])),

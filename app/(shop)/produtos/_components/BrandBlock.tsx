@@ -8,11 +8,10 @@ function shouldDisableOptimization(src: string): boolean {
   if (!value) return false;
 
   try {
-    const parsed = new URL(value, "http://localhost");
-    const hostWithPort = `${parsed.hostname}:${parsed.port || (parsed.protocol === "https:" ? "443" : "80")}`;
-    return hostWithPort === "localhost:4000" || hostWithPort === "127.0.0.1:4000";
+    const parsed = new URL(value);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "::1";
   } catch {
-    return value.includes("localhost:4000") || value.includes("127.0.0.1:4000");
+    return value.includes("localhost") || value.includes("127.0.0.1");
   }
 }
 
@@ -50,4 +49,3 @@ export default function BrandBlock({ brand }: BrandBlockProps) {
     </Link>
   );
 }
-

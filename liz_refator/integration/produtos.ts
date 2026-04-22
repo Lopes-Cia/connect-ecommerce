@@ -44,7 +44,7 @@ function encodePathSegments(value: string): string {
 }
 
 function isMockFonte(): boolean {
-  return String(process.env.NEXT_PUBLIC_FONTE ?? '').toLowerCase() === 'lopes'
+  return String(process.env.NEXT_PUBLIC_FONTE ?? '').toLowerCase() === 'mock'
 }
 
 export async function getCategoriaBySlug(slugPath: string): Promise<SuccessResponse<{ category: CategoriaNode }>> {

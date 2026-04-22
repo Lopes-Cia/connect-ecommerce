@@ -14,6 +14,18 @@ import {
 
 export type BannerCarouselItem = { id?: string | number; src: string; alt: string; link?: string };
 
+function isLocalhostUrl(value: string): boolean {
+  const src = String(value ?? "").trim();
+  if (!src) return false;
+  if (!/^https?:\/\//i.test(src)) return false;
+  try {
+    const parsed = new URL(src);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "::1";
+  } catch {
+    return false;
+  }
+}
+
 export default function BannerCarousel({ items }: { items: BannerCarouselItem[] }) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
@@ -47,18 +59,24 @@ export default function BannerCarousel({ items }: { items: BannerCarouselItem[] 
           {banners.map((banner, index) => (
             <CarouselItem key={String(banner.id ?? index)} className="pl-0">
               <div className="relative w-full aspect-4/1">
-                <Image
-                  src={banner.src}
-                  alt={banner.alt}
-                  fill
-                  className="object-cover rounded-lg"
-                  priority={index === 0}
-                  sizes="(max-width: 768px) 100vw, 90rem"
-                  unoptimized={
-                    banner.src.startsWith("http://localhost:4000") ||
-                    banner.src.startsWith("http://127.0.0.1:4000")
-                  }
-                />
+                {isLocalhostUrl(banner.src) ? (
+                  <img
+                    src={banner.src}
+                    alt={banner.alt}
+                    className="absolute inset-0 h-full w-full object-cover rounded-lg"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                ) : (
+                  <Image
+                    src={banner.src}
+                    alt={banner.alt}
+                    fill
+                    className="object-cover rounded-lg"
+                    priority={index === 0}
+                    sizes="(max-width: 768px) 100vw, 90rem"
+                  />
+                )}
               </div>
             </CarouselItem>
           ))}
