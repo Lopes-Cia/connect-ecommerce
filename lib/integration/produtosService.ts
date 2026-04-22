@@ -1,7 +1,9 @@
 import 'server-only'
 
+import { ensureAuthWebserviceToken } from './authWebserviceClient'
 import { getIntegrationEnvConfig } from './config'
 import { fetchWithRetry, HttpError, readResponseData } from './network'
+import { toRawToken } from './token'
 
 import type { Brand, BrandByIdPayload, Categoria, CategoriaNode, Produto } from '@/lib/types/produtos'
 
@@ -31,7 +33,11 @@ function buildIntegrationUrl(
   query?: Record<string, string | number | boolean | null | undefined>
 ): string {
   const normalizedBase = baseUrl.replace(/\/+$/, '')
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  let normalizedPath = path.startsWith('/') ? path : `/${path}`
+
+  if (/\/Servidor$/i.test(normalizedBase) && /^\/Servidor\//i.test(normalizedPath)) {
+    normalizedPath = normalizedPath.slice('/Servidor'.length)
+  }
   const url = new URL(`${normalizedBase}${normalizedPath}`)
 
   if (query) {
@@ -50,10 +56,11 @@ async function integrationGet<T>(
   query?: Record<string, string | number | boolean | null | undefined>
 ): Promise<T> {
   const { integrationUrlApi } = getIntegrationEnvConfig()
+  const token = await ensureAuthWebserviceToken({ backgroundRefresh: true })
   const url = buildIntegrationUrl(integrationUrlApi, path, query)
   const response = await fetchWithRetry(
     url,
-    { method: 'GET', headers: { Accept: 'application/json' } },
+    { method: 'GET', headers: { Accept: 'application/json', Authorization: toRawToken(token.hashToken) } },
     { maxAttempts: 3 }
   )
   const data = await readResponseData<T>(response)

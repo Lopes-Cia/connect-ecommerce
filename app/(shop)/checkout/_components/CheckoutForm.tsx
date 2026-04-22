@@ -292,8 +292,10 @@ export default function CheckoutForm() {
 
         <div className="mt-4 space-y-3">
           {items.map((item) => {
-            const itemSlug = slugify(item.name) || encodeURIComponent(item.id);
-            const productHref = `/produtos/${itemSlug}`;
+            const idSegment = String(item.id ?? "").trim();
+            const baseSlug = slugify(item.name) || encodeURIComponent(idSegment);
+            const slugSegment = idSegment ? `${baseSlug}-${encodeURIComponent(idSegment)}` : baseSlug;
+            const productHref = `/produtos/${slugSegment}`;
             return (
               <div key={item.id} className="flex items-center gap-3">
                 <Link href={productHref} className="w-12 h-12 shrink-0">

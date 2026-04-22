@@ -33,11 +33,13 @@ export async function apiClient<T>(
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
+      const rawText = await response.text().catch(() => '')
+      const errorData = rawText ? JSON.parse(rawText) : {}
       throw new ApiError(
-        errorData.message || 'Ocorreu um erro na requisição',
+        (errorData as { message?: string })?.message ||
+          (rawText ? rawText.slice(0, 800) : 'Ocorreu um erro na requisição'),
         response.status,
-        errorData
+        rawText ? { errorData, rawText } : errorData
       )
     }
 
@@ -45,7 +47,8 @@ export async function apiClient<T>(
       return undefined as T
     }
 
-    return response.json()
+    const rawText = await response.text()
+    return (rawText ? JSON.parse(rawText) : undefined) as T
   } catch (error) {
     if (error instanceof ApiError) {
       throw error

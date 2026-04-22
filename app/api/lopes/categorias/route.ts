@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { getBackListCategoria } from '@/lib/integration/lopesBackClient'
 import { HttpError } from '@/lib/integration/network'
-import { translateLopesCategoriasToCategoriasTree } from '@/lib/mockups/syncDataFromBackToFront'
+import { translateLopesCategoriasToCategoriasTree } from '@/liz_refator/contracts/lopes/translate'
 
 export const dynamic = 'force-dynamic'
 

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { getBackProdutoLoja } from "@/lib/integration/lopesBackClient"
 import { HttpError } from "@/lib/integration/network"
 import type { Brand, Categoria } from "@/lib/types/produtos"
-import { buildBrandsById, translateLopesProdutoToProduto } from "@/lib/mockups/translateLopesProdutosToProdutos"
+import { buildBrandsById, translateLopesProdutoToProduto } from "@/liz_refator/contracts/lopes/translate"
 
 export const dynamic = "force-dynamic"
 
@@ -85,4 +85,3 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     return NextResponse.json({ success: false, message }, { status: 500 })
   }
 }
-

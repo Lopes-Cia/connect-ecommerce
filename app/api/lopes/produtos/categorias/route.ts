@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import type { Categoria } from "@/lib/types/produtos"
-import { buildCategoriasTreeFromCategorias } from "@/lib/mockups/syncDataFromBackToFront"
+import { buildCategoriasTreeFromCategorias } from "@/liz_refator/contracts/lopes/translate"
 
 export const dynamic = "force-dynamic"
 

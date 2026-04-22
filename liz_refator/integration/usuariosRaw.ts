@@ -8,7 +8,7 @@ import { toRawToken } from '@/liz_refator/adapters/integration-token'
 import type { IntegrationQueryParams } from './client'
 import { RawHttpError } from './rawClient'
 import type { RawRequestInfo, RawIntegrationResponse } from './rawClient'
-import { USUARIOS_API_ROUTES } from './usuariosRoutes'
+import { USUARIOS_API_ROUTES } from './integrationRoutes'
 
 function buildWebserviceApiUrl(baseUrl: string, path: string, query: IntegrationQueryParams): string {
   const normalizedBase = baseUrl.replace(/\/+$/, '')

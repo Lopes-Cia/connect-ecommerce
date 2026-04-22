@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 
 import { getIntegrationEnvConfig } from "@/liz_refator/adapters/integration-config"
 import { integrationRawGetJsonAuth, RawHttpError } from "@/liz_refator/integration/rawClient"
-import { PRODUTOS_INTEGRATION_ROUTES } from "@/liz_refator/integration/produtosRoutes"
+import { PRODUTOS_INTEGRATION_ROUTES } from "@/liz_refator/integration/integrationRoutes"
 
 export const dynamic = "force-dynamic"
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import type { CategoriaNode } from "@/lib/types/produtos";
@@ -20,6 +21,7 @@ import {
 
 export default function CategoryHeader() {
   const isMobile = useCheckIsMobile();
+  const router = useRouter();
   const categoriasTree = useProdutosStore((s) => s.categoriasTree);
   const categoriasTreeStatus = useProdutosStore((s) => s.categoriasTreeStatus);
   const categoriasTreeError = useProdutosStore((s) => s.categoriasTreeError);
@@ -40,7 +42,7 @@ export default function CategoryHeader() {
           href="/categorias"
           className="text-white font-montserrat font-medium text-[0.7em] uppercase text-sm hover:underline"
         >
-          Ver Todas as categorias
+          Categorias
         </Link>
       </div>
     );
@@ -51,18 +53,19 @@ export default function CategoryHeader() {
       <nav className="max-w-[var(--width-content-md)] lg:max-w-[var(--width-content-lg)] mx-auto flex gap-8 justify-center items-center text-white font-montserrat font-medium text-[0.78em] uppercase">
         <div className="flex items-center gap-3">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button type="button" className="hover:underline inline-flex items-center gap-1">
-                Todas as categorias
-                <ChevronDown className="h-3.5 w-3.5" />
-              </button>
-            </DropdownMenuTrigger>
+            <div className="inline-flex items-center gap-1">
+              <Link href="/categorias" className="hover:underline">
+                Categorias
+              </Link>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="hover:underline inline-flex items-center">
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+            </div>
             <DropdownMenuContent align="start" className="w-[22rem] normal-case">
               <DropdownMenuLabel>Categorias</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/categorias">Ver todas as categorias</Link>
-              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/categoria/sem-categoria">Sem categoria</Link>
               </DropdownMenuItem>
@@ -82,12 +85,10 @@ export default function CategoryHeader() {
                   const level2 = (root.children ?? []) as CategoriaNode[];
                   return (
                     <DropdownMenuSub key={`root-${root.id}`}>
-                      <DropdownMenuSubTrigger>{root.name}</DropdownMenuSubTrigger>
+                      <DropdownMenuSubTrigger onClick={() => router.push(root.slug)}>
+                        {root.name}
+                      </DropdownMenuSubTrigger>
                       <DropdownMenuSubContent className="w-[22rem]">
-                        <DropdownMenuItem asChild>
-                          <Link href={root.slug}>Ver tudo em {root.name}</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         {level2.length === 0 ? (
                           <div className="px-2 py-1.5 text-sm text-muted-foreground">
                             Sem subcategorias.
@@ -104,12 +105,10 @@ export default function CategoryHeader() {
                             }
                             return (
                               <DropdownMenuSub key={`l2-${child.id}`}>
-                                <DropdownMenuSubTrigger>{child.name}</DropdownMenuSubTrigger>
+                                <DropdownMenuSubTrigger onClick={() => router.push(child.slug)}>
+                                  {child.name}
+                                </DropdownMenuSubTrigger>
                                 <DropdownMenuSubContent className="w-[22rem]">
-                                  <DropdownMenuItem asChild>
-                                    <Link href={child.slug}>Ver tudo em {child.name}</Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
                                   {level3.map((leaf) => (
                                     <DropdownMenuItem key={`l3-${leaf.id}`} asChild>
                                       <Link href={leaf.slug}>{leaf.name}</Link>

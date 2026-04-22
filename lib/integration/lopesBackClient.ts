@@ -102,9 +102,15 @@ function getLopesBackEnvConfig(): LopesBackEnvConfig {
     return cachedEnv
   }
 
+  const fonte = normalizeString(process.env.NEXT_PUBLIC_FONTE).toLowerCase()
+  const integrationUrlKeys =
+    fonte === 'lopes'
+      ? ['INTEGRATION_URL_API_MOCK', 'INTEGRATION_URL_API_BACK', 'INTEGRATION_URL_API']
+      : ['INTEGRATION_URL_API_BACK', 'INTEGRATION_URL_API']
+
   cachedEnv = {
     authBaseUrl: normalizeBaseUrl(readFirstEnv(['AUTH_BASE_URL_BACK', 'AUTH_BASE_URL'])),
-    integrationUrlApi: normalizeBaseUrl(readFirstEnv(['INTEGRATION_URL_API_BACK', 'INTEGRATION_URL_API'])),
+    integrationUrlApi: normalizeBaseUrl(readFirstEnv(integrationUrlKeys)),
     produto: readFirstEnv(['PRODUTO']),
     ean: readFirstEnv(['EAN']),
     idIntegradora: parseRequiredNumber(['ID_INTEGRADORA', 'IDINTEGRADORA']),

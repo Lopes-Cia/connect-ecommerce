@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getBackListProdutoLoja } from "@/lib/integration/lopesBackClient"
 import { HttpError } from "@/lib/integration/network"
 import type { Brand, Categoria } from "@/lib/types/produtos"
-import type { ProdutoMock } from "@/lib/mockups/translateLopesProdutosToProdutos"
-import { buildBrandsById, translateLopesProdutosToProdutosMock } from "@/lib/mockups/translateLopesProdutosToProdutos"
+import type { ProdutoMock } from "@/liz_refator/contracts/lopes/models"
+import { buildBrandsById, translateLopesProdutosToProdutosMock } from "@/liz_refator/contracts/lopes/translate"
 
 export const dynamic = "force-dynamic"
 

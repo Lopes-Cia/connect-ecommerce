@@ -145,8 +145,10 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
         ) : (
           items.map((item) => {
             const subtotal = item.unitPrice * item.quantity;
-            const itemSlug = slugify(item.name) || encodeURIComponent(item.id);
-            const productHref = `/produtos/${itemSlug}`;
+            const idSegment = String(item.id ?? "").trim();
+            const baseSlug = slugify(item.name) || encodeURIComponent(idSegment);
+            const slugSegment = idSegment ? `${baseSlug}-${encodeURIComponent(idSegment)}` : baseSlug;
+            const productHref = `/produtos/${slugSegment}`;
 
             return (
             <div

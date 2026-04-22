@@ -2,7 +2,7 @@ import 'server-only'
 
 import type { Brand, CategoriaNode, Produto } from '@/liz_refator/adapters/produtos-types'
 
-import { integrationGetJsonAuth } from './client'
+import { integrationGetJson, integrationGetJsonAuth } from './client'
 
 type SuccessResponse<T> = {
   success: true
@@ -43,11 +43,17 @@ function encodePathSegments(value: string): string {
     .join('/')
 }
 
+function isMockFonte(): boolean {
+  return String(process.env.NEXT_PUBLIC_FONTE ?? '').toLowerCase() === 'lopes'
+}
+
 export async function getCategoriaBySlug(slugPath: string): Promise<SuccessResponse<{ category: CategoriaNode }>> {
   const safeSlug = encodePathSegments(slugPath)
 
-  const payload = await integrationGetJsonAuth<unknown>(
-    `/Servidor/webservice/integration/produtos/categorias/by-slug/${safeSlug}`
+  const payload = await (isMockFonte() ? integrationGetJson<unknown> : integrationGetJsonAuth<unknown>)(
+    isMockFonte()
+      ? `/produtos/categorias/by-slug/${safeSlug}`
+      : `/Servidor/webservice/integration/produtos/categorias/by-slug/${safeSlug}`
   )
 
   const data = unwrapData<{ category: CategoriaNode }>(payload)
@@ -57,8 +63,10 @@ export async function getCategoriaBySlug(slugPath: string): Promise<SuccessRespo
 export async function getProdutoBySlug(slug: string): Promise<SuccessResponse<Produto>> {
   const safeSlug = encodePathSegments(slug)
 
-  const payload = await integrationGetJsonAuth<unknown>(
-    `/Servidor/webservice/integration/produtos/by-slug/${safeSlug}`
+  const payload = await (isMockFonte() ? integrationGetJson<unknown> : integrationGetJsonAuth<unknown>)(
+    isMockFonte()
+      ? `/produtos/by-slug/${safeSlug}`
+      : `/Servidor/webservice/integration/produtos/by-slug/${safeSlug}`
   )
 
   const data = unwrapData<Produto>(payload)
@@ -66,7 +74,9 @@ export async function getProdutoBySlug(slug: string): Promise<SuccessResponse<Pr
 }
 
 export async function getBrands(): Promise<SuccessResponse<Brand[]>> {
-  const payload = await integrationGetJsonAuth<unknown>('/Servidor/webservice/integration/produtos/brands')
+  const payload = await (isMockFonte() ? integrationGetJson<unknown> : integrationGetJsonAuth<unknown>)(
+    isMockFonte() ? '/produtos/brands' : '/Servidor/webservice/integration/produtos/brands'
+  )
   const data = unwrapData<Brand[]>(payload)
   return { success: true, data }
 }
