@@ -14,6 +14,8 @@ interface SendTokenRequestBody {
 
 export async function POST(request: Request) {
   try {
+
+    console.log("r1")
     const body = (await request.json()) as SendTokenRequestBody
     const email = body.email?.trim() ?? ''
     const whatsapp = body.whatsapp?.trim() ?? ''

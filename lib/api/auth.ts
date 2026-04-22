@@ -19,8 +19,10 @@ export async function registerUser(
 }
 
 export async function sendLoginToken(
+  
   payload: SendLoginTokenInput
 ): Promise<AuthResponse<boolean>> {
+  console.log("ghjjhg")
   return apiClient<AuthResponse<boolean>>('/auth/send-token', {
     method: 'POST',
     body: JSON.stringify(payload),

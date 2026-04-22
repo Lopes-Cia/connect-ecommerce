@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { HttpError } from '@/lib/integration/network'
-import { getBrands } from '@/lib/integration/produtosService'
+import { getBrands } from '@/liz_refator/integration/produtos'
 
 export const dynamic = 'force-dynamic'
 

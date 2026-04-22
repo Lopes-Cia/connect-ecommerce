@@ -1,0 +1,5 @@
+- [x] `spec.md` descreve requisitos sem contradições com o código atual (pelo menos para o fluxo de categoria).
+- [x] `tasks.md` cobre revisão, prova de fluxo e proposta de implementação do piloto.
+- [x] A “Prova do fluxo” lista claramente page → store → lib/api → endpoint → route → service → env.
+- [x] O documento esclarece o comportamento para `NEXT_PUBLIC_FONTE !== 'lopes'` e para `NEXT_PUBLIC_FONTE === 'lopes'` no domínio de produtos.
+- [x] A proposta do piloto preserva invariantes (retry de rede, `no-store`, mapeamento de erro/status).

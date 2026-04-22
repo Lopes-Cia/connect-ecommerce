@@ -12,7 +12,7 @@ export default function LoginPage() {
           className="inline-flex items-center gap-2 text-black font-montserrat text-sm mb-8 hover:text-tints-french-blue transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Voltar
+          Voltarsadsa
         </Link>
 
         <div className="bg-[linear-gradient(to_bottom,#080956_0%,#040228_100%)] rounded-lg shadow-xl p-8 border border-custom-light-400">

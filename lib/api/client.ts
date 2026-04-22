@@ -53,3 +53,5 @@ export async function apiClient<T>(
     throw new ApiError('Erro de rede', 0, error)
   }
 }
+
+
