@@ -148,9 +148,9 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <section className="w-full grid grid-cols-3 md:grid-cols-6 gap-2 px-4 md:px-20 my-10">
+      <section className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6 px-4 md:px-20 my-12">
         {categoryCards.length === 0 && homeStatus !== "loading" && (
-          <div className="col-span-3 md:col-span-6 text-sm text-custom-dark-700 font-montserrat">
+          <div className="col-span-full text-sm text-custom-dark-700 font-montserrat">
             Nenhuma categoria em destaque no momento.
           </div>
         )}

@@ -86,7 +86,7 @@ export default function CategoriasPage() {
         )}
 
         {rootCategorias.length > 0 && (
-          <section className="mt-8 w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+          <section className="mt-8 w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
             <HomeCategoryCard
               key={semCategoria.id}
               id={semCategoria.id}
