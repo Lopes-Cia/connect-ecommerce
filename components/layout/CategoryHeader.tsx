@@ -51,7 +51,7 @@ export default function CategoryHeader() {
 
   const handleCloseSoon = () => {
     clearCloseTimeout();
-    closeTimeoutRef.current = setTimeout(() => setOpen(false), 120);
+    closeTimeoutRef.current = setTimeout(() => setOpen(false), 240);
   };
 
   if (isMobile) {
@@ -72,16 +72,21 @@ export default function CategoryHeader() {
       <nav className="max-w-[var(--width-content-md)] lg:max-w-[var(--width-content-lg)] mx-auto flex gap-8 justify-center items-center text-white font-montserrat font-medium text-[0.78em] uppercase">
         <div className="flex items-center gap-3">
           <DropdownMenu open={open} onOpenChange={setOpen}>
-            <div className="inline-flex items-center gap-1" onMouseEnter={handleOpen} onMouseLeave={handleCloseSoon}>
-              <Link href="/categorias" className="hover:underline" onMouseEnter={handleOpen} onMouseLeave={handleCloseSoon}>
+            <div
+              className="inline-flex items-center gap-1 group"
+              onMouseEnter={handleOpen}
+              onMouseLeave={handleCloseSoon}
+            >
+              <Link
+                href="/categorias"
+                className="relative after:absolute after:-bottom-0.5 after:left-0 after:right-0 after:h-px after:bg-current after:origin-left after:scale-x-0 after:transition-transform after:duration-150 group-hover:after:scale-x-100"
+              >
                 Categorias
               </Link>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="hover:underline inline-flex items-center"
-                  onMouseEnter={handleOpen}
-                  onMouseLeave={handleCloseSoon}
+                  className="inline-flex items-center"
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>

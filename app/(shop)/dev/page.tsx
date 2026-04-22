@@ -10,7 +10,7 @@ type CallResult = {
   payload: unknown;
 };
 
-type ActionGroup = "raw" | "contract";
+type ActionGroup = "raw" | "contract" | "catalog";
 
 type Action = {
   label: string;
@@ -98,6 +98,13 @@ export default function DevPage() {
     skuId: "",
     cnpjCliente: "",
     idCategoria: "",
+    catalogQ: "",
+    catalogCategoryId: "",
+    catalogBrandId: "",
+    catalogInStock: "",
+    catalogPriceMin: "",
+    catalogPriceMax: "",
+    catalogSort: "name:asc",
   });
 
   const actions = useMemo(
@@ -180,6 +187,92 @@ export default function DevPage() {
               descricaoErp: params.descricaoErp,
               skuId: params.skuId,
               cnpjCliente: params.cnpjCliente,
+            }),
+          init: { method: "GET" as const },
+        },
+
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): health",
+          url: "/api/catalog/health",
+          init: { method: "GET" as const },
+        },
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): index (ensure)",
+          url: "/api/dev/catalog/index",
+          init: { method: "POST" as const },
+        },
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): index (drop+create)",
+          url: "/api/dev/catalog/index?drop=1",
+          init: { method: "POST" as const },
+        },
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): sync (all)",
+          url: "/api/dev/catalog/sync",
+          init: { method: "POST" as const },
+        },
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): sync (categorias)",
+          url: "/api/dev/catalog/sync?only=categorias",
+          init: { method: "POST" as const },
+        },
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): clean (all)",
+          url: "/api/dev/catalog/clean",
+          init: { method: "POST" as const },
+        },
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): categories",
+          url: "/api/catalog/categories",
+          init: { method: "GET" as const },
+        },
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): brands",
+          url: "/api/catalog/brands",
+          init: { method: "GET" as const },
+        },
+        {
+          group: "catalog",
+          uses: [
+            "catalogQ",
+            "catalogCategoryId",
+            "catalogBrandId",
+            "catalogInStock",
+            "catalogPriceMin",
+            "catalogPriceMax",
+            "catalogSort",
+            "page",
+            "pageSize",
+          ],
+          label: "CATALOG (redis): products",
+          url:
+            "/api/catalog/products" +
+            buildQueryString({
+              q: params.catalogQ,
+              categoryId: params.catalogCategoryId,
+              brandId: params.catalogBrandId,
+              inStock: params.catalogInStock,
+              priceMin: params.catalogPriceMin,
+              priceMax: params.catalogPriceMax,
+              sort: params.catalogSort,
+              page: params.page,
+              pageSize: params.pageSize,
             }),
           init: { method: "GET" as const },
         },
@@ -536,6 +629,13 @@ export default function DevPage() {
                   skuId: "",
                   cnpjCliente: "",
                   idCategoria: "",
+                  catalogQ: "",
+                  catalogCategoryId: "",
+                  catalogBrandId: "",
+                  catalogInStock: "",
+                  catalogPriceMin: "",
+                  catalogPriceMax: "",
+                  catalogSort: "name:asc",
                 })
               }
               disabled={Boolean(loading)}
@@ -563,7 +663,11 @@ export default function DevPage() {
                 disabled={Boolean(loading)}
                 className={[
                   "min-h-10 px-3 py-2 rounded-md text-white font-montserrat text-sm font-semibold disabled:opacity-60 text-left",
-                  action.group === "raw" ? "bg-tints-french-blue" : "bg-green-600",
+                  action.group === "raw"
+                    ? "bg-tints-french-blue"
+                    : action.group === "catalog"
+                      ? "bg-purple-600"
+                      : "bg-green-600",
                 ].join(" ")}
               >
                 <div className="leading-tight">

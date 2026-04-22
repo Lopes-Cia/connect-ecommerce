@@ -21,8 +21,12 @@ export type ProdutosByCategoriaResponse = ApiSuccess<Produto[]> & {
 
 export type BrandByIdResponse = ApiSuccess<BrandByIdPayload>
 
-function produtosBasePath(): '/produtos' | '/lopes/produtos' {
-  return process.env.NEXT_PUBLIC_FONTE === 'lopes' ? '/lopes/produtos' : '/produtos'
+function produtosBasePath(): '/produtos' | '/lopes/produtos' | '/catalog/produtos' {
+  const fonte = String(process.env.NEXT_PUBLIC_FONTE ?? '').trim().toLowerCase()
+  const catalogFonte = String(process.env.NEXT_PUBLIC_CATALOGO_FONTE ?? '').trim().toLowerCase()
+
+  if (catalogFonte === 'redis' || fonte === 'redis') return '/catalog/produtos'
+  return fonte === 'lopes' ? '/lopes/produtos' : '/produtos'
 }
 
 export async function getCategoriasTree(): Promise<CategoriaNode[]> {
