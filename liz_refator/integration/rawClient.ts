@@ -16,7 +16,7 @@ export type RawRequestInfo = {
 
 export type RawIntegrationResponse<T> = {
   request: RawRequestInfo
-  data: T
+  data: Awaited<T> | null
 }
 
 export class RawHttpError extends HttpError {

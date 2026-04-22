@@ -12,6 +12,12 @@ import ProductSummary from "../_components/ProductSummary";
 import BrandBlock from "../_components/BrandBlock";
 import { toProdutoDetailViewModel } from "@/lib/produtos/viewModels";
 
+type BrandCandidate = { name?: unknown; slug?: unknown; image?: unknown };
+
+function isBrandCandidate(value: unknown): value is BrandCandidate {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 export default function ProdutoClient({ slugPath }: { slugPath: string }) {
   const loadProdutoBySlug = useProdutosStore((s) => s.loadProdutoBySlug);
   const loadBrands = useProdutosStore((s) => s.loadBrands);
@@ -63,7 +69,8 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
 
   const view = useMemo(() => {
     if (!rawProduct) return null;
-    return toProdutoDetailViewModel(rawProduct, { brands: rawBrands });
+    const brands = Array.isArray(rawBrands) ? rawBrands.filter(isBrandCandidate) : undefined;
+    return toProdutoDetailViewModel(rawProduct, { brands });
   }, [rawBrands, rawProduct]);
 
   if (isLoading) {

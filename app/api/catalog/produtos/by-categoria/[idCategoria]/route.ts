@@ -94,7 +94,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ idC
       query,
       page,
       pageSize,
-      sort: { field: 'id', dir: 'asc' },
+      sort: { field: 'rank', dir: 'desc' },
     })
 
     const totalPages = result.total === 0 ? 0 : Math.ceil(result.total / pageSize)

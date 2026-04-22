@@ -40,7 +40,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ idB
       query,
       page,
       pageSize,
-      sort: { field: 'name', dir: 'asc' },
+      sort: { field: 'rank', dir: 'desc' },
     })
 
     const totalPages = productsResult.total === 0 ? 0 : Math.ceil(productsResult.total / pageSize)

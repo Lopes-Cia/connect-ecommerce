@@ -2,7 +2,7 @@ import 'server-only'
 
 import { getCatalogKeyPrefix, getCatalogRedisClient } from '@/lib/integration/catalogRedis'
 
-export type CatalogProductSortField = 'id' | 'name' | 'price' | 'stock'
+export type CatalogProductSortField = 'id' | 'name' | 'price' | 'stock' | 'rank'
 export type CatalogProductSortDir = 'asc' | 'desc'
 
 export interface CatalogProductsQueryInput {
@@ -119,10 +119,10 @@ export async function catalogHealthcheck() {
 
   const tmpKey = `${prefix}:__health:${Date.now()}`
   await client.sendCommand(['JSON.SET', tmpKey, '$', JSON.stringify({ ok: true })])
-  const jsonGet = await client.sendCommand(['JSON.GET', tmpKey])
+  const jsonGet: unknown = await client.sendCommand(['JSON.GET', tmpKey])
   await client.sendCommand(['UNLINK', tmpKey])
 
-  const indexes = await client.sendCommand(['FT._LIST'])
+  const indexes: unknown = await client.sendCommand(['FT._LIST'])
 
   async function scanSample(match: string) {
     let count = 0
@@ -144,7 +144,7 @@ export async function catalogHealthcheck() {
   let categoryJsonGet: unknown = null
   if (scanCategories.sample.length) {
     const firstKey = scanCategories.sample[0]
-    categoryJsonGet = await client.sendCommand(['JSON.GET', firstKey])
+    categoryJsonGet = (await client.sendCommand(['JSON.GET', firstKey])) as unknown
   }
 
   return {
@@ -166,8 +166,6 @@ export async function catalogHealthcheck() {
 export async function queryCatalogProducts<TItem = unknown>(
   input: CatalogProductsQueryInput
 ): Promise<CatalogProductsQueryResult<TItem>> {
-  const sort = input.sort ?? { field: 'name', dir: 'asc' }
-  const offset = (input.page - 1) * input.pageSize
   const query = buildSearchQuery({
     q: input.q,
     brandId: input.brandId,
@@ -176,7 +174,7 @@ export async function queryCatalogProducts<TItem = unknown>(
     priceMin: input.priceMin,
     priceMax: input.priceMax,
   })
-  return searchCatalogProducts<TItem>({ query, page: input.page, pageSize: input.pageSize, sort })
+  return searchCatalogProducts<TItem>({ query, page: input.page, pageSize: input.pageSize, sort: input.sort })
 }
 
 export async function searchCatalogProducts<TItem = unknown>(input: {

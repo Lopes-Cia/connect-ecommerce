@@ -177,7 +177,15 @@ export async function syncCatalogToRedis(input: CatalogSyncInput) {
     const categoriasById = buildCategoriasById(categoriasForLookup)
     const brands = buildFallbackBrands()
     const brandsById = buildBrandsById(brands)
-    const produtos = translateLopesProdutosToProdutosMock(rawProdutos, { categoriasById, brandsById })
+    const produtos = translateLopesProdutosToProdutosMock(rawProdutos, { categoriasById, brandsById }).map((p) => {
+      const price = typeof (p as { price?: unknown }).price === 'number' ? (p as { price: number }).price : 0
+      const stock = typeof (p as { stock?: unknown }).stock === 'number' ? (p as { stock: number }).stock : 0
+      const hasBoth = price > 0 && stock > 0
+      const priceCents = Number.isFinite(price) ? Math.max(0, Math.round(price * 100)) : 0
+      const safeStock = Number.isFinite(stock) ? Math.max(0, Math.min(999_999_999, Math.trunc(stock))) : 0
+      const rank = (hasBoth ? 1 : 0) * 1_000_000_000_000_000 + safeStock * 100_000_000 + priceCents
+      return { ...p, rank }
+    })
 
     result.fetched.produtos = Array.isArray(rawProdutos) ? rawProdutos.length : produtos.length
     result.written.produtos = await upsertJsonDocs({
@@ -224,6 +232,11 @@ function buildCreateIndexCommand(prefix: string) {
     '1',
     keyPrefix,
     'SCHEMA',
+    '$.rank',
+    'AS',
+    'rank',
+    'NUMERIC',
+    'SORTABLE',
     '$.id',
     'AS',
     'id',

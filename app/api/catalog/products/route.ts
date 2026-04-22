@@ -31,10 +31,10 @@ function normalizeSort(value: string | null): { field: CatalogProductSortField; 
   const field = (fieldRaw || 'name') as CatalogProductSortField
   const dir = (dirRaw || 'asc') as CatalogProductSortDir
 
-  const allowedFields = new Set<CatalogProductSortField>(['id', 'name', 'price', 'stock'])
+  const allowedFields = new Set<CatalogProductSortField>(['id', 'name', 'price', 'stock', 'rank'])
   const allowedDirs = new Set<CatalogProductSortDir>(['asc', 'desc'])
   if (!allowedFields.has(field)) {
-    throw new Error('sort inválido (campos: id,name,price,stock)')
+    throw new Error('sort inválido (campos: id,name,price,stock,rank)')
   }
   if (!allowedDirs.has(dir)) {
     throw new Error('sort inválido (direções: asc,desc)')
@@ -74,12 +74,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: 'priceMax deve ser número' }, { status: 400 })
     }
 
+    const sortParam = usp.get('sort')
     let sort: ReturnType<typeof normalizeSort> | undefined
-    try {
-      sort = normalizeSort(usp.get('sort'))
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'sort inválido'
-      return NextResponse.json({ message }, { status: 400 })
+    if (sortParam) {
+      try {
+        sort = normalizeSort(sortParam)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'sort inválido'
+        return NextResponse.json({ message }, { status: 400 })
+      }
+    } else {
+      sort = { field: 'rank', dir: 'desc' }
     }
 
     const q = usp.get('q') ?? undefined

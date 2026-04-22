@@ -96,14 +96,22 @@ export async function getCatalogRedisClient() {
   if (!cachedClientPromise) {
     cachedClientPromise = (async () => {
       const cfg = getCatalogRedisConfig()
+      const reconnectStrategy = (retries: number) =>
+        retries < 2 ? 250 : new Error('Redis reconnect retries exceeded')
+      const socket = cfg.tlsEnabled
+        ? {
+            connectTimeout: 10_000,
+            tls: true as const,
+            servername: cfg.tlsServername || undefined,
+            reconnectStrategy,
+          }
+        : {
+            connectTimeout: 10_000,
+            reconnectStrategy,
+          }
       const client = createClient({
         url: cfg.url,
-        socket: {
-          connectTimeout: 10_000,
-          tls: cfg.tlsEnabled,
-          servername: cfg.tlsServername || undefined,
-          reconnectStrategy: (retries) => (retries < 2 ? 250 : new Error('Redis reconnect retries exceeded')),
-        },
+        socket,
       })
       await client.connect()
       return client

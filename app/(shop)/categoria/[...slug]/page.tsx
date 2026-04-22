@@ -263,12 +263,13 @@ export default function CategoriaPage({ params }: { params: Promise<{ slug: stri
     const unique = [categoria, ...children].filter(
       (c, idx, arr) => arr.findIndex((it) => it.slug === c.slug) === idx
     );
-    return [semCategoriaOption, ...unique]
+    const opts = unique
       .map((c) => ({
         label: c.name,
         value: normalizeSlugPath(c.slug) ?? "",
       }))
       .filter((opt) => Boolean(opt.value));
+    return opts.length > 0 ? [semCategoriaOption, ...opts] : [];
   }, [categoriasTree, categoria]);
 
   const filteredProducts = useMemo(() => {

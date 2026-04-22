@@ -133,6 +133,10 @@ export function translateProdutos(raw) {
 
     const price = toNumberOrNull(it?.preco ?? it?.price);
     const stock = toIntOrZero(it?.qtEstoque ?? it?.stock);
+    const hasBoth = price > 0 && stock > 0;
+    const priceCents = Number.isFinite(price) ? Math.max(0, Math.round(price * 100)) : 0;
+    const safeStock = Number.isFinite(stock) ? Math.max(0, Math.min(999999999, Math.trunc(stock))) : 0;
+    const rank = (hasBoth ? 1 : 0) * 1000000000000000 + safeStock * 100000000 + priceCents;
 
     const catId = toIntOrZero(it?.categoriaPrinciapal ?? it?.categoriaPrincipal ?? it?.categoryId ?? it?.category?.id);
     const category = {
@@ -152,6 +156,7 @@ export function translateProdutos(raw) {
       unitLabel,
       sizeLabel,
       price,
+      rank,
       compareAtPrice: null,
       badges: detectBadges(name),
       image,
@@ -173,4 +178,3 @@ export function buildFallbackBrands() {
     },
   ];
 }
-

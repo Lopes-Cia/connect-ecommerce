@@ -22,6 +22,15 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ sl
     const slugPath = `/${(Array.isArray(slug) ? slug : []).map((s) => decodeURIComponent(s)).join('/')}`
 
     const categorias = await listCatalogCategories<Categoria>()
+    if (slugPath === '/categoria/sem-categoria') {
+      const sem = categorias.find((c) => Number(c.id) === 0) ?? null
+      if (!sem) {
+        return NextResponse.json({ success: false, message: 'Categoria não encontrada' }, { status: 404 })
+      }
+      const node: CategoriaNode = { ...(sem as CategoriaNode), children: [] }
+      const payload: ApiSuccess<{ category: CategoriaNode }> = { success: true, data: { category: node } }
+      return NextResponse.json(payload)
+    }
     const tree = buildCategoriasTreeFromCategorias(categorias) as CategoriaNode[]
     const found = findNodeBySlug(tree, slugPath)
 
@@ -36,4 +45,3 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ sl
     return NextResponse.json({ success: false, message }, { status: 500 })
   }
 }
-

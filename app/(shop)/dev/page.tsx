@@ -12,12 +12,15 @@ type CallResult = {
 
 type ActionGroup = "raw" | "contract" | "catalog";
 
+type ActionVariant = "primary" | "danger" | "neutral";
+
 type Action = {
   label: string;
   url: string;
   init: RequestInit;
   group: ActionGroup;
   uses: string[];
+  variant?: ActionVariant;
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -197,6 +200,7 @@ export default function DevPage() {
           label: "CATALOG (redis): health",
           url: "/api/catalog/health",
           init: { method: "GET" as const },
+          variant: "neutral",
         },
         {
           group: "catalog",
@@ -204,6 +208,7 @@ export default function DevPage() {
           label: "CATALOG (redis): index (ensure)",
           url: "/api/dev/catalog/index",
           init: { method: "POST" as const },
+          variant: "primary",
         },
         {
           group: "catalog",
@@ -211,6 +216,7 @@ export default function DevPage() {
           label: "CATALOG (redis): index (drop+create)",
           url: "/api/dev/catalog/index?drop=1",
           init: { method: "POST" as const },
+          variant: "danger",
         },
         {
           group: "catalog",
@@ -218,6 +224,7 @@ export default function DevPage() {
           label: "CATALOG (redis): sync (all)",
           url: "/api/dev/catalog/sync",
           init: { method: "POST" as const },
+          variant: "primary",
         },
         {
           group: "catalog",
@@ -225,6 +232,7 @@ export default function DevPage() {
           label: "CATALOG (redis): sync (categorias)",
           url: "/api/dev/catalog/sync?only=categorias",
           init: { method: "POST" as const },
+          variant: "primary",
         },
         {
           group: "catalog",
@@ -232,6 +240,7 @@ export default function DevPage() {
           label: "CATALOG (redis): clean (all)",
           url: "/api/dev/catalog/clean",
           init: { method: "POST" as const },
+          variant: "danger",
         },
         {
           group: "catalog",
@@ -239,6 +248,7 @@ export default function DevPage() {
           label: "CATALOG (redis): categories",
           url: "/api/catalog/categories",
           init: { method: "GET" as const },
+          variant: "neutral",
         },
         {
           group: "catalog",
@@ -246,6 +256,7 @@ export default function DevPage() {
           label: "CATALOG (redis): brands",
           url: "/api/catalog/brands",
           init: { method: "GET" as const },
+          variant: "neutral",
         },
         {
           group: "catalog",
@@ -275,6 +286,7 @@ export default function DevPage() {
               pageSize: params.pageSize,
             }),
           init: { method: "GET" as const },
+          variant: "neutral",
         },
 
         {
@@ -662,11 +674,15 @@ export default function DevPage() {
                 }}
                 disabled={Boolean(loading)}
                 className={[
-                  "min-h-10 px-3 py-2 rounded-md text-white font-montserrat text-sm font-semibold disabled:opacity-60 text-left",
+                  "min-h-10 px-3 py-2 rounded-md text-white font-montserrat text-sm font-semibold disabled:opacity-60 text-left transition-colors",
                   action.group === "raw"
                     ? "bg-tints-french-blue"
                     : action.group === "catalog"
-                      ? "bg-purple-600"
+                      ? action.variant === "danger"
+                        ? "bg-red-600 hover:bg-red-700"
+                        : action.variant === "primary"
+                          ? "bg-purple-600 hover:bg-purple-700"
+                          : "bg-slate-600 hover:bg-slate-700"
                       : "bg-green-600",
                 ].join(" ")}
               >
