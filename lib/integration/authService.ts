@@ -68,11 +68,19 @@ function ensureTokenResponse(value: unknown, fallbackMessage: string): TokenResp
     throw new Error(fallbackMessage)
   }
 
+  const refreshTokenValue = obj.refreshToken
+  const refreshToken =
+    typeof refreshTokenValue === 'string'
+      ? refreshTokenValue
+      : typeof refreshTokenValue === 'number'
+        ? String(refreshTokenValue)
+        : ''
+
   return {
     ...obj,
     hashToken: obj.hashToken,
     dtExpira: obj.dtExpira,
-    refreshToken: typeof obj.refreshToken === 'string' ? obj.refreshToken : '',
+    refreshToken,
   }
 }
 
@@ -108,7 +116,15 @@ async function requestTokenByProduct(): Promise<TokenResponse> {
 
 async function refreshToken(currentToken: TokenResponse): Promise<TokenResponse> {
   const env = getIntegrationEnvConfig()
-  const url = `${env.authBaseUrl}/tokenService`
+  const url = `${env.authBaseUrl}/refreshToken`
+  const refreshValue = currentToken.refreshToken
+  const refreshTokenParam =
+    typeof refreshValue === 'string' &&
+    /^\d+$/.test(refreshValue) &&
+    refreshValue.length <= 15 &&
+    Number.isSafeInteger(Number(refreshValue))
+      ? Number(refreshValue)
+      : refreshValue
 
   const response = await fetchWithRetry(
     url,
@@ -116,9 +132,13 @@ async function refreshToken(currentToken: TokenResponse): Promise<TokenResponse>
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: currentToken.hashToken,
       },
       body: JSON.stringify({
-        refreshToken: currentToken.refreshToken,
+        token: currentToken.hashToken,
+        refreshToken: refreshTokenParam,
+        idIntegradora: env.idIntegradora,
       }),
     },
     { maxAttempts: 3 }
@@ -209,40 +229,8 @@ function runBootSequenceOnce(): Promise<AuthStateBundle> {
 }
 
 async function runRefreshWithFallback(): Promise<TokenResponse> {
-  const state = getIntegrationAuthState()
-
-  if (!state.token?.refreshToken) {
-    logWarn('token_refresh_missing_refresh_token')
-    const boot = await runBootSequenceOnce()
-    return boot.token
-  }
-
-  logInfo('token_refresh_started')
-
-  try {
-    const refreshed = await refreshToken(state.token)
-    setIntegrationAuthState({ token: refreshed })
-    logInfo('token_refresh_completed', {
-      expiresAt: refreshed.dtExpira,
-    })
-    return refreshed
-  } catch (error) {
-    logWarn('token_refresh_failed_restarting_boot', {
-      reason: getErrorMessage(error),
-    })
-
-    if (state.token) {
-      setIntegrationAuthState({
-        token: {
-          ...state.token,
-          refreshToken: '',
-        },
-      })
-    }
-
-    const boot = await runBootSequenceOnce()
-    return boot.token
-  }
+  const boot = await runBootSequenceOnce()
+  return boot.token
 }
 
 function runRefreshWithLock(waitForResult: boolean): Promise<TokenResponse> | void {

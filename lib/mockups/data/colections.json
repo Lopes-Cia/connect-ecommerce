@@ -1,0 +1,582 @@
+{
+  "home": {
+    "banners_1": [
+      {
+        "id": 1,
+        "image": "http://localhost:4000/assets/images/banners/banner-1.webp",
+        "link": ""
+      },
+      {
+        "id": 2,
+        "image": "http://localhost:4000/assets/images/banners/banner-2.webp",
+        "link": ""
+      },
+      {
+        "id": 3,
+        "image": "http://localhost:4000/assets/images/banners/banner-3.webp",
+        "link": ""
+      },
+      {
+        "id": 4,
+        "image": "http://localhost:4000/assets/images/banners/banner-4.webp",
+        "link": ""
+      }
+    ],
+    "categorias_destaque": [
+      {
+        "id": 4,
+        "name": "Cervejas Especiais",
+        "slug": "/categoria/bebidas/cervejas-especiais",
+        "parentId": 1,
+        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "order": 1
+      },
+      {
+        "id": 2,
+        "name": "Cervejas",
+        "slug": "/categoria/bebidas/cervejas",
+        "parentId": 1,
+        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "order": 1
+      },
+      {
+        "id": 3,
+        "name": "Água",
+        "slug": "/categoria/bebidas/agua",
+        "parentId": 1,
+        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "order": 1
+      },
+      {
+        "id": 1,
+        "name": "Bebidas",
+        "slug": "/categoria/bebidas",
+        "parentId": 0,
+        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "order": 1
+      }
+    ],
+    "produtos_maisvendidos": {
+      "slug": "mais-vendidos",
+      "data": [
+        {
+          "id": 80,
+          "sku": "67896098909753-80",
+          "name": "Lava-roupas em pó Tixan Ypê Maciez",
+          "slug": "/produtos/lava-roupas-em-po-tixan-ype-maciez-80",
+          "unitLabel": "un",
+          "sizeLabel": "",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.comercialsouzaatacado.com.br/media/catalog/product/cache/1/small_image/200x200/9df78eab33525d08d6e5fb8d27136e95/0/0/00058802901_14.jpg",
+          "stock": 27456,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 88,
+          "sku": "47896098900237-88",
+          "name": "Lava-louças lí­quido Ypê Coco, frasco 500 ml, caixa com 24 unidades",
+          "slug": "/produtos/lava-loucas-li-quido-ype-coco-frasco-500-ml-caixa-com-24-unidades-88",
+          "unitLabel": "frasco",
+          "sizeLabel": "500ml",
+          "price": 1.94,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://cdn.leroymerlin.com.br/products/detergente_liquido_ype_lava_loucas_coco_500ml_embalagem_com_2_1570075209_e1bb_300x300.jpg",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 24,
+          "sku": "7896045506590-24",
+          "name": "Cerveja Heineken Lata 269 ml",
+          "slug": "/produtos/cerveja-heineken-lata-269-ml-24",
+          "unitLabel": "lata",
+          "sizeLabel": "269ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://redemix.vteximg.com.br/arquivos/ids/214763-500-500/7896045506590.jpg?v=638357581132330000",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 30,
+          "sku": "7897395020101-30",
+          "name": "Cerveja Itaipava Lata 350 ml",
+          "slug": "/produtos/cerveja-itaipava-lata-350-ml-30",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://gpexecucao.com.br/uploads/library/224-p24102459.jpg",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 83,
+          "sku": "7891991307048-83",
+          "name": "Cerveja Original Lata 269 ml Multipack, caixa com 15 unidades",
+          "slug": "/produtos/cerveja-original-lata-269-ml-multipack-caixa-com-15-unidades-83",
+          "unitLabel": "lata",
+          "sizeLabel": "269ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://carrefourbrfood.vtexassets.com/arquivos/ids/182342993/3486141_1.jpg.jpg?v=638720268544630000",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 57,
+          "sku": "7892840802707-57",
+          "name": "Refrigerante Pepsi Cola 2,5 L",
+          "slug": "/produtos/refrigerante-pepsi-cola-2-5-l-57",
+          "unitLabel": "un",
+          "sizeLabel": "2.5L",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/65f0b1332b372aa8f649b4bbacaae525.png",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 12,
+          "sku": "7891991294942-12",
+          "name": "Cerveja Brahma Duplo Malte Lata 350 ml",
+          "slug": "/produtos/cerveja-brahma-duplo-malte-lata-350-ml-12",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 3.49,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://redemix.vteximg.com.br/arquivos/ids/211634-500-500/7891991294942.jpg?v=638350615015300000",
+          "stock": 2975,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 82,
+          "sku": "7891991307680-82",
+          "name": "Cerveja Skol Lata 350 ml Multipack, caixa com 12 unidades",
+          "slug": "/produtos/cerveja-skol-lata-350-ml-multipack-caixa-com-12-unidades-82",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 32.28,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.jauserve.com.br/dw/image/v2/BFJL_PRD/on/demandware.static/-/Sites-jauserve-master/default/dw94500b56/7891991307680.png?sw=1800",
+          "stock": 8026,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        }
+      ]
+    },
+    "produtos_promocao": {
+      "slug": "promocao",
+      "data": [
+        {
+          "id": 9,
+          "sku": "7891149011001-9",
+          "name": "Cerveja Brahma Chopp Lata 473 ml",
+          "slug": "/produtos/cerveja-brahma-chopp-lata-473-ml-9",
+          "unitLabel": "lata",
+          "sizeLabel": "473ml",
+          "price": 14.99,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/7e0b33e88ae0bed9806fc6a88e2b7b96.png",
+          "stock": 13862,
+          "inStock": true,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 21,
+          "sku": "7891991295055-21",
+          "name": "Cerveja Corona Extra Lata 350 ml",
+          "slug": "/produtos/cerveja-corona-extra-lata-350-ml-21",
+          "unitLabel": "lata",
+          "sizeLabel": "350ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.imigrantesbebidas.com.br/bebida/images/products/full/19194-cerveja-corona-extra-pilsen-lata-350ml.20231218122856.jpg",
+          "stock": 80,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 10,
+          "sku": "7891991298827-10",
+          "name": "Cerveja Brahma Duplo Malte Lata 473 ml",
+          "slug": "/produtos/cerveja-brahma-duplo-malte-lata-473-ml-10",
+          "unitLabel": "lata",
+          "sizeLabel": "473ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/aaaf24af3d84fc3dcb3dbefef40f4c31.png",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 46,
+          "sku": "7891991015462-46",
+          "name": "Cerveja Stella Artois Long Neck 330 ml",
+          "slug": "/produtos/cerveja-stella-artois-long-neck-330-ml-46",
+          "unitLabel": "long neck",
+          "sizeLabel": "330ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/fbfafb968145278d5a96a0ba62af356e.png",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 37,
+          "sku": "7891991301138-37",
+          "name": "Skol Beats Senses Long Neck 269 ml",
+          "slug": "/produtos/skol-beats-senses-long-neck-269-ml-37",
+          "unitLabel": "long neck",
+          "sizeLabel": "269ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://coobrasil.com.br/storage/uploads/XdgLajRvccd1mgN3kMiPFouk7aBMMsAZidRQT2F8.jpg",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 50,
+          "sku": "7892840808174-50",
+          "name": "Isotônico Gatorade Morango e Maracujá 500 ml",
+          "slug": "/produtos/isotonico-gatorade-morango-e-maracuja-500-ml-50",
+          "unitLabel": "un",
+          "sizeLabel": "500ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://www.catalogoambev.com.br/images/uploads/artes-finais/f192a2e0216ec8c301180a2f2f0a43e3.png",
+          "stock": 1764,
+          "inStock": true,
+          "category": {
+            "id": 0,
+            "name": "sem categoria",
+            "slug": "/categoria/sem-categoria",
+            "familia": [
+              {
+                "id": 0,
+                "name": "sem categoria",
+                "slug": "/categoria/sem-categoria"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 78,
+          "sku": "47896098900251-78",
+          "name": "Lava-louças lí­quido Ypê Clear, frasco 500 ml, caixa com 24 unidades",
+          "slug": "/produtos/lava-loucas-li-quido-ype-clear-frasco-500-ml-caixa-com-24-unidades-78",
+          "unitLabel": "frasco",
+          "sizeLabel": "500ml",
+          "price": 1.94,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://cdn.leroymerlin.com.br/products/detergente_liquido_ype_lava_loucas_clear_500ml_embalagem_com_1570075211_3364_300x300.jpg",
+          "stock": 6048,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        },
+        {
+          "id": 17,
+          "sku": "7891991014762-17",
+          "name": "Cerveja Budweiser Long Neck 330 ml",
+          "slug": "/produtos/cerveja-budweiser-long-neck-330-ml-17",
+          "unitLabel": "long neck",
+          "sizeLabel": "330ml",
+          "price": 1,
+          "compareAtPrice": null,
+          "badges": [],
+          "image": "https://redemix.vteximg.com.br/arquivos/ids/211626-500-500/7891991014762.jpg?v=638350614966170000",
+          "stock": 0,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Bebidas",
+            "slug": "/categoria/bebidas",
+            "familia": [
+              {
+                "id": 1,
+                "name": "Bebidas",
+                "slug": "/categoria/bebidas"
+              }
+            ]
+          },
+          "brand": {
+            "id": 0,
+            "name": "No Brand",
+            "slug": "/marca/no-brand",
+            "image": "https://lopesecia.com.br/img/semImagem.png"
+          }
+        }
+      ]
+    }
+  }
+}

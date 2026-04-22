@@ -1,0 +1,4 @@
+[submodule ".vendor/mdk-elis"]
+	path = .vendor/mdk-elis
+	url = c:/LOPES/www/MDK-ELIS
+	branch = main

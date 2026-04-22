@@ -1,0 +1,469 @@
+[
+  {
+    "meus_dados": {
+      "id": 999,
+      "tipoPessoa": "PF",
+      "documento": "11122233344",
+      "nome": "Cliente Testeoooo",
+      "email": "teste@exemplo.com",
+      "whatsapp": "11999990000",
+      "senha": "123456",
+      "status": "ativo",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    "enderecos": [
+      {
+        "id": 1,
+        "clienteId": 999,
+        "rotulo": "casa",
+        "principal": true,
+        "cep": "01311000",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "complemento": "10º andar",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 999,
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "aceitaMarketing": true,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "updatedAt": "2026-04-17T00:29:41.106Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 998,
+      "tipoPessoa": "PF",
+      "documento": "55566677788",
+      "nome": "Cliente Inativo",
+      "email": "inativo@exemplo.com",
+      "whatsapp": "11999990001",
+      "senha": "123456",
+      "status": "inativo",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    "enderecos": [],
+    "privacidade": {
+      "clienteId": 998,
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "aceitaMarketing": false,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1000,
+      "tipoPessoa": "PF",
+      "documento": "DOC-1776356666544-599f2c336ad6d",
+      "nome": "Cliente Cadastro",
+      "email": "cadastro.1776356666544-599f2c336ad6d@exemplo.com",
+      "whatsapp": "11999990000",
+      "senha": "123456",
+      "status": "ativo",
+      "createdAt": "2026-04-16T16:24:26.645Z"
+    },
+    "enderecos": [
+      {
+        "id": 2,
+        "clienteId": 1000,
+        "rotulo": "Casa",
+        "principal": true,
+        "cep": "01001000",
+        "logradouro": "Praça da Sé",
+        "numero": "100",
+        "complemento": "lado ímpar",
+        "bairro": "Sé",
+        "cidade": "São Paulo",
+        "uf": "SP",
+        "pais": "BR",
+        "referencia": "Perto da catedral"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1000,
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "aceitaMarketing": false,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "updatedAt": "2026-04-16T16:24:26.645Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1001,
+      "tipoPessoa": "PF",
+      "documento": "DOC-1776357769555-659cb422fb48",
+      "nome": "Cliente Cadastro",
+      "email": "cadastro.1776357769555-659cb422fb48@exemplo.com",
+      "whatsapp": "11999990000",
+      "senha": "123456",
+      "status": "ativo",
+      "createdAt": "2026-04-16T16:42:49.647Z"
+    },
+    "enderecos": [
+      {
+        "id": 3,
+        "clienteId": 1001,
+        "rotulo": "Casa",
+        "principal": true,
+        "cep": "01001000",
+        "logradouro": "Praça da Sé",
+        "numero": "100",
+        "complemento": "lado ímpar",
+        "bairro": "Sé",
+        "cidade": "São Paulo",
+        "uf": "SP",
+        "pais": "BR",
+        "referencia": "Perto da catedral"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1001,
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "aceitaMarketing": false,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "updatedAt": "2026-04-16T16:42:49.647Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1002,
+      "tipoPessoa": "PF",
+      "documento": "DOC-1776358466797-1a47a1ff215f7",
+      "nome": "Cliente Cadastro",
+      "email": "cadastro.1776358466797-1a47a1ff215f7@exemplo.com",
+      "whatsapp": "11999990000",
+      "senha": "123456",
+      "status": "ativo",
+      "createdAt": "2026-04-16T16:54:26.881Z"
+    },
+    "enderecos": [
+      {
+        "id": 4,
+        "clienteId": 1002,
+        "rotulo": "Casa",
+        "principal": true,
+        "cep": "01001000",
+        "logradouro": "Praça da Sé",
+        "numero": "100",
+        "complemento": "lado ímpar",
+        "bairro": "Sé",
+        "cidade": "São Paulo",
+        "uf": "SP",
+        "pais": "BR",
+        "referencia": "Perto da catedral"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1002,
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "aceitaMarketing": false,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "updatedAt": "2026-04-16T16:54:26.881Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1003,
+      "tipoPessoa": "PF",
+      "documento": "DOC-1776358759735-52f8e695b7504",
+      "nome": "Cliente Cadastro",
+      "email": "cadastro.1776358759735-52f8e695b7504@exemplo.com",
+      "whatsapp": "11999990000",
+      "senha": "123456",
+      "status": "ativo",
+      "createdAt": "2026-04-16T16:59:19.826Z"
+    },
+    "enderecos": [
+      {
+        "id": 5,
+        "clienteId": 1003,
+        "rotulo": "Casa",
+        "principal": true,
+        "cep": "01001000",
+        "logradouro": "Praça da Sé",
+        "numero": "100",
+        "complemento": "lado ímpar",
+        "bairro": "Sé",
+        "cidade": "São Paulo",
+        "uf": "SP",
+        "pais": "BR",
+        "referencia": "Perto da catedral"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1003,
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "aceitaMarketing": false,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "updatedAt": "2026-04-16T16:59:19.826Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1004,
+      "tipoPessoa": "PF",
+      "documento": "DOC-1776358953991-5d8c4813b5703",
+      "nome": "Cliente Cadastro Login",
+      "email": "cadastro.login.1776358953991-5d8c4813b5703@exemplo.com",
+      "whatsapp": "11999990000",
+      "senha": "123456",
+      "status": "ativo",
+      "createdAt": "2026-04-16T17:02:34.068Z"
+    },
+    "enderecos": [
+      {
+        "id": 6,
+        "clienteId": 1004,
+        "rotulo": "Casa",
+        "principal": true,
+        "cep": "01001000",
+        "logradouro": "Praça da Sé",
+        "numero": "100",
+        "complemento": "lado ímpar",
+        "bairro": "Sé",
+        "cidade": "São Paulo",
+        "uf": "SP",
+        "pais": "BR",
+        "referencia": "Perto da catedral"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1004,
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "aceitaMarketing": false,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "updatedAt": "2026-04-16T17:02:34.069Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1005,
+      "tipoPessoa": "PF",
+      "documento": "0000000000370",
+      "nome": "Cliente Mock Updated 5008f12f0265",
+      "email": "mock-5008f12f0265@local.test",
+      "whatsapp": "5511999999999",
+      "senha": "Senha-5008f12f0265",
+      "status": "ativo",
+      "createdAt": "2026-04-22T00:48:32.383Z"
+    },
+    "enderecos": [
+      {
+        "id": 8,
+        "clienteId": 1005,
+        "cep": "01001000",
+        "logradouro": "Rua Mock 2",
+        "numero": "456",
+        "bairro": "Centro",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1005,
+      "aceitaMarketing": true,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "updatedAt": "2026-04-22T00:48:32.432Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1006,
+      "tipoPessoa": "PF",
+      "documento": "0000000000887",
+      "nome": "Cliente Mock Updated 08fe893a724e",
+      "email": "mock-08fe893a724e@local.test",
+      "whatsapp": "5511999999999",
+      "senha": "Senha-08fe893a724e",
+      "status": "ativo",
+      "createdAt": "2026-04-22T00:50:49.897Z"
+    },
+    "enderecos": [
+      {
+        "id": 10,
+        "clienteId": 1006,
+        "cep": "01001000",
+        "logradouro": "Rua Mock 2",
+        "numero": "456",
+        "bairro": "Centro",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1006,
+      "aceitaMarketing": true,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "updatedAt": "2026-04-22T00:50:49.950Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1007,
+      "tipoPessoa": "PF",
+      "documento": "0000000000403",
+      "nome": "Cliente Mock Updated fe350b41360c",
+      "email": "mock-fe350b41360c@local.test",
+      "whatsapp": "5511999999999",
+      "senha": "Senha-fe350b41360c",
+      "status": "ativo",
+      "createdAt": "2026-04-22T00:52:25.412Z"
+    },
+    "enderecos": [
+      {
+        "id": 12,
+        "clienteId": 1007,
+        "cep": "01001000",
+        "logradouro": "Rua Mock 2",
+        "numero": "456",
+        "bairro": "Centro",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1007,
+      "aceitaMarketing": true,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "updatedAt": "2026-04-22T00:52:25.478Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1008,
+      "tipoPessoa": "PF",
+      "documento": "0000000000397",
+      "nome": "Cliente Mock Updated 40e71aa3dc4f",
+      "email": "mock-40e71aa3dc4f@local.test",
+      "whatsapp": "5511999999999",
+      "senha": "Senha-40e71aa3dc4f",
+      "status": "ativo",
+      "createdAt": "2026-04-22T00:53:23.409Z"
+    },
+    "enderecos": [
+      {
+        "id": 14,
+        "clienteId": 1008,
+        "cep": "01001000",
+        "logradouro": "Rua Mock 2",
+        "numero": "456",
+        "bairro": "Centro",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1008,
+      "aceitaMarketing": true,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "updatedAt": "2026-04-22T00:53:23.460Z"
+    }
+  },
+  {
+    "meus_dados": {
+      "id": 1009,
+      "tipoPessoa": "PF",
+      "documento": "0000000000452",
+      "nome": "Cliente Mock Updated 4f2029204940",
+      "email": "mock-4f2029204940@local.test",
+      "whatsapp": "5511999999999",
+      "senha": "Senha-4f2029204940",
+      "status": "ativo",
+      "createdAt": "2026-04-22T04:40:14.467Z"
+    },
+    "enderecos": [
+      {
+        "id": 16,
+        "clienteId": 1009,
+        "cep": "01001000",
+        "logradouro": "Rua Mock 2",
+        "numero": "456",
+        "bairro": "Centro",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      }
+    ],
+    "privacidade": {
+      "clienteId": 1009,
+      "aceitaMarketing": true,
+      "aceitaTermos": true,
+      "aceitaCookies": true,
+      "canalPreferido": "email",
+      "doisFatores": {
+        "habilitado": false,
+        "metodo": "email"
+      },
+      "updatedAt": "2026-04-22T04:40:14.521Z"
+    }
+  }
+]

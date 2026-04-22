@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { frontModal } from "@/stores/front-modal-store";
 
 function buildInitial(value: string | undefined): string {
   const safe = value?.trim();
@@ -31,6 +32,16 @@ export default function DashboardSidebar() {
   const userRole = isLoading ? "Carregando" : "Distribuidor";
 
   async function handleLogout() {
+    const confirmed = await frontModal.confirm({
+      title: "Sair da conta",
+      description: "Tem certeza que deseja sair?",
+      confirmText: "Sair",
+      cancelText: "Cancelar",
+      confirmVariant: "destructive",
+    });
+
+    if (!confirmed) return;
+
     await logoutUser();
     router.push("/login");
     router.refresh();
@@ -64,11 +75,19 @@ export default function DashboardSidebar() {
         </Link>
 
         <Link
-          href="/products"
+          href="/cliente/painel"
+          className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
+        >
+          <User size={18} />
+          <span>Área do Cliente</span>
+        </Link>
+
+        <Link
+          href="/categorias"
           className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
         >
           <PackageSearch size={18} />
-          <span>Produtos</span>
+          <span>Categorias</span>
         </Link>
 
 

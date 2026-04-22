@@ -1,0 +1,7 @@
+{
+    "idIntegradora": 8,
+    "tipo": "OrderLopes",
+    "orderId": "009200417042026",
+    "payload": "{\"orderId\":\"008200417042026\",\"orderMarketplace\":null,\"tipo\":\"OrderLopes\",\"dateOrder\":\"2026-04-20 17:04:20\",\"cliente\":{\"nome\":\"COMERCIO DE BEBIDAS FICTICIO (TESTE)\",\"fantasia\":\"BEBIDAS FICTICIO\",\"CPFCNPJ\":\"25231575000146\",\"inscRg\":\"258076992\",\"email\":\"smbebidas91@gmail.com\",\"bairro\":\"PACHECOS\",\"CEP\":\"88135010\",\"cidade\":\"PALHOCA\",\"complemento\":null,\"endereco\":\"RODOVIA BR-101\",\"fone\":\"48988088888\",\"numero\":null,\"UF\":\"SC\"},\"itens\":[{\"codProd\":9,\"produto\":\"Cerveja Brahma Chopp Lata 473 ml\",\"brinde\":\"N\",\"qt\":5,\"valorUnitario\":14.99,\"desconto\":1.68,\"subTotal\":74.95},{\"codProd\":94,\"produto\":\"Lava-roupas em pó Tixan Ypê Maciez, caixa com 9 unidades de 2,2 kg\",\"brinde\":\"N\",\"qt\":25,\"valorUnitario\":14.99,\"desconto\":0,\"subTotal\":374.75}],\"idTransp\":5,\"transportadora\":\"Transportadora retira\",\"planoCodigo\":\"PIX\",\"planoDescricao\":\"A VISTA\",\"valor\":449.7,\"valorDesconto\":1.68,\"valorFrete\":0,\"valorTaxas\":0,\"posicao\":\"Aguardando Pagamento\",\"pagamento\":{\"codAutorizacao\":null,\"nsu\":null,\"dataPagamento\":\"2026-04-20 17:05:20\",\"valorPago\":449.7}}",
+    "integrado": "N"
+}

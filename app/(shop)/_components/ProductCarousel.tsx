@@ -42,6 +42,7 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
                 price: product.price,
                 discountPrice: product.discountPrice,
                 image_url: product.image_url,
+                slug: product.slug,
               }}
             />
           </CarouselItem>

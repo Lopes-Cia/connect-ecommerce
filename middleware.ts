@@ -1,18 +1,17 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const session = request.cookies.get('session')
+  const loggedIn = request.cookies.get("clientes_logged_in");
 
-  if (!session) {
-    const loginUrl = new URL('/login', request.url)
-    return NextResponse.redirect(loginUrl)
+  if (!loggedIn) {
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
-// Configure middleware to run only on dashboard routes
 export const config = {
-  matcher: '/dashboard/:path*'
-}
+  matcher: ["/dashboard/:path*", "/cliente/:path*"],
+};

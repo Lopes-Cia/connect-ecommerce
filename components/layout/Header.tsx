@@ -3,13 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import SearchBar from "./SearchBar";
 import CartSidebarMenu from "./CartSidebarMenu";
 import SidebarMenu from "./SidebarMenu";
 import { Button } from "../ui/button";
 import { LayoutDashboard, LogOut, ShieldUser } from "lucide-react";
 
+import { useClientesStore } from "@/stores/clientes-store";
+import { frontModal } from "@/stores/front-modal-store";
 import { useAuth } from "@/contexts/AuthContext";
+import { isBackendMode } from "@/lib/runtime/appMode";
 
 export default function Header() {
   const pathname = usePathname();
@@ -24,10 +28,38 @@ export default function Header() {
 
 function ShopHeader() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, logoutUser } = useAuth();
+  const backendMode = isBackendMode();
+  const clientesIsLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const clientesLogout = useClientesStore((s) => s.logout);
+  const { isAuthenticated, logoutUser } = useAuth();
+  const isLoggedIn = isAuthenticated || clientesIsLoggedIn;
+  const myAccountHref = isAuthenticated || backendMode ? "/dashboard" : "/cliente/painel";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isLoggedInHydrated = mounted ? isLoggedIn : false;
+  const myAccountHrefHydrated = mounted ? myAccountHref : "/login";
+
+  function handleLoginClick() {
+    router.push(isLoggedInHydrated ? myAccountHrefHydrated : "/login");
+  }
 
   async function handleLogout() {
-    await logoutUser();
+    const confirmed = await frontModal.confirm({
+      title: "Sair da conta",
+      description: "Tem certeza que deseja sair?",
+      confirmText: "Sair",
+      cancelText: "Cancelar",
+      confirmVariant: "destructive",
+    });
+
+    if (!confirmed) return;
+
+    if (isAuthenticated) {
+      await logoutUser();
+    }
+    if (clientesIsLoggedIn) {
+      clientesLogout();
+    }
     router.push("/login");
     router.refresh();
   }
@@ -53,29 +85,20 @@ function ShopHeader() {
 
         <div className="hidden md:flex flex-row items-center gap-6">
           <CartSidebarMenu />
-          {isLoading ? (
-            <Button
-              variant="outline"
-              size="default"
-              disabled
-              className="cursor-default rounded-xs"
-            >
-              <ShieldUser />
-              Carregando
-            </Button>
-          ) : isAuthenticated ? (
+          {isLoggedInHydrated ? (
             <>
-              <Link href="/dashboard">
-                <Button
-                  variant="outline"
-                  size="default"
-                  aria-label="Minha conta"
-                  className="cursor-pointer hover:opacity-75 rounded-xs"
-                >
+              <Button
+                asChild
+                variant="outline"
+                size="default"
+                aria-label="Minha conta"
+                className="cursor-pointer hover:opacity-75 rounded-xs"
+              >
+                <Link href={myAccountHrefHydrated}>
                   <LayoutDashboard />
                   Minha conta
-                </Button>
-              </Link>
+                </Link>
+              </Button>
               <Button
                 variant="outline"
                 size="default"
@@ -88,17 +111,16 @@ function ShopHeader() {
               </Button>
             </>
           ) : (
-            <Link href="/login">
-              <Button
-                variant="outline"
-                size="default"
-                aria-label="Entrar"
-                className="cursor-pointer hover:opacity-75 rounded-xs"
-              >
-                <ShieldUser />
-                Entrar
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              size="default"
+              aria-label="Entrar"
+              className="cursor-pointer hover:opacity-75 rounded-xs"
+              onClick={handleLoginClick}
+            >
+              <ShieldUser />
+              Entrar
+            </Button>
           )}
         </div>
       </div>

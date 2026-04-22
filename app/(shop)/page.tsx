@@ -1,63 +1,101 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
 import Image from "next/image";
 import CategoryLine from "./_components/CategoryLine";
 import ProductCarousel from "./_components/ProductCarousel";
 import BannerCarousel from "./_components/BannerCarousel";
 import Unidades from "./_components/Unidades";
+import HomeCategoryCard from "./_components/HomeCategoryCard";
 import { Truck, Package, Headphones, CreditCard } from "lucide-react";
-import { getProducts } from "@/lib/api/products";
-import type { Product } from "@/lib/types/product";
-import { toProductCardViewModel } from "@/lib/products/viewModels";
+import { useControlStore } from "@/stores/control-store";
+import {
+  toHomeBannerSlides,
+  toHomeCategoryCards,
+  toHomeMaisVendidosProducts,
+  toHomePromocaoProducts,
+} from "@/lib/ecommerce/homeViewModels";
+
+function isLocalhostUrl(value: string): boolean {
+  const src = String(value ?? "").trim();
+  if (!src) return false;
+  if (!/^https?:\/\//i.test(src)) return false;
+  try {
+    const parsed = new URL(src);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "::1";
+  } catch {
+    return false;
+  }
+}
 
 export default function Home() {
   const isMobile = useCheckIsMobile();
-  const [products, setProducts] = useState<Product[]>([]);
+  const useEcommerceStore = useControlStore((s) => s.ECOMMERCESTORE);
+  const home = useEcommerceStore((s) => s.home);
+  const homeStatus = useEcommerceStore((s) => s.homeStatus);
+  const homeError = useEcommerceStore((s) => s.homeError);
+  const loadHome = useEcommerceStore((s) => s.loadHome);
 
   useEffect(() => {
-    let active = true;
+    void loadHome();
+  }, [loadHome]);
 
-    const loadProducts = async () => {
-      try {
-        const result = await getProducts();
-        if (!active) {
-          return;
-        }
-
-        setProducts(result);
-      } catch (error) {
-        console.error("Failed to load products for home page", error);
-      }
-    };
-
-    void loadProducts();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const carouselProducts = useMemo(
-    () => products.slice(0, 12).map(toProductCardViewModel),
-    [products]
+  const homePayload = home?.home;
+  const bannerItems = useMemo(
+    () => toHomeBannerSlides(homePayload),
+    [homePayload]
   );
+  const categoryCards = useMemo(
+    () => toHomeCategoryCards(homePayload),
+    [homePayload]
+  );
+  const maisVendidosProducts = useMemo(
+    () => toHomeMaisVendidosProducts(homePayload),
+    [homePayload]
+  );
+  const promocaoProducts = useMemo(
+    () => toHomePromocaoProducts(homePayload),
+    [homePayload]
+  );
+  const mobileBannerSrc = bannerItems[0]?.src || "/assets/banner-mobile.webp";
 
   return (
     <div>
       {isMobile ? (
         <div className="w-full flex justify-center">
-          <Image
-            src="/assets/banner-mobile.webp"
-            alt="Banner Mobile"
-            width={375}
-            height={200}
-            className="max-w-100 h-auto"
-          />
+          {isLocalhostUrl(mobileBannerSrc) ? (
+            <img
+              src={mobileBannerSrc}
+              alt="Banner Mobile"
+              width={375}
+              height={200}
+              className="max-w-100 h-auto"
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <Image
+              src={mobileBannerSrc}
+              alt="Banner Mobile"
+              width={375}
+              height={200}
+              className="max-w-100 h-auto"
+            />
+          )}
         </div>
       ) : (
-        <BannerCarousel />
+        <BannerCarousel items={bannerItems} />
+      )}
+      {homeStatus === "loading" && (
+        <div className="px-4 md:px-20 mt-4 text-sm text-custom-dark-700 font-montserrat">
+          Carregando home...
+        </div>
+      )}
+      {homeStatus === "error" && (
+        <div className="px-4 md:px-20 mt-4 text-sm text-red-700 font-montserrat">
+          Erro ao carregar home: {homeError ?? "erro inesperado"}
+        </div>
       )}
       <div className="py-4 px-4 my-8 border-y border-black/30 xs:hidden">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-center md:justify-between items-center gap-4 md:gap-3">
@@ -110,61 +148,21 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <section className="w-full grid grid-cols-3 md:grid-cols-6 gap-2 px-4 md:px-20 my-10">
-        <a href="#" className="hover:opacity-80 transition-opacity">
-          <Image
-            src="/assets/categoria-piracanjuba.webp"
-            alt="Categoria Piracanjuba"
-            width={158}
-            height={197}
-            className="w-full h-auto"
+      <section className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6 px-4 md:px-20 my-12">
+        {categoryCards.length === 0 && homeStatus !== "loading" && (
+          <div className="col-span-full text-sm text-custom-dark-700 font-montserrat">
+            Nenhuma categoria em destaque no momento.
+          </div>
+        )}
+        {categoryCards.map((category) => (
+          <HomeCategoryCard
+            key={category.id}
+            id={category.id}
+            name={category.name}
+            image={category.image}
+            href={category.slug}
           />
-        </a>
-        <a href="#" className="hover:opacity-80 transition-opacity">
-          <Image
-            src="/assets/categoria-redbull.webp"
-            alt="Categoria Redbull"
-            width={158}
-            height={197}
-            className="w-full h-auto"
-          />
-        </a>
-        <a href="#" className="hover:opacity-80 transition-opacity">
-          <Image
-            src="/assets/categoria-monster.png"
-            alt="Categoria Monster"
-            width={158}
-            height={197}
-            className="w-full h-auto"
-          />
-        </a>
-        <a href="#" className="hover:opacity-80 transition-opacity">
-          <Image
-            src="/assets/categoria-heinz.webp"
-            alt="Categoria Heinz"
-            width={158}
-            height={197}
-            className="w-full h-auto"
-          />
-        </a>
-        <a href="#" className="hover:opacity-80 transition-opacity">
-          <Image
-            src="/assets/categoria-ype.webp"
-            alt="Categoria Ypê"
-            width={158}
-            height={197}
-            className="w-full h-auto"
-          />
-        </a>
-        <a href="#" className="hover:opacity-80 transition-opacity">
-          <Image
-            src="/assets/categoria-ambev.webp"
-            alt="Categoria Ambev"
-            width={158}
-            height={197}
-            className="w-full h-auto"
-          />
-        </a>
+        ))}
       </section>
       <section aria-label="Mais Vendidos">
         <CategoryLine
@@ -173,7 +171,7 @@ export default function Home() {
           verticalLineColor="bg-white"
         />
         <div className="w-full flex justify-center py-10 px-4">
-          <ProductCarousel products={carouselProducts} />
+          <ProductCarousel products={maisVendidosProducts} />
         </div>
       </section>
       <section aria-label="Promoções">
@@ -183,7 +181,7 @@ export default function Home() {
           verticalLineColor="bg-white"
         />
         <div className="w-full flex justify-center py-10 px-4">
-          <ProductCarousel products={carouselProducts} />
+          <ProductCarousel products={promocaoProducts} />
         </div>
       </section>
       <Unidades />

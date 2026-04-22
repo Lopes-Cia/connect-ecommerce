@@ -78,6 +78,11 @@ function shouldRetryAuth(error: unknown): error is HttpError {
 }
 
 export async function businessRequest<T>(options: BusinessRequestOptions): Promise<T> {
+  if (process.env.NODE_ENV !== 'production') {
+    const fonte = String(process.env.NEXT_PUBLIC_FONTE ?? '').trim().toLowerCase()
+    const source = fonte === 'mock' ? 'mock' : 'back'
+    console.log('[DATA-SOURCE]', source, 'integration', String(options.method ?? 'GET').toUpperCase(), options.path)
+  }
   const auth = await ensureAuthReady({ backgroundRefresh: true })
 
   try {

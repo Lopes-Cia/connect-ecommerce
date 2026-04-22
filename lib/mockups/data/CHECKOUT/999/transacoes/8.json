@@ -1,0 +1,132 @@
+{
+  "checkoutId": 8,
+  "clienteId": 999,
+  "carrinhoId": 2,
+  "checkout": {
+    "checkoutId": 8,
+    "clienteId": 999,
+    "carrinhoId": 2,
+    "snapshot": {
+      "itens": [
+        {
+          "itemId": 5,
+          "produtoId": 1061,
+          "sku": "TANQUERAY-GIN-TANQUERAY-LONDON-DRY-750ML-750ML",
+          "slug": "/produtos/gin-tanqueray-london-dry-750ml",
+          "nome": "Gin Tanqueray London Dry 750ml",
+          "imagemUrl": "http://localhost:4000/assets/images/produtos/gin-tanqueray-london-dry-750ml-09e432.png",
+          "precoUnitario": 150.17,
+          "quantidade": 1,
+          "subtotal": 150.17,
+          "addedAt": "2026-04-17T03:11:50.375Z"
+        }
+      ],
+      "cupom": null,
+      "resumoBase": {
+        "subtotal": 150.17,
+        "desconto": 0,
+        "totalItens": 1,
+        "moeda": "BRL"
+      }
+    },
+    "contato": {
+      "nome": "Cliente Testeoooo",
+      "email": "teste@exemplo.com",
+      "telefone": "11999990000"
+    },
+    "entrega": {
+      "endereco": {
+        "cep": "01311000",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "complemento": "10º andar",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      },
+      "freteSelecionado": {
+        "codigo": "economico",
+        "nome": "Entrega Economica",
+        "preco": 8.9,
+        "prazoDias": 5
+      }
+    },
+    "pagamento": {
+      "pagamentoId": 3,
+      "metodo": "pix",
+      "pix": {
+        "copiaECola": "000201checkout8pag3mockend",
+        "qrCodeBase64": "bW9jay1waXgtcXItY29kZQ==",
+        "expiresAt": "2026-04-17T03:42:13.755Z"
+      },
+      "status": "pago"
+    },
+    "resumoFinal": {
+      "subtotal": 150.17,
+      "desconto": 0,
+      "frete": 8.9,
+      "total": 159.07,
+      "moeda": "BRL"
+    },
+    "status": "finalizado",
+    "createdAt": "2026-04-17T03:12:11.032Z",
+    "updatedAt": "2026-04-17T03:12:15.548Z"
+  },
+  "pedido": {
+    "pedidoId": 3,
+    "checkoutId": 8,
+    "clienteId": 999,
+    "itens": [
+      {
+        "itemId": 5,
+        "produtoId": 1061,
+        "sku": "TANQUERAY-GIN-TANQUERAY-LONDON-DRY-750ML-750ML",
+        "slug": "/produtos/gin-tanqueray-london-dry-750ml",
+        "nome": "Gin Tanqueray London Dry 750ml",
+        "imagemUrl": "http://localhost:4000/assets/images/produtos/gin-tanqueray-london-dry-750ml-09e432.png",
+        "precoUnitario": 150.17,
+        "quantidade": 1,
+        "subtotal": 150.17,
+        "addedAt": "2026-04-17T03:11:50.375Z"
+      }
+    ],
+    "entrega": {
+      "endereco": {
+        "cep": "01311000",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "complemento": "10º andar",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      },
+      "freteSelecionado": {
+        "codigo": "economico",
+        "nome": "Entrega Economica",
+        "preco": 8.9,
+        "prazoDias": 5
+      }
+    },
+    "pagamento": {
+      "pagamentoId": 3,
+      "metodo": "pix",
+      "pix": {
+        "copiaECola": "000201checkout8pag3mockend",
+        "qrCodeBase64": "bW9jay1waXgtcXItY29kZQ==",
+        "expiresAt": "2026-04-17T03:42:13.755Z"
+      },
+      "status": "pago"
+    },
+    "resumo": {
+      "subtotal": 150.17,
+      "desconto": 0,
+      "frete": 8.9,
+      "total": 159.07,
+      "moeda": "BRL"
+    },
+    "status": "pago",
+    "createdAt": "2026-04-17T03:12:15.548Z"
+  }
+}

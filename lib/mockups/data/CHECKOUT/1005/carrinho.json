@@ -1,0 +1,17 @@
+{
+  "carrinhoId": 3,
+  "clienteId": 1005,
+  "status": "aberto",
+  "itens": [],
+  "cupom": null,
+  "resumo": {
+    "subtotal": 0,
+    "desconto": 0,
+    "frete": 0,
+    "total": 0,
+    "totalItens": 0,
+    "moeda": "BRL"
+  },
+  "createdAt": "2026-04-22T00:48:32.446Z",
+  "updatedAt": "2026-04-22T00:48:32.570Z"
+}

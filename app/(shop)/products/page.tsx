@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import ProductCard from "../_components/ProductCard";
-import { getProducts } from "@/lib/api/products";
-import { toProductCardViewModel } from "@/lib/products/viewModels";
+import { useProdutosStore } from "@/stores/produtos-store";
 
 type ProductCardType =
   | "standard"
@@ -13,17 +12,75 @@ type ProductCardType =
   | "highlighted-discount"
   | "coming-soon";
 
-interface ProductItem {
+type ProductItem = {
   id: string;
   name: string;
   category: string;
   price: number;
   discountPrice?: number;
   image_url: string;
+  slug?: string;
   cardType?: ProductCardType;
+};
+
+type UnknownRecord = Record<string, unknown>;
+
+function asRecord(value: unknown): UnknownRecord | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as UnknownRecord;
+}
+
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function normalizeSlugPath(value: unknown): string | null {
+  const raw = asString(value).trim();
+  if (!raw) return null;
+  if (!raw.startsWith("/")) return null;
+  return raw;
+}
+
+function toProductItem(raw: unknown): ProductItem | null {
+  const record = asRecord(raw);
+  if (!record) return null;
+
+  const id = String(record.id ?? "");
+  const name = asString(record.name, "").trim();
+  if (!id || !name) return null;
+
+  const categoryRecord = asRecord(record.category);
+  const categoryName = asString(categoryRecord?.name, asString(record.categoryName, "Sem categoria"));
+
+  const price = asNumber(record.price, 0);
+  const compareAtPrice = asNumber(record.compareAtPrice, 0);
+  const hasDiscount = compareAtPrice > 0 && compareAtPrice > price;
+  const inStock = Boolean(record.inStock ?? record.in_stock ?? true);
+
+  const image_url = asString(record.image, asString(record.image_url, "/placeholder.svg"));
+  const slug = normalizeSlugPath(record.slug);
+
+  return {
+    id,
+    name,
+    category: categoryName,
+    price: hasDiscount ? compareAtPrice : price,
+    discountPrice: hasDiscount ? price : undefined,
+    image_url,
+    slug: slug ?? undefined,
+    cardType: inStock ? (hasDiscount ? "discount" : "standard") : "coming-soon",
+  };
 }
 
 export default function ProductsPage() {
+  const loadCategoriasTree = useProdutosStore((s) => s.loadCategoriasTree);
+  const loadProdutosByCategoria = useProdutosStore((s) => s.loadProdutosByCategoria);
+
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -35,20 +92,48 @@ export default function ProductsPage() {
 
     const loadProducts = async () => {
       try {
-        const result = await getProducts();
+        const categoriasTree = await loadCategoriasTree();
+        const root = categoriasTree[0];
+        if (!root?.id) {
+          throw new Error("categoria_root_invalida");
+        }
+
+        const all: ProductItem[] = [];
+        const first = await loadProdutosByCategoria({
+          idCategoria: root.id,
+          includeDescendants: 1,
+          page: 1,
+          pageSize: 100,
+        });
+
+        const pageTotal = Number(first.totalPages ?? 1);
+        const firstItems = Array.isArray(first.data) ? first.data.map(toProductItem).filter(Boolean) : [];
+        all.push(...(firstItems as ProductItem[]));
+
+        for (let page = 2; page <= pageTotal; page += 1) {
+          const next = await loadProdutosByCategoria({
+            idCategoria: root.id,
+            includeDescendants: 1,
+            page,
+            pageSize: 100,
+          });
+          const items = Array.isArray(next.data) ? next.data.map(toProductItem).filter(Boolean) : [];
+          all.push(...(items as ProductItem[]));
+        }
+
         if (!active) {
           return;
         }
 
-        setProducts(result.map(toProductCardViewModel));
+        setProducts(all);
         setLoadError(null);
       } catch (error) {
         if (!active) {
           return;
         }
 
-        setLoadError("Nao foi possivel carregar os produtos agora.");
-        console.error("Failed to load products page data", error);
+        setLoadError("Não foi possível carregar os produtos agora.");
+        console.error("Falha ao carregar catálogo (/products)", error);
       } finally {
         if (active) {
           setIsLoading(false);
@@ -61,7 +146,7 @@ export default function ProductsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [loadCategoriasTree, loadProdutosByCategoria]);
 
   const categories = useMemo(() => {
     return [...new Set(products.map((product) => product.category))].sort(
@@ -172,28 +257,28 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {!isLoading && !loadError && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                type={product.cardType ?? (product.discountPrice ? "discount" : "standard")}
-                product={product}
-              />
-            ))}
-          </div>
+          {!isLoading && !loadError && filteredProducts.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  type={product.cardType ?? (product.discountPrice ? "discount" : "standard")}
+                  product={product}
+                />
+              ))}
+            </div>
           )}
 
-        {!isLoading && !loadError && filteredProducts.length === 0 && (
-          <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-white/70 mt-4">
-            <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">
-              Nenhum produto encontrado com os filtros atuais.
-            </p>
-            <p className="text-custom-dark-700 font-montserrat text-sm mt-1">
-              Tente outra categoria ou ajuste o termo de busca.
-            </p>
-          </div>
-        )}
+          {!isLoading && !loadError && filteredProducts.length === 0 && (
+            <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-white/70 mt-4">
+              <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">
+                Nenhum produto encontrado com os filtros atuais.
+              </p>
+              <p className="text-custom-dark-700 font-montserrat text-sm mt-1">
+                Tente outra categoria ou ajuste o termo de busca.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

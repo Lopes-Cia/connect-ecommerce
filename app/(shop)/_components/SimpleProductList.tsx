@@ -10,6 +10,7 @@ interface Product {
   price: number;
   discountPrice?: number;
   image_url: string;
+  slug?: string;
 }
 
 interface SimpleProductListProps {

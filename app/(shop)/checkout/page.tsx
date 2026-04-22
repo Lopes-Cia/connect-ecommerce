@@ -1,136 +1,81 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 
-import { useCart } from "@/contexts/CartContext";
-import { formatCurrency } from "@/lib/formatting";
-
-
+import { Button } from "@/components/ui/button";
+import CheckoutForm from "./_components/CheckoutForm";
+import { useControlStore } from "@/stores/control-store";
 
 export default function CheckoutPage() {
-  const { items, totalAmount, totalItems, setItemQuantity, removeItem } = useCart();
+  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
+  const items = useCarrinhoStore((s) => s.items);
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Checkout</h1>
-        <div className="rounded-lg border border-custom-light-400 bg-white p-8 text-center">
-          <p className="text-gray-700 mb-4">Seu carrinho esta vazio.</p>
-          <Link
-            href="/products"
-            className="inline-flex px-4 py-2 rounded bg-tints-french-blue text-white font-medium hover:opacity-90"
-          >
-            Ir para produtos
-          </Link>
+      <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7f8_0%,#ffffff_28%,#ffffff_100%)] p-3 sm:p-5 lg:p-8">
+        <div className="mx-auto max-w-7xl space-y-6">
+          <header className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-[11px] font-montserrat font-semibold uppercase tracking-widest text-custom-light-600">
+                  Checkout
+                </p>
+                <h1 className="mt-1 text-2xl font-league-spartan font-bold text-custom-dark-1000 sm:text-3xl">
+                  Finalizar compra
+                </h1>
+                <p className="mt-2 text-sm font-montserrat text-custom-dark-700">
+                  Revise seus dados e confirme o pedido.
+                </p>
+              </div>
+              <Button asChild variant="outline">
+                <Link href="/cart">Voltar ao carrinho</Link>
+              </Button>
+            </div>
+          </header>
+
+          <div className="rounded-2xl border border-custom-light-300 bg-white p-6 text-center shadow-sm sm:p-8">
+            <p className="text-sm font-montserrat text-custom-dark-700">
+              Seu carrinho está vazio.
+            </p>
+            <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button asChild variant="outline">
+                <Link href="/cart">Ver carrinho</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/categorias">Ir para categorias</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Checkout</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="lg:col-span-2 rounded-lg border border-custom-light-400 bg-white p-4 md:p-6">
-          <h2 className="text-lg font-semibold mb-4">Itens do pedido</h2>
-
-          <div className="space-y-4">
-            {items.map((item) => {
-              const subtotal = item.unitPrice * item.quantity;
-
-              return (
-                <div
-                  key={item.id}
-                  className="flex gap-4 items-center border border-custom-light-300 rounded p-3"
-                >
-                  <div className="w-16 h-16 rounded bg-custom-light-100 border border-custom-light-300 overflow-hidden flex items-center justify-center">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.name}
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-custom-dark-1000 line-clamp-2">
-                      {item.name}
-                    </p>
-                    <p className="text-sm text-custom-dark-700">{item.category}</p>
-                    <p className="text-sm text-custom-dark-700">
-                      {formatCurrency(item.unitPrice)} por unidade
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setItemQuantity(item.id, item.quantity - 1)}
-                      className="w-8 h-8 rounded border border-custom-light-400 hover:bg-custom-light-100"
-                      aria-label="Diminuir quantidade"
-                    >
-                      -
-                    </button>
-                    <span className="w-8 text-center">{item.quantity}</span>
-                    <button
-                      onClick={() => setItemQuantity(item.id, item.quantity + 1)}
-                      className="w-8 h-8 rounded border border-custom-light-400 hover:bg-custom-light-100"
-                      aria-label="Aumentar quantidade"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  <div className="text-right min-w-26">
-                    <p className="font-semibold text-custom-dark-1000">
-                      {formatCurrency(subtotal)}
-                    </p>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="text-xs text-tints-french-blue hover:underline"
-                    >
-                      Remover
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <aside className="rounded-lg border border-custom-light-400 bg-white p-4 md:p-6 h-fit">
-          <h2 className="text-lg font-semibold mb-4">Resumo</h2>
-
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Itens</span>
-              <span>{totalItems}</span>
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7f8_0%,#ffffff_28%,#ffffff_100%)] p-3 sm:p-5 lg:p-8">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <header className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[11px] font-montserrat font-semibold uppercase tracking-widest text-custom-light-600">
+                Checkout
+              </p>
+              <h1 className="mt-1 text-2xl font-league-spartan font-bold text-custom-dark-1000 sm:text-3xl">
+                Finalizar compra
+              </h1>
+              <p className="mt-2 text-sm font-montserrat text-custom-dark-700">
+                Revise seus dados e confirme o pedido.
+              </p>
             </div>
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>{formatCurrency(totalAmount)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Frete</span>
-              <span>A calcular</span>
-            </div>
+            <Button asChild variant="outline">
+              <Link href="/cart">Voltar ao carrinho</Link>
+            </Button>
           </div>
+        </header>
 
-          <div className="border-t border-custom-light-300 my-4" />
-
-          <div className="flex justify-between items-center mb-4">
-            <span className="font-semibold">Total</span>
-            <span className="text-lg font-bold text-tints-french-blue">
-              {formatCurrency(totalAmount)}
-            </span>
-          </div>
-
-          <button className="w-full py-3 rounded bg-tints-french-blue text-white font-semibold hover:opacity-90">
-            Confirmar pedido
-          </button>
-        </aside>
+        <div className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-6">
+          <CheckoutForm />
+        </div>
       </div>
     </div>
   );

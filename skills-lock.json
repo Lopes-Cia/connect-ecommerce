@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "swagger-api-query": {
+      "source": "zhihuihu/agent-skills",
+      "sourceType": "github",
+      "computedHash": "8316207e7cc7f997708fd1980ef9a7bcaf7cc4d9798ec7194fd6dc880ef01db2"
+    }
+  }
+}

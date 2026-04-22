@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { setSession } from '@/lib/auth/session'
 import { getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
-import { ensureAuthReady } from '@/lib/integration/authService'
+import { ensureAuthWebserviceToken } from '@/lib/integration/authWebserviceClient'
 import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
 import { toRawToken } from '@/lib/integration/token'
 
@@ -49,8 +49,8 @@ export async function POST(request: Request) {
       )
     }
 
-    const auth = await ensureAuthReady({ backgroundRefresh: false })
-    const authHeader = toRawToken(auth.token.hashToken)
+    const tokenResponse = await ensureAuthWebserviceToken({ backgroundRefresh: false })
+    const authHeader = toRawToken(tokenResponse.hashToken)
     const baseUrl = getAuthWebserviceBaseUrl()
 
     const verifyUrl = `${baseUrl}/verificarTokenSistema?token=${encodeURIComponent(token)}`

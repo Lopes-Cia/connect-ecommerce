@@ -2,8 +2,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import LoginForm from "./_components/LoginForm";
 import Image from "next/image";
+import LoginOriPage from "../login_ori/page";
 
-export default function LoginPage() {
+function LoginPageDefault() {
   return (
     <div className="min-h-screen bg-white flex items-start justify-center px-4 py-8 mt-8">
       <div className="w-full max-w-md">
@@ -50,4 +51,13 @@ export default function LoginPage() {
       </div>
     </div>
   );
+}
+
+export default function LoginPage() {
+  const fonte = process.env.NEXT_PUBLIC_FONTE;
+  const isLopes = fonte?.trim().toLowerCase() === "lopes";
+
+  if (isLopes) return <LoginOriPage />;
+
+  return <LoginPageDefault />;
 }

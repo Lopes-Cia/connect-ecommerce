@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
-import { ensureAuthReady } from '@/lib/integration/authService'
+import { ensureAuthWebserviceToken } from '@/lib/integration/authWebserviceClient'
 import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
 import { toRawToken } from '@/lib/integration/token'
 
@@ -14,6 +14,8 @@ interface SendTokenRequestBody {
 
 export async function POST(request: Request) {
   try {
+
+    console.log("r1")
     const body = (await request.json()) as SendTokenRequestBody
     const email = body.email?.trim() ?? ''
     const whatsapp = body.whatsapp?.trim() ?? ''
@@ -38,8 +40,8 @@ export async function POST(request: Request) {
     }
 
     const url = `${getAuthWebserviceBaseUrl()}/enviarToken?${query.toString()}`
-    const auth = await ensureAuthReady({ backgroundRefresh: false })
-    const authHeader = toRawToken(auth.token.hashToken)
+    const tokenResponse = await ensureAuthWebserviceToken({ backgroundRefresh: false })
+    const authHeader = toRawToken(tokenResponse.hashToken)
 
     const response = await fetchWithRetry(
       url,

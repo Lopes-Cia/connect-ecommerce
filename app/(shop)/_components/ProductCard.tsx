@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
-import { cn, slugify } from "@/lib/utils";
-import { useCart } from "@/contexts/CartContext";
+import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/formatting";
+import { frontModal } from "@/stores/front-modal-store";
+import { useControlStore } from "@/stores/control-store";
 
 type ProductCardType =
   | "standard"
@@ -21,6 +23,7 @@ interface Product {
   price: number;
   discountPrice?: number;
   image_url: string;
+  slug?: string;
 }
 
 interface ProductCardProps {
@@ -28,30 +31,81 @@ interface ProductCardProps {
   product: Product;
 }
 
+function normalizeProductHref(value: unknown): string | null {
+  const raw = typeof value === "string" ? value.trim() : "";
+  if (!raw) return null;
+
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  if (raw.startsWith("/produtos/")) return raw;
+
+  if (raw.startsWith("/products/")) {
+    const parts = raw.split("/").filter(Boolean);
+    const last = parts.at(-1) ?? "";
+    if (!last || last === "products") return null;
+    return `/produtos/${last}`;
+  }
+
+  if (raw.startsWith("/")) return raw;
+  if (raw.startsWith("produtos/")) return `/${raw}`;
+
+  if (raw.startsWith("products/")) {
+    const parts = raw.split("/").filter(Boolean);
+    const last = parts.at(-1) ?? "";
+    if (!last || last === "products") return null;
+    return `/produtos/${last}`;
+  }
+
+  return `/produtos/${raw}`;
+}
+
 
 
 export default function ProductCard({ type, product }: ProductCardProps) {
-  const { addItem } = useCart();
+  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
+  const items = useCarrinhoStore((s) => s.items);
+  const addItem = useCarrinhoStore((s) => s.addItem);
   const isComingSoon = type === "coming-soon";
   const hasDiscount = type === "discount" || type === "highlighted-discount";
   const isHighlighted =
     type === "highlighted" || type === "highlighted-discount";
-  const productSlug = slugify(product.name) || "produto";
-  const productHref = `/products/${product.id}/${productSlug}`;
+  const productHref = normalizeProductHref(product.slug) ?? "#";
+  const [imageSrc, setImageSrc] = useState(product.image_url || "/placeholder.svg");
 
-  const handleAddToCart = () => {
+  useEffect(() => {
+    setImageSrc(product.image_url || "/placeholder.svg");
+  }, [product.image_url]);
+
+  const shouldUseImgTag =
+    (imageSrc ?? "").startsWith("http://") || (imageSrc ?? "").startsWith("https://");
+
+  const handleAddToCart = async () => {
     if (isComingSoon) {
       return;
     }
 
-    addItem({
-      id: product.id,
-      name: product.name,
-      category: product.category,
-      imageUrl: product.image_url,
-      unitPrice: product.discountPrice ?? product.price,
-      quantity: 1,
-    });
+    const existed = items.some((x) => x.id === product.id);
+    try {
+      await addItem({
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        imageUrl: product.image_url,
+        unitPrice: product.discountPrice ?? product.price,
+        quantity: 1,
+      });
+      void frontModal.success({
+        title: existed ? "Quantidade atualizada" : "Adicionado ao carrinho",
+        description: existed
+          ? `${product.name} teve a quantidade atualizada no seu carrinho.`
+          : `${product.name} foi adicionado no seu carrinho.`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro inesperado ao adicionar no carrinho.";
+      void frontModal.error({
+        title: "Erro no carrinho",
+        description: message,
+      });
+    }
   };
 
   return (
@@ -66,13 +120,25 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         <div
           className={`mb-4 h-56 shrink-0 flex items-center justify-center border border-black/10 rounded-xs ${isComingSoon ? "opacity-50" : ""}`}
         >
-          <Image
-            src={product.image_url || "/placeholder.svg"}
-            alt={product.name}
-            width={120}
-            height={135}
-            className="h-full w-6/10 object-contain"
-          />
+          {shouldUseImgTag ? (
+            <img
+              src={imageSrc}
+              alt={product.name}
+              width={120}
+              height={135}
+              className="h-full w-6/10 object-contain"
+              onError={() => setImageSrc("/placeholder.svg")}
+            />
+          ) : (
+            <Image
+              src={imageSrc}
+              alt={product.name}
+              width={120}
+              height={135}
+              className="h-full w-6/10 object-contain"
+              unoptimized
+            />
+          )}
         </div>
       </Link>
 
@@ -130,7 +196,7 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         </p>
 
         <button
-          onClick={handleAddToCart}
+          onClick={() => void handleAddToCart()}
           className={cn(
             "mt-1.5 w-full rounded-xs py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed",
             isComingSoon ? "bg-tints-french-blue/60 cursor-not-allowed" : "bg-tints-french-blue cursor-pointer"
