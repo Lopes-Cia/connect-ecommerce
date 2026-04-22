@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import SearchBar from "./SearchBar";
 import CartSidebarMenu from "./CartSidebarMenu";
 import SidebarMenu from "./SidebarMenu";
@@ -33,9 +34,13 @@ function ShopHeader() {
   const { isAuthenticated, logoutUser } = useAuth();
   const isLoggedIn = isAuthenticated || clientesIsLoggedIn;
   const myAccountHref = isAuthenticated || backendMode ? "/dashboard" : "/cliente/painel";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isLoggedInHydrated = mounted ? isLoggedIn : false;
+  const myAccountHrefHydrated = mounted ? myAccountHref : "/login";
 
   function handleLoginClick() {
-    router.push(isLoggedIn ? myAccountHref : "/login");
+    router.push(isLoggedInHydrated ? myAccountHrefHydrated : "/login");
   }
 
   async function handleLogout() {
@@ -80,19 +85,20 @@ function ShopHeader() {
 
         <div className="hidden md:flex flex-row items-center gap-6">
           <CartSidebarMenu />
-          {isLoggedIn ? (
+          {isLoggedInHydrated ? (
             <>
-              <Link href={myAccountHref}>
-                <Button
-                  variant="outline"
-                  size="default"
-                  aria-label="Minha conta"
-                  className="cursor-pointer hover:opacity-75 rounded-xs"
-                >
+              <Button
+                asChild
+                variant="outline"
+                size="default"
+                aria-label="Minha conta"
+                className="cursor-pointer hover:opacity-75 rounded-xs"
+              >
+                <Link href={myAccountHrefHydrated}>
                   <LayoutDashboard />
                   Minha conta
-                </Button>
-              </Link>
+                </Link>
+              </Button>
               <Button
                 variant="outline"
                 size="default"

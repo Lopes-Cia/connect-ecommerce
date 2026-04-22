@@ -26,6 +26,12 @@ export interface CatalogProductsQueryResult<TItem = unknown> {
 
 const INDEX_NAME = 'idx:catalog:product'
 
+function logCatalogSource(event: string, meta?: Record<string, unknown>) {
+  if (process.env.NODE_ENV === 'production') return
+  if (meta) console.log('[DATA-SOURCE]', 'redis', event, meta)
+  else console.log('[DATA-SOURCE]', 'redis', event)
+}
+
 function escapeQueryText(value: string | undefined): string {
   const v = String(value ?? '').trim()
   if (!v) return ''
@@ -110,6 +116,7 @@ function detectModules(modules: Record<string, unknown>[]) {
 }
 
 export async function catalogHealthcheck() {
+  logCatalogSource('catalog.health')
   const client = await getCatalogRedisClient()
   const prefix = getCatalogKeyPrefix()
 
@@ -183,6 +190,7 @@ export async function searchCatalogProducts<TItem = unknown>(input: {
   pageSize: number
   sort?: { field: CatalogProductSortField; dir: CatalogProductSortDir }
 }): Promise<CatalogProductsQueryResult<TItem>> {
+  logCatalogSource('catalog.search', { page: input.page, pageSize: input.pageSize })
   const client = await getCatalogRedisClient()
 
   const sort = input.sort ?? { field: 'name', dir: 'asc' }
@@ -255,12 +263,14 @@ async function fetchJsonByKeyPrefix<TDoc>(input: { keyPrefix: string; batchSize?
 }
 
 export async function listCatalogCategories<TCategory = unknown>(): Promise<TCategory[]> {
+  logCatalogSource('catalog.categories.list')
   const prefix = getCatalogKeyPrefix()
   const keyPrefix = `${prefix}:category:`
   return fetchJsonByKeyPrefix<TCategory>({ keyPrefix })
 }
 
 export async function listCatalogBrands<TBrand = unknown>(): Promise<TBrand[]> {
+  logCatalogSource('catalog.brands.list')
   const prefix = getCatalogKeyPrefix()
   const keyPrefix = `${prefix}:brand:`
   return fetchJsonByKeyPrefix<TBrand>({ keyPrefix })

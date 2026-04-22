@@ -28,6 +28,8 @@ export default function CategoryHeader() {
   const loadCategoriasTree = useProdutosStore((s) => s.loadCategoriasTree);
   const [open, setOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     void loadCategoriasTree().catch((error) => {
@@ -54,7 +56,7 @@ export default function CategoryHeader() {
     closeTimeoutRef.current = setTimeout(() => setOpen(false), 240);
   };
 
-  if (isMobile) {
+  if (!mounted || isMobile) {
     return (
       <div className="flex justify-center items-center h-8 bg-tints-carbon-black">
         <Link

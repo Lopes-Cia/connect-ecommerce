@@ -80,7 +80,7 @@ function buildCategorySlugById(byId, id) {
 }
 
 export function translateCategorias(raw) {
-  const brandImageFallback = "http://localhost:4000/assets/images/semImagem.png";
+  const brandImageFallback = "https://lopesecia.com.br/img/semImagem.png";
   const categoryFallback = { id: 0, name: "sem categoria", slug: "/categoria/sem-categoria", parentId: 0, image: brandImageFallback, order: 0 };
 
   const items = Array.isArray(raw) ? raw : [];
@@ -114,7 +114,7 @@ export function translateCategorias(raw) {
 }
 
 export function translateProdutos(raw) {
-  const imageFallback = "http://localhost:4000/assets/images/semImagem.png";
+  const imageFallback = "https://lopesecia.com.br/img/semImagem.png";
   const brandFallback = { id: 0, name: "No Brand", slug: "/marca/no-brand", image: imageFallback };
 
   const items = Array.isArray(raw) ? raw : [];
@@ -174,7 +174,7 @@ export function buildFallbackBrands() {
       id: 0,
       name: "No Brand",
       slug: "/marca/no-brand",
-      image: "http://localhost:4000/assets/images/semImagem.png",
+      image: "https://lopesecia.com.br/img/semImagem.png",
     },
   ];
 }

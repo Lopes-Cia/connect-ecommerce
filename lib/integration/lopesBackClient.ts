@@ -261,6 +261,11 @@ export async function lopesBackGet<T>(
   const env = getLopesBackEnvConfig()
   const token = await ensureToken()
   const url = buildUrl(env.integrationUrlApi, path, query)
+  if (process.env.NODE_ENV !== 'production') {
+    const fonte = normalizeString(process.env.NEXT_PUBLIC_FONTE).toLowerCase()
+    const source = fonte === 'mock' ? 'mock' : 'back'
+    console.log('[DATA-SOURCE]', source, 'lopes', 'GET', path)
+  }
 
   const response = await fetchWithRetry(
     url,

@@ -149,7 +149,7 @@ function resolveBrandFromSnapshot(brandsById: Map<number, Brand>, rawId: number 
         id: 0,
         name: "No Brand",
         slug: "/marca/no-brand",
-        image: "http://localhost:4000/assets/images/semImagem.png",
+        image: "https://lopesecia.com.br/img/semImagem.png",
       }
 
   if (!rawId) return base
@@ -167,7 +167,7 @@ export function translateLopesProdutosToProdutosMock(
   }
 ): ProdutoMock[] {
   const items = readListFrom(input) as LopesProdutoRaw[]
-  const fallbackImage = lookups.fallbackImage ?? "http://localhost:4000/assets/images/semImagem.png"
+  const fallbackImage = lookups.fallbackImage ?? "https://lopesecia.com.br/img/semImagem.png"
 
   return items.map((it) => {
     const id = toIntOrZero(it?.codProd)

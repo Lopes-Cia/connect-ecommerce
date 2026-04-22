@@ -306,7 +306,7 @@ export default function LoginForm() {
                   id="value"
                   type={selectedChannel === "email" ? "email" : "tel"}
                   {...registerSend("value")}
-                  value={displayedValue}
+                  value={displayedValue ?? ""}
                   readOnly={selectedChannel === "email"}
                   onChange={(event) => {
                     if (selectedChannel === "email") return;

@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server'
 
 import { HttpError } from '@/lib/integration/network'
 import { getHome } from '@/lib/integration/ecommerceService'
+import { applyHomeCollectionsRandomProducts, getHomeFromRedisOrNull, getRandomInStockPricedProducts } from '@/lib/integration/catalogHomeService'
 
 export const dynamic = 'force-dynamic'
 
 function rewriteMockLocalhostAssetUrls(value: unknown): unknown {
   if (typeof value === 'string') {
-    if (value === 'http://localhost:4000/assets/images/semImagem.png') return '/logo.png'
+    if (value === 'https://lopesecia.com.br/img/semImagem.png') return '/logo.png'
     if (value.startsWith('http://localhost:4000/assets/images/banners/banner-')) {
       const match = value.match(/banner-(\d+)\.webp$/)
       if (match?.[1]) return `/assets/banner-${match[1]}.webp`
@@ -30,6 +31,28 @@ function rewriteMockLocalhostAssetUrls(value: unknown): unknown {
 export async function GET() {
   try {
     const fonte = String(process.env.NEXT_PUBLIC_FONTE ?? '').toLowerCase()
+    const catalogFonte = String(process.env.NEXT_PUBLIC_CATALOGO_FONTE ?? '').toLowerCase()
+    const useRedisCatalog = catalogFonte === 'redis' || fonte === 'redis'
+    if (useRedisCatalog) {
+      const home = await getHomeFromRedisOrNull()
+      if (!home) {
+        return NextResponse.json(
+          { success: false, message: 'Home não importado no Redis. Rode POST /api/dev/catalog/home/import' },
+          { status: 500, headers: { 'x-data-source': 'redis (missing home)' } }
+        )
+      }
+
+      const [maisVendidos, promocao] = await Promise.all([
+        getRandomInStockPricedProducts({ count: 8 }),
+        getRandomInStockPricedProducts({ count: 8 }),
+      ])
+
+      const data = applyHomeCollectionsRandomProducts({ home, maisVendidos, promocao })
+      return NextResponse.json(
+        { success: true, data },
+        { headers: { 'x-data-source': 'redis (home + random products)' } }
+      )
+    }
     if (fonte === 'lopes' || fonte === 'mock') {
       const fs = await import('node:fs/promises')
       const path = await import('node:path')

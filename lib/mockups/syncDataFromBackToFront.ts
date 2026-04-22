@@ -47,7 +47,7 @@ export function translateLopesCategoriasToCategorias(input: unknown): Categoria[
     name: "sem categoria",
     slug: "/categoria/sem-categoria",
     parentId: 0,
-    image: "http://localhost:4000/assets/images/semImagem.png",
+    image: "https://lopesecia.com.br/img/semImagem.png",
     order: 0,
   }
 
@@ -56,7 +56,7 @@ export function translateLopesCategoriasToCategorias(input: unknown): Categoria[
     const id = toIntOrZero(c?.codigo)
     const parentId = toIntOrZero(c?.codPai)
     const name = safeString(c?.categoria) || `Categoria ${id}`
-    const image = safeString(c?.imagem) || "http://localhost:4000/assets/images/semImagem.png"
+    const image = safeString(c?.imagem) || "https://lopesecia.com.br/img/semImagem.png"
     const order = toIntOrZero(c?.sequencia) || id
 
     return { id, name, slug: "", parentId, image, order }
