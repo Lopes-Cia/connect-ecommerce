@@ -75,6 +75,14 @@ export default function DashboardSidebar() {
         </Link>
 
         <Link
+          href="/cliente/painel"
+          className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
+        >
+          <User size={18} />
+          <span>Área do Cliente</span>
+        </Link>
+
+        <Link
           href="/categorias"
           className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
         >

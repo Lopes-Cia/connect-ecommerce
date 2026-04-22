@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "version": 2,
+    "updatedAt": "2026-04-22T04:40:14.671Z"
+  },
+  "seq": {
+    "carrinhoId": 8,
+    "itemId": 17,
+    "checkoutId": 16,
+    "pedidoId": 11,
+    "pagamentoId": 11
+  },
+  "config": {
+    "moeda": "BRL",
+    "frete": {
+      "opcoes": [
+        {
+          "codigo": "economico",
+          "nome": "Entrega Economica",
+          "preco": 8.9,
+          "prazoDias": 5
+        },
+        {
+          "codigo": "expresso",
+          "nome": "Entrega Expresso",
+          "preco": 17.9,
+          "prazoDias": 2
+        }
+      ]
+    },
+    "cupons": [
+      {
+        "codigo": "BEMVINDO10",
+        "tipo": "percent",
+        "valor": 10,
+        "mensagem": "Cupom de boas-vindas: 10% de desconto."
+      },
+      {
+        "codigo": "FRETEGRATIS",
+        "tipo": "fixed",
+        "valor": 8.9,
+        "mensagem": "Desconto de frete no valor da entrega economica."
+      }
+    ],
+    "pagamentos": {
+      "metodos": [
+        "pix"
+      ]
+    }
+  }
+}

@@ -12,8 +12,8 @@ import { useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
 
 const loginSchema = z.object({
-  email: z.string().min(1, "Informe o e-mail").email("Digite um e-mail válido"),
-  senha: z.string().min(1, "Informe a senha"),
+  email: z.string(),
+  senha: z.string(),
 });
 
 type LoginInput = z.input<typeof loginSchema>;
@@ -21,8 +21,8 @@ type LoginOutput = z.output<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
-  const loginCliente = useClientesStore((s) => s.login);
   const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
+  const setLoggedIn = useClientesStore((s) => s.setLoggedIn);
   const [isLoading, setIsLoading] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
@@ -50,17 +50,14 @@ export default function LoginForm() {
     setFeedbackSuccess(false);
 
     try {
-      const result = await loginCliente({ email: data.email, senha: data.senha });
-      const hasToken = Boolean(result?.token);
-      if (!hasToken) {
-        setFeedbackMessage("Login retornou sucesso, mas sem token. Verifique a resposta do backend e tente novamente.");
-        await frontModal.warning({
-          title: "Login incompleto (sem token)",
-          description:
-            "O backend retornou sucesso, mas não enviou o token de autenticação. Verifique o contrato/response do endpoint de login e tente novamente.",
-        });
-        return;
-      }
+      const safeEmail = String(data.email ?? "").trim();
+      setLoggedIn({
+        isLoggedIn: true,
+        loginData: {
+          token: "mock-token",
+          meus_dados: { id: "1", email: safeEmail || "mock@exemplo.com", nome: "Mock" },
+        },
+      });
 
       setFeedbackSuccess(true);
       setFeedbackMessage("Login realizado com sucesso.");

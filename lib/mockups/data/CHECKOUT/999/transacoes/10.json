@@ -1,0 +1,132 @@
+{
+  "checkoutId": 10,
+  "clienteId": 999,
+  "carrinhoId": 2,
+  "checkout": {
+    "checkoutId": 10,
+    "clienteId": 999,
+    "carrinhoId": 2,
+    "snapshot": {
+      "itens": [
+        {
+          "itemId": 11,
+          "produtoId": 1059,
+          "sku": "SMIRNOFF-VODKA-SMIRNOFF-SABORIZADA-1L-1L",
+          "slug": "/produtos/vodka-smirnoff-saborizada-1l",
+          "nome": "Vodka Smirnoff Saborizada 1L",
+          "imagemUrl": "http://localhost:4000/assets/images/produtos/vodka-smirnoff-saborizada-1l-18096e.jpg",
+          "precoUnitario": 56.78,
+          "quantidade": 1,
+          "subtotal": 56.78,
+          "addedAt": "2026-04-20T14:31:17.174Z"
+        }
+      ],
+      "cupom": null,
+      "resumoBase": {
+        "subtotal": 56.78,
+        "desconto": 0,
+        "totalItens": 1,
+        "moeda": "BRL"
+      }
+    },
+    "contato": {
+      "nome": "Cliente Testeoooo",
+      "email": "teste@exemplo.com",
+      "telefone": "11999990000"
+    },
+    "entrega": {
+      "endereco": {
+        "cep": "01311000",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "complemento": "10º andar",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      },
+      "freteSelecionado": {
+        "codigo": "economico",
+        "nome": "Entrega Economica",
+        "preco": 8.9,
+        "prazoDias": 5
+      }
+    },
+    "pagamento": {
+      "pagamentoId": 5,
+      "metodo": "pix",
+      "pix": {
+        "copiaECola": "000201checkout10pag5mockend",
+        "qrCodeBase64": "bW9jay1waXgtcXItY29kZQ==",
+        "expiresAt": "2026-04-20T15:01:34.171Z"
+      },
+      "status": "pago"
+    },
+    "resumoFinal": {
+      "subtotal": 56.78,
+      "desconto": 0,
+      "frete": 8.9,
+      "total": 65.68,
+      "moeda": "BRL"
+    },
+    "status": "finalizado",
+    "createdAt": "2026-04-20T14:31:31.796Z",
+    "updatedAt": "2026-04-20T14:31:35.800Z"
+  },
+  "pedido": {
+    "pedidoId": 5,
+    "checkoutId": 10,
+    "clienteId": 999,
+    "itens": [
+      {
+        "itemId": 11,
+        "produtoId": 1059,
+        "sku": "SMIRNOFF-VODKA-SMIRNOFF-SABORIZADA-1L-1L",
+        "slug": "/produtos/vodka-smirnoff-saborizada-1l",
+        "nome": "Vodka Smirnoff Saborizada 1L",
+        "imagemUrl": "http://localhost:4000/assets/images/produtos/vodka-smirnoff-saborizada-1l-18096e.jpg",
+        "precoUnitario": 56.78,
+        "quantidade": 1,
+        "subtotal": 56.78,
+        "addedAt": "2026-04-20T14:31:17.174Z"
+      }
+    ],
+    "entrega": {
+      "endereco": {
+        "cep": "01311000",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "complemento": "10º andar",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      },
+      "freteSelecionado": {
+        "codigo": "economico",
+        "nome": "Entrega Economica",
+        "preco": 8.9,
+        "prazoDias": 5
+      }
+    },
+    "pagamento": {
+      "pagamentoId": 5,
+      "metodo": "pix",
+      "pix": {
+        "copiaECola": "000201checkout10pag5mockend",
+        "qrCodeBase64": "bW9jay1waXgtcXItY29kZQ==",
+        "expiresAt": "2026-04-20T15:01:34.171Z"
+      },
+      "status": "pago"
+    },
+    "resumo": {
+      "subtotal": 56.78,
+      "desconto": 0,
+      "frete": 8.9,
+      "total": 65.68,
+      "moeda": "BRL"
+    },
+    "status": "pago",
+    "createdAt": "2026-04-20T14:31:35.800Z"
+  }
+}

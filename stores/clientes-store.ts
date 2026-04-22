@@ -4,6 +4,21 @@ import { ApiError, apiClient } from "@/lib/api/client";
 
 type LoadStatus = "idle" | "loading" | "success" | "error";
 
+function setClientesLoggedInCookie(value: boolean) {
+  if (typeof document === "undefined") return;
+  if (!value) {
+    document.cookie = "clientes_logged_in=; Path=/; Max-Age=0; SameSite=Lax";
+    return;
+  }
+
+  document.cookie = "clientes_logged_in=1; Path=/; Max-Age=604800; SameSite=Lax";
+}
+
+function readClientesLoggedInCookie(): boolean {
+  if (typeof document === "undefined") return false;
+  return document.cookie.split("; ").some((c) => c.startsWith("clientes_logged_in=1"));
+}
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
@@ -51,6 +66,7 @@ export type ClientesState = {
   loginData: ClienteLoginData | null;
   isLoggedIn: boolean;
   login: (input: { email: string; senha: string }) => Promise<ClienteLoginData>;
+  setLoggedIn: (next: { isLoggedIn: boolean; loginData?: ClienteLoginData | null }) => void;
   updateMeusDados: (patch: Record<string, unknown>) => Promise<ClienteLoginData>;
   updatePrivacidade: (patch: Record<string, unknown>) => Promise<ClienteLoginData>;
   listEnderecos: () => Promise<unknown[]>;
@@ -65,7 +81,7 @@ const INITIAL: Pick<ClientesState, "loginStatus" | "loginError" | "loginData" | 
   loginStatus: "idle",
   loginError: null,
   loginData: null,
-  isLoggedIn: false,
+  isLoggedIn: readClientesLoggedInCookie(),
 };
 
 function getClienteIdFromLoginData(loginData: ClienteLoginData | null): number | null {
@@ -90,6 +106,17 @@ function mergeLoginData(
 
 export const useClientesStore = create<ClientesState>((set, get) => ({
   ...INITIAL,
+
+  setLoggedIn: ({ isLoggedIn, loginData }) => {
+    setClientesLoggedInCookie(isLoggedIn);
+    set((state) => ({
+      ...state,
+      isLoggedIn,
+      loginStatus: isLoggedIn ? "success" : "idle",
+      loginError: null,
+      ...(loginData !== undefined ? { loginData } : {}),
+    }));
+  },
 
   login: async ({ email, senha }) => {
     const safeEmail = String(email ?? "").trim();
@@ -253,7 +280,13 @@ export const useClientesStore = create<ClientesState>((set, get) => ({
     }
   },
 
-  logout: () => set({ ...INITIAL }),
-  reset: () => set({ ...INITIAL }),
+  logout: () => {
+    setClientesLoggedInCookie(false);
+    set({ ...INITIAL });
+  },
+  reset: () => {
+    setClientesLoggedInCookie(false);
+    set({ ...INITIAL });
+  },
 }));
 

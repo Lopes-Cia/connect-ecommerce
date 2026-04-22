@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, User, MapPinHouse, ShieldCheck, ShoppingBasket, LogOut } from "lucide-react";
+import { LayoutDashboard, User, MapPinHouse, ShieldCheck, ShoppingBasket, LogOut, Monitor } from "lucide-react";
 
 import { pickMeusDados, useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
@@ -15,6 +15,7 @@ function getInitial(value: string): string {
 
 const MENU = [
   { href: "/cliente/painel", label: "Painel", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: Monitor },
   { href: "/cliente/meus-dados", label: "Meus dados", icon: User },
   { href: "/cliente/meus-enderecos", label: "Meus endereços", icon: MapPinHouse },
   { href: "/cliente/privacidade", label: "Privacidade", icon: ShieldCheck },

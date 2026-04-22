@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 
 const LINKS = [
   { href: "/cliente/painel", label: "Painel" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/cliente/meus-dados", label: "Meus dados" },
   { href: "/cliente/meus-enderecos", label: "Meus endereços" },
   { href: "/cliente/privacidade", label: "Privacidade" },

@@ -1,0 +1,156 @@
+{
+  "checkoutId": 9,
+  "clienteId": 999,
+  "carrinhoId": 2,
+  "checkout": {
+    "checkoutId": 9,
+    "clienteId": 999,
+    "carrinhoId": 2,
+    "snapshot": {
+      "itens": [
+        {
+          "itemId": 6,
+          "produtoId": 1072,
+          "sku": "RUM-RUM-ENVELHECIDO-750ML-3-750ML",
+          "slug": "/produtos/rum-envelhecido-750ml-3",
+          "nome": "Rum Envelhecido 750ml 3",
+          "imagemUrl": "http://localhost:4000/assets/images/produtos/rum-envelhecido-750ml-3-76c049.png",
+          "precoUnitario": 82.92,
+          "quantidade": 1,
+          "subtotal": 82.92,
+          "addedAt": "2026-04-17T03:12:41.977Z"
+        },
+        {
+          "itemId": 7,
+          "produtoId": 1064,
+          "sku": "BEEFEATER-GIN-BEEFEATER-AROMATIZADO-750ML-750ML",
+          "slug": "/produtos/gin-beefeater-aromatizado-750ml",
+          "nome": "Gin Beefeater Aromatizado 750ml",
+          "imagemUrl": "http://localhost:4000/assets/images/produtos/gin-beefeater-aromatizado-750ml-c315e5.jpg",
+          "precoUnitario": 127.05,
+          "quantidade": 1,
+          "subtotal": 127.05,
+          "addedAt": "2026-04-17T03:12:46.801Z"
+        }
+      ],
+      "cupom": null,
+      "resumoBase": {
+        "subtotal": 209.97,
+        "desconto": 0,
+        "totalItens": 2,
+        "moeda": "BRL"
+      }
+    },
+    "contato": {
+      "nome": "Cliente Testeoooo",
+      "email": "teste@exemplo.com",
+      "telefone": "11999990000"
+    },
+    "entrega": {
+      "endereco": {
+        "cep": "01311000",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "complemento": "10º andar",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      },
+      "freteSelecionado": {
+        "codigo": "economico",
+        "nome": "Entrega Economica",
+        "preco": 8.9,
+        "prazoDias": 5
+      }
+    },
+    "pagamento": {
+      "pagamentoId": 4,
+      "metodo": "pix",
+      "pix": {
+        "copiaECola": "000201checkout9pag4mockend",
+        "qrCodeBase64": "bW9jay1waXgtcXItY29kZQ==",
+        "expiresAt": "2026-04-17T03:42:55.390Z"
+      },
+      "status": "pago"
+    },
+    "resumoFinal": {
+      "subtotal": 209.97,
+      "desconto": 0,
+      "frete": 8.9,
+      "total": 218.87,
+      "moeda": "BRL"
+    },
+    "status": "finalizado",
+    "createdAt": "2026-04-17T03:12:55.304Z",
+    "updatedAt": "2026-04-17T03:12:55.452Z"
+  },
+  "pedido": {
+    "pedidoId": 4,
+    "checkoutId": 9,
+    "clienteId": 999,
+    "itens": [
+      {
+        "itemId": 6,
+        "produtoId": 1072,
+        "sku": "RUM-RUM-ENVELHECIDO-750ML-3-750ML",
+        "slug": "/produtos/rum-envelhecido-750ml-3",
+        "nome": "Rum Envelhecido 750ml 3",
+        "imagemUrl": "http://localhost:4000/assets/images/produtos/rum-envelhecido-750ml-3-76c049.png",
+        "precoUnitario": 82.92,
+        "quantidade": 1,
+        "subtotal": 82.92,
+        "addedAt": "2026-04-17T03:12:41.977Z"
+      },
+      {
+        "itemId": 7,
+        "produtoId": 1064,
+        "sku": "BEEFEATER-GIN-BEEFEATER-AROMATIZADO-750ML-750ML",
+        "slug": "/produtos/gin-beefeater-aromatizado-750ml",
+        "nome": "Gin Beefeater Aromatizado 750ml",
+        "imagemUrl": "http://localhost:4000/assets/images/produtos/gin-beefeater-aromatizado-750ml-c315e5.jpg",
+        "precoUnitario": 127.05,
+        "quantidade": 1,
+        "subtotal": 127.05,
+        "addedAt": "2026-04-17T03:12:46.801Z"
+      }
+    ],
+    "entrega": {
+      "endereco": {
+        "cep": "01311000",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "complemento": "10º andar",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      },
+      "freteSelecionado": {
+        "codigo": "economico",
+        "nome": "Entrega Economica",
+        "preco": 8.9,
+        "prazoDias": 5
+      }
+    },
+    "pagamento": {
+      "pagamentoId": 4,
+      "metodo": "pix",
+      "pix": {
+        "copiaECola": "000201checkout9pag4mockend",
+        "qrCodeBase64": "bW9jay1waXgtcXItY29kZQ==",
+        "expiresAt": "2026-04-17T03:42:55.390Z"
+      },
+      "status": "pago"
+    },
+    "resumo": {
+      "subtotal": 209.97,
+      "desconto": 0,
+      "frete": 8.9,
+      "total": 218.87,
+      "moeda": "BRL"
+    },
+    "status": "pago",
+    "createdAt": "2026-04-17T03:12:55.452Z"
+  }
+}

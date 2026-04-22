@@ -1,0 +1,130 @@
+{
+  "checkoutId": 12,
+  "clienteId": 1006,
+  "carrinhoId": 4,
+  "checkout": {
+    "checkoutId": 12,
+    "clienteId": 1006,
+    "carrinhoId": 4,
+    "snapshot": {
+      "itens": [
+        {
+          "itemId": 13,
+          "produtoId": 1001,
+          "sku": "HEINEKEN-HEINEKEN-LATA-269ML-269ML",
+          "slug": "/produtos/heineken-lata-269ml",
+          "nome": "Heineken Lata 269ml",
+          "imagemUrl": "http://localhost:4000/assets/images/produtos/heineken-lata-269ml-ad93e1.jpg",
+          "precoUnitario": 4.19,
+          "quantidade": 2,
+          "subtotal": 8.38,
+          "addedAt": "2026-04-22T00:50:49.979Z"
+        }
+      ],
+      "cupom": null,
+      "resumoBase": {
+        "subtotal": 8.38,
+        "desconto": 0,
+        "totalItens": 2,
+        "moeda": "BRL"
+      }
+    },
+    "contato": {
+      "nome": "Cliente 08fe893a724e",
+      "email": "mock-08fe893a724e@local.test",
+      "telefone": "5511888888888"
+    },
+    "entrega": {
+      "endereco": {
+        "cep": "01001000",
+        "logradouro": "Rua Mock 3",
+        "numero": "999",
+        "bairro": "Centro",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      },
+      "freteSelecionado": {
+        "codigo": "economico",
+        "nome": "Entrega Economica",
+        "preco": 8.9,
+        "prazoDias": 5
+      }
+    },
+    "pagamento": {
+      "pagamentoId": 7,
+      "metodo": "pix",
+      "pix": {
+        "copiaECola": "000201checkout12pag7mockend",
+        "qrCodeBase64": "bW9jay1waXgtcXItY29kZQ==",
+        "expiresAt": "2026-04-22T00:55:50.072Z"
+      },
+      "status": "pago"
+    },
+    "resumoFinal": {
+      "subtotal": 8.38,
+      "desconto": 0,
+      "frete": 8.9,
+      "total": 17.28,
+      "moeda": "BRL"
+    },
+    "status": "finalizado",
+    "createdAt": "2026-04-22T00:50:50.022Z",
+    "updatedAt": "2026-04-22T00:50:50.089Z"
+  },
+  "pedido": {
+    "pedidoId": 7,
+    "checkoutId": 12,
+    "clienteId": 1006,
+    "itens": [
+      {
+        "itemId": 13,
+        "produtoId": 1001,
+        "sku": "HEINEKEN-HEINEKEN-LATA-269ML-269ML",
+        "slug": "/produtos/heineken-lata-269ml",
+        "nome": "Heineken Lata 269ml",
+        "imagemUrl": "http://localhost:4000/assets/images/produtos/heineken-lata-269ml-ad93e1.jpg",
+        "precoUnitario": 4.19,
+        "quantidade": 2,
+        "subtotal": 8.38,
+        "addedAt": "2026-04-22T00:50:49.979Z"
+      }
+    ],
+    "entrega": {
+      "endereco": {
+        "cep": "01001000",
+        "logradouro": "Rua Mock 3",
+        "numero": "999",
+        "bairro": "Centro",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "pais": "BR"
+      },
+      "freteSelecionado": {
+        "codigo": "economico",
+        "nome": "Entrega Economica",
+        "preco": 8.9,
+        "prazoDias": 5
+      }
+    },
+    "pagamento": {
+      "pagamentoId": 7,
+      "metodo": "pix",
+      "pix": {
+        "copiaECola": "000201checkout12pag7mockend",
+        "qrCodeBase64": "bW9jay1waXgtcXItY29kZQ==",
+        "expiresAt": "2026-04-22T00:55:50.072Z"
+      },
+      "status": "pago"
+    },
+    "resumo": {
+      "subtotal": 8.38,
+      "desconto": 0,
+      "frete": 8.9,
+      "total": 17.28,
+      "moeda": "BRL"
+    },
+    "status": "pago",
+    "createdAt": "2026-04-22T00:50:50.089Z"
+  }
+}

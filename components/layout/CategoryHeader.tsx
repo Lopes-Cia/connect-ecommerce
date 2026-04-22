@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -26,6 +26,8 @@ export default function CategoryHeader() {
   const categoriasTreeStatus = useProdutosStore((s) => s.categoriasTreeStatus);
   const categoriasTreeError = useProdutosStore((s) => s.categoriasTreeError);
   const loadCategoriasTree = useProdutosStore((s) => s.loadCategoriasTree);
+  const [open, setOpen] = useState(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     void loadCategoriasTree().catch((error) => {
@@ -34,6 +36,23 @@ export default function CategoryHeader() {
   }, [loadCategoriasTree]);
 
   const rootCategorias = useMemo(() => categoriasTree ?? [], [categoriasTree]);
+
+  const clearCloseTimeout = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const handleOpen = () => {
+    clearCloseTimeout();
+    setOpen(true);
+  };
+
+  const handleCloseSoon = () => {
+    clearCloseTimeout();
+    closeTimeoutRef.current = setTimeout(() => setOpen(false), 120);
+  };
 
   if (isMobile) {
     return (
@@ -52,18 +71,28 @@ export default function CategoryHeader() {
     <div className="flex justify-center items-center h-12 bg-black/90">
       <nav className="max-w-[var(--width-content-md)] lg:max-w-[var(--width-content-lg)] mx-auto flex gap-8 justify-center items-center text-white font-montserrat font-medium text-[0.78em] uppercase">
         <div className="flex items-center gap-3">
-          <DropdownMenu>
-            <div className="inline-flex items-center gap-1">
-              <Link href="/categorias" className="hover:underline">
+          <DropdownMenu open={open} onOpenChange={setOpen}>
+            <div className="inline-flex items-center gap-1" onMouseEnter={handleOpen} onMouseLeave={handleCloseSoon}>
+              <Link href="/categorias" className="hover:underline" onMouseEnter={handleOpen} onMouseLeave={handleCloseSoon}>
                 Categorias
               </Link>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="hover:underline inline-flex items-center">
+                <button
+                  type="button"
+                  className="hover:underline inline-flex items-center"
+                  onMouseEnter={handleOpen}
+                  onMouseLeave={handleCloseSoon}
+                >
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
               </DropdownMenuTrigger>
             </div>
-            <DropdownMenuContent align="start" className="w-[22rem] normal-case">
+            <DropdownMenuContent
+              align="start"
+              className="w-[22rem] normal-case"
+              onMouseEnter={handleOpen}
+              onMouseLeave={handleCloseSoon}
+            >
               <DropdownMenuLabel>Categorias</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

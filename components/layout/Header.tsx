@@ -31,7 +31,12 @@ function ShopHeader() {
   const clientesIsLoggedIn = useClientesStore((s) => s.isLoggedIn);
   const clientesLogout = useClientesStore((s) => s.logout);
   const { isAuthenticated, logoutUser } = useAuth();
-  const isLoggedIn = backendMode ? isAuthenticated : clientesIsLoggedIn;
+  const isLoggedIn = isAuthenticated || clientesIsLoggedIn;
+  const myAccountHref = isAuthenticated || backendMode ? "/dashboard" : "/cliente/painel";
+
+  function handleLoginClick() {
+    router.push(isLoggedIn ? myAccountHref : "/login");
+  }
 
   async function handleLogout() {
     const confirmed = await frontModal.confirm({
@@ -44,9 +49,10 @@ function ShopHeader() {
 
     if (!confirmed) return;
 
-    if (backendMode) {
+    if (isAuthenticated) {
       await logoutUser();
-    } else {
+    }
+    if (clientesIsLoggedIn) {
       clientesLogout();
     }
     router.push("/login");
@@ -76,7 +82,7 @@ function ShopHeader() {
           <CartSidebarMenu />
           {isLoggedIn ? (
             <>
-              <Link href={backendMode ? "/dashboard" : "/cliente/painel"}>
+              <Link href={myAccountHref}>
                 <Button
                   variant="outline"
                   size="default"
@@ -99,17 +105,16 @@ function ShopHeader() {
               </Button>
             </>
           ) : (
-            <Link href="/login">
-              <Button
-                variant="outline"
-                size="default"
-                aria-label="Entrar"
-                className="cursor-pointer hover:opacity-75 rounded-xs"
-              >
-                <ShieldUser />
-                Entrar
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              size="default"
+              aria-label="Entrar"
+              className="cursor-pointer hover:opacity-75 rounded-xs"
+              onClick={handleLoginClick}
+            >
+              <ShieldUser />
+              Entrar
+            </Button>
           )}
         </div>
       </div>
