@@ -1,7 +1,7 @@
 "use client";
 
 import { Package } from "lucide-react";
-import ProductCard from "./ProductCard";
+import ProductCardVariant from "./ProductCardVariant";
 
 interface Product {
   id: string;
@@ -36,7 +36,7 @@ export default function SimpleProductList({
         {/* Product Grid */}
         <div className="grid place-content-center place-items-center grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {products.map((product) => (
-            <ProductCard
+            <ProductCardVariant
               key={product.id}
               type={product.discountPrice ? "discount" : "standard"}
               product={product}

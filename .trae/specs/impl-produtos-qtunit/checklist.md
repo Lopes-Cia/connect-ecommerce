@@ -1,0 +1,8 @@
+- [x] `LopesProdutoRaw` inclui `qtUnitCaixa` e `qtUnit`
+- [x] `ProdutoMock` inclui `qtUnitCaixa: number | null` e `qtUnit: number | null`
+- [x] Tradutor preenche `qtUnitCaixa` e `qtUnit` no retorno (com parse para `number | null`)
+- [x] Tipo global `Produto` (catálogo) aceita `qtUnitCaixa` e `qtUnit` (opcionais/nullable)
+- [x] (Opcional) `ProdutoSchema` aceita `qtUnitCaixa` e `qtUnit`
+- [x] Propagação: docs gravados no Redis passam a conter os campos (sem mudar índice)
+- [x] Propagação: JSON de home gerado (colections.json) passa a conter os campos via tradutor
+- [x] Diagnósticos TypeScript sem erros

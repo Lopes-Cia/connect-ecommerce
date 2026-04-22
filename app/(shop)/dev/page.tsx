@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from "react";
 
+import { CardCompM1 } from "@/components/cards/cardCompM1";
+import { CardCompM2 } from "@/components/cards/cardCompM2";
+import { CardCompM2V2 } from "@/components/cards/cardCompM2.v2";
+
 type CallResult = {
   url: string;
   method: string;
@@ -424,6 +428,52 @@ export default function DevPage() {
           <p className="text-sm font-montserrat text-custom-dark-700">
             Endpoints para validar tokenService e chamadas do piloto.
           </p>
+        </div>
+
+        <div className="rounded-xl border border-custom-light-300 bg-white p-4 shadow-sm">
+          <div className="text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700 mb-3">
+            Componentes
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardCompM1
+              imageUrl="/assets/banner-1.webp"
+              imageAlt="Back to basics"
+              title="Back to basics"
+              description="Simple and versatile"
+              href="/categorias"
+              ctaLabel="Shop now"
+            />
+            <CardCompM2
+              product={{
+                id: "produto-1",
+                name: "Nome",
+                category: "Categoria",
+                price: 149,
+                image_url: "/assets/banner-2.webp",
+                slug: "/produtos/produto-1",
+              }}
+              type="standard"
+              colorLabel="Embalgem"
+              sizeLabel="Valor"
+              showOptionsAsText
+              colorValueText="150 UN"
+              sizeValueText="R$ 1543,00"
+              colorOptions={["Lighter", "Darker"]}
+              sizeOptions={["30", "32", "34"]}
+              ctaLabel="Comprar"
+              onAddToCart={() => null}
+              onToggleFavorite={() => null}
+            />
+            <CardCompM2V2
+              href="/produtos/produto-1"
+              imageUrl="/assets/banner-3.webp"
+              imageAlt="Produto"
+              title="Lava-louças líquido Ypê Maça, frasco 500 ml, caixa com 24 unidades"
+              priceLabel="R$ 1,94"
+              priceSubLabel="por unidade"
+              onAdd={() => null}
+            />
+          </div>
         </div>
 
         <div className="rounded-xl border border-custom-light-300 bg-white p-4 shadow-sm">

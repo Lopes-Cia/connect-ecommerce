@@ -66,6 +66,8 @@ const ProdutoSchema = z
     imagens: z.array(z.unknown()).optional(),
     unitLabel: z.string().optional(),
     sizeLabel: z.string().optional(),
+    qtUnitCaixa: z.coerce.number().nullable().optional(),
+    qtUnit: z.coerce.number().nullable().optional(),
     price: z.coerce.number().optional(),
     compareAtPrice: z.coerce.number().nullable().optional(),
     stock: z.coerce.number().optional(),
@@ -235,4 +237,3 @@ export function toProdutoDetailViewModel(
     inStock,
   };
 }
-

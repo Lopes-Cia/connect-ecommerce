@@ -34,6 +34,15 @@ function toNumberOrNull(value: unknown): number | null {
   return Number.isFinite(n) ? n : null
 }
 
+function toNumberOrNullIfPresent(value: unknown): number | null {
+  if (value === undefined || value === null) return null
+  const raw = String(value).trim()
+  if (!raw) return null
+  if (raw.toLowerCase() === "null") return null
+  const n = Number(raw.replace(",", "."))
+  return Number.isFinite(n) ? n : null
+}
+
 function detectSizeLabel(text: unknown): string {
   const t = normalizeText(text)
   const m = t.match(/(\d+(?:[.,]\d+)?)\s*(ml|l|g|kg)\b/)
@@ -69,6 +78,8 @@ type LopesProdutoRaw = {
   descricaoErp?: unknown
   ean?: unknown
   codVol?: unknown
+  qtUnitCaixa?: unknown
+  qtUnit?: unknown
   preco?: unknown
   qtEstoque?: unknown
   imagem?: unknown
@@ -95,6 +106,8 @@ export type ProdutoMock = {
   slug: string
   unitLabel: string
   sizeLabel: string
+  qtUnitCaixa: number | null
+  qtUnit: number | null
   price: number | null
   compareAtPrice: number | null
   badges: string[]
@@ -180,6 +193,8 @@ export function translateLopesProdutosToProdutosMock(
 
     const unitLabel = detectUnitLabel(name, it?.codVol)
     const sizeLabel = detectSizeLabel(name)
+    const qtUnitCaixa = toNumberOrNullIfPresent(it?.qtUnitCaixa)
+    const qtUnit = toNumberOrNullIfPresent(it?.qtUnit)
 
     const price = toNumberOrNull(it?.preco)
     const stock = toIntOrZero(it?.qtEstoque)
@@ -197,6 +212,8 @@ export function translateLopesProdutosToProdutosMock(
       slug,
       unitLabel,
       sizeLabel,
+      qtUnitCaixa,
+      qtUnit,
       price,
       compareAtPrice: null,
       badges: [],

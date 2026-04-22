@@ -2,26 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import ProductCard from "../_components/ProductCard";
+import ProductCardVariant from "../_components/ProductCardVariant";
 import { useProdutosStore } from "@/stores/produtos-store";
-
-type ProductCardType =
-  | "standard"
-  | "discount"
-  | "highlighted"
-  | "highlighted-discount"
-  | "coming-soon";
-
-type ProductItem = {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  discountPrice?: number;
-  image_url: string;
-  slug?: string;
-  cardType?: ProductCardType;
-};
+import type { ProductCardViewModel } from "@/lib/products/viewModels";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -46,7 +29,7 @@ function normalizeSlugPath(value: unknown): string | null {
   return raw;
 }
 
-function toProductItem(raw: unknown): ProductItem | null {
+function toProductItem(raw: unknown): ProductCardViewModel | null {
   const record = asRecord(raw);
   if (!record) return null;
 
@@ -81,7 +64,7 @@ export default function ProductsPage() {
   const loadCategoriasTree = useProdutosStore((s) => s.loadCategoriasTree);
   const loadProdutosByCategoria = useProdutosStore((s) => s.loadProdutosByCategoria);
 
-  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [products, setProducts] = useState<ProductCardViewModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -98,7 +81,7 @@ export default function ProductsPage() {
           throw new Error("categoria_root_invalida");
         }
 
-        const all: ProductItem[] = [];
+        const all: ProductCardViewModel[] = [];
         const first = await loadProdutosByCategoria({
           idCategoria: root.id,
           includeDescendants: 1,
@@ -108,7 +91,7 @@ export default function ProductsPage() {
 
         const pageTotal = Number(first.totalPages ?? 1);
         const firstItems = Array.isArray(first.data) ? first.data.map(toProductItem).filter(Boolean) : [];
-        all.push(...(firstItems as ProductItem[]));
+        all.push(...(firstItems as ProductCardViewModel[]));
 
         for (let page = 2; page <= pageTotal; page += 1) {
           const next = await loadProdutosByCategoria({
@@ -118,7 +101,7 @@ export default function ProductsPage() {
             pageSize: 100,
           });
           const items = Array.isArray(next.data) ? next.data.map(toProductItem).filter(Boolean) : [];
-          all.push(...(items as ProductItem[]));
+          all.push(...(items as ProductCardViewModel[]));
         }
 
         if (!active) {
@@ -260,7 +243,7 @@ export default function ProductsPage() {
           {!isLoading && !loadError && filteredProducts.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
               {filteredProducts.map((product) => (
-                <ProductCard
+                <ProductCardVariant
                   key={product.id}
                   type={product.cardType ?? (product.discountPrice ? "discount" : "standard")}
                   product={product}
