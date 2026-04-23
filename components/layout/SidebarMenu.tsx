@@ -301,12 +301,12 @@ function AuthenticatedSidebarBackend({
         </Link>
 
         <Link
-          href="/dashboard"
+          href="/cliente/painel"
           onClick={onClose}
           className="flex items-center gap-3 px-4 py-2 text-white hover:bg-white/10 rounded transition-colors"
         >
           <LayoutDashboard size={20} />
-          <span>Dashboard</span>
+          <span>Minha conta</span>
         </Link>
       </nav>
 

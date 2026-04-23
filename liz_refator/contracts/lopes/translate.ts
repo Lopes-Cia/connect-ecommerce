@@ -12,6 +12,7 @@ import {
   slugify,
   toIntOrZero,
   toNumberOrNull,
+  toNumberOrNullIfPresent,
 } from './raw'
 
 function detectSizeLabel(text: unknown): string {
@@ -123,6 +124,8 @@ export function translateLopesProdutosToProdutosMock(
 
     const unitLabel = detectUnitLabel(name, it?.codVol)
     const sizeLabel = detectSizeLabel(name)
+    const qtUnit = toNumberOrNullIfPresent(it?.qtUnit)
+    const qtUnitCaixa = toNumberOrNullIfPresent(it?.qtUnitCaixa)
 
     const price = toNumberOrNull(it?.preco)
     const stock = toIntOrZero(it?.qtEstoque)
@@ -140,6 +143,8 @@ export function translateLopesProdutosToProdutosMock(
       slug,
       unitLabel,
       sizeLabel,
+      qtUnit,
+      qtUnitCaixa,
       price,
       compareAtPrice: null,
       badges: [],
@@ -282,4 +287,3 @@ export function translateLopesCategoriasToCategoriasTree(input: unknown): Catego
   const categorias = translateLopesCategoriasToCategorias(input)
   return buildCategoriasTreeFromCategoriasInternal(categorias)
 }
-

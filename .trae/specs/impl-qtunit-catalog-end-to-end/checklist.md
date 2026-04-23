@@ -1,0 +1,11 @@
+- [x] Origem confirmada: existe (ou não) `qtUnit`/`qtUnitCaixa` no payload que alimenta o catálogo (Lopes)
+- [x] `LopesProdutoRaw` (liz_refator) inclui `qtUnit` e `qtUnitCaixa`
+- [x] `ProdutoMock` (liz_refator) inclui `qtUnit: number | null` e `qtUnitCaixa: number | null`
+- [x] Tradutor `translateLopesProdutosToProdutosMock` preenche `qtUnit`/`qtUnitCaixa` sem defaults (quando ausentes, não inventa)
+- [x] Catálogo no Redis preserva os campos no doc do produto (quando presentes na origem)
+- [x] Endpoint `/api/catalog/produtos/by-slug/:slug` retorna `data.qtUnit`/`data.qtUnitCaixa` quando presentes no doc
+- [x] Endpoint `/api/catalog/produtos/by-id/:id` retorna `data.qtUnit`/`data.qtUnitCaixa` quando presentes no doc
+- [x] Endpoint `/api/catalog/produtos/by-categoria/:idCategoria` mantém `qtUnit`/`qtUnitCaixa` nos itens quando presentes
+- [x] PDP: view model inclui os campos quando presentes
+- [x] PDP: UI renderiza “Quantidade por unidade/caixa” apenas quando houver valor (sem placeholder/default) e sem “quadro dentro de quadro”
+- [x] Diagnósticos TypeScript sem erros nos arquivos alterados

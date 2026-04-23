@@ -21,6 +21,8 @@ export type ProdutoMock = {
   slug: string
   unitLabel: string
   sizeLabel: string
+  qtUnit: number | null
+  qtUnitCaixa: number | null
   price: number | null
   compareAtPrice: number | null
   badges: string[]
@@ -30,4 +32,3 @@ export type ProdutoMock = {
   category: ProdutoCategory
   brand: ProdutoBrand
 }
-

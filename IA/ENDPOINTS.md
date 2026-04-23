@@ -48,7 +48,7 @@ Clientes (consumo no front):
 - Formato: JSON em claro (httpOnly) com shape `Session`:
   - `{ userId: string; email: string; token: string; name?: string }` ([session.ts](file:///c:/LOPES/www/connect-ecommerce/lib/auth/session.ts#L1-L42))
 - Escrita: no `POST /api/auth/verify-token`, após validar token e obter operador ([verify-token route](file:///c:/LOPES/www/connect-ecommerce/app/api/auth/verify-token/route.ts#L114-L119))
-- Proteção: middleware redireciona `/dashboard/*` para `/login` se não houver cookie `session` ([middleware.ts](file:///c:/LOPES/www/connect-ecommerce/middleware.ts#L1-L18))
+- Proteção: middleware redireciona `/cliente/*` para `/login` se não houver cookie `clientes_logged_in` ([middleware.ts](file:///c:/LOPES/www/connect-ecommerce/middleware.ts#L1-L18))
 
 ### Endpoints externos de autenticação (AUTH_BASE_URL)
 

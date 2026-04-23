@@ -2,15 +2,24 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 
 import { useProdutosStore } from "@/stores/produtos-store";
 import ImageViewer from "../_components/ImageViewer";
 import ProductActivity from "../_components/ProductActivity";
-import ProductInfo from "../_components/ProductInfo";
 import ProductSummary from "../_components/ProductSummary";
-import BrandBlock from "../_components/BrandBlock";
+import ProductInfoTabs from "../_components/ProductInfoTabs";
+import FreightConsult from "../_components/FreightConsult";
 import { toProdutoDetailViewModel } from "@/lib/produtos/viewModels";
+import ProductCarousel from "../../_components/ProductCarousel";
+import type { ProductCardViewModel } from "@/lib/products/viewModels";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 type BrandCandidate = { name?: unknown; slug?: unknown; image?: unknown };
 
@@ -18,14 +27,69 @@ function isBrandCandidate(value: unknown): value is BrandCandidate {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+type UnknownRecord = Record<string, unknown>;
+
+function asRecord(value: unknown): UnknownRecord | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as UnknownRecord;
+}
+
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function toRelatedProductCard(raw: unknown): ProductCardViewModel | null {
+  const record = asRecord(raw);
+  if (!record) return null;
+
+  const id = String(record.id ?? "").trim();
+  const name = asString(record.name, "").trim();
+  if (!id || !name) return null;
+
+  const categoryRecord = asRecord(record.category);
+  const category = asString(categoryRecord?.name, asString(record.categoryName, "Sem categoria")).trim() || "Sem categoria";
+
+  const price = asNumber(record.price, 0);
+  const compareAt = asNumber(record.compareAtPrice, 0);
+  const hasDiscount = compareAt > 0 && compareAt > price;
+
+  const inStock = Boolean(record.inStock ?? record.in_stock ?? true);
+
+  const image_url = asString(record.image, asString(record.image_url, "/placeholder.svg")) || "/placeholder.svg";
+  const slug = asString(record.slug, "").trim() || undefined;
+
+  return {
+    id,
+    name,
+    category,
+    price: hasDiscount ? compareAt : price,
+    discountPrice: hasDiscount ? price : undefined,
+    image_url,
+    slug,
+    cardType: inStock ? (hasDiscount ? "discount" : "standard") : "coming-soon",
+  };
+}
+
 export default function ProdutoClient({ slugPath }: { slugPath: string }) {
   const loadProdutoBySlug = useProdutosStore((s) => s.loadProdutoBySlug);
   const loadBrands = useProdutosStore((s) => s.loadBrands);
+  const loadProdutosByCategoria = useProdutosStore((s) => s.loadProdutosByCategoria);
 
   const [rawProduct, setRawProduct] = useState<unknown>(null);
   const [rawBrands, setRawBrands] = useState<unknown[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  const [relatedProducts, setRelatedProducts] = useState<ProductCardViewModel[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
+  const [relatedError, setRelatedError] = useState<string | null>(null);
+
+
 
   useEffect(() => {
     let active = true;
@@ -73,11 +137,52 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
     return toProdutoDetailViewModel(rawProduct, { brands });
   }, [rawBrands, rawProduct]);
 
+  useEffect(() => {
+    let active = true;
+
+    const categoryId = view?.categoryId;
+    if (!categoryId) {
+      setRelatedProducts([]);
+      setRelatedLoading(false);
+      setRelatedError(null);
+      return () => {
+        active = false;
+      };
+    }
+
+    setRelatedLoading(true);
+    setRelatedError(null);
+
+    (async () => {
+      try {
+        const response = await loadProdutosByCategoria({ idCategoria: categoryId, page: 1, pageSize: 12 });
+        const items = Array.isArray(response?.data) ? response.data : [];
+        const mapped = items.map(toRelatedProductCard).filter(Boolean) as ProductCardViewModel[];
+        const filtered = mapped.filter((p) => p.id !== view?.id);
+        if (!active) return;
+        setRelatedProducts(filtered);
+      } catch (error) {
+        if (!active) return;
+        setRelatedError("Não foi possível carregar recomendações agora.");
+        setRelatedProducts([]);
+        console.error("Falha ao carregar produtos relacionados", { categoryId, error });
+      } finally {
+        if (active) setRelatedLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [loadProdutosByCategoria, view?.categoryId, view?.id]);
+
   if (isLoading) {
     return (
-      <div className="container mx-auto px-2 sm:px-4 md:px-6 py-6 bg-white">
-        <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-custom-light-100">
-          <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">Carregando produto...</p>
+      <div className="bg-white py-6 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-custom-light-100">
+            <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">Carregando produto...</p>
+          </div>
         </div>
       </div>
     );
@@ -85,68 +190,142 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
 
   if (loadError || !view) {
     return (
-      <div className="container mx-auto px-2 sm:px-4 md:px-6 py-6 bg-white">
-        <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-custom-light-100">
-          <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">
-            {loadError ?? "Produto não encontrado."}
-          </p>
+      <div className="bg-white py-6 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-14 rounded-xl border border-dashed border-custom-light-400 bg-custom-light-100">
+            <p className="text-custom-dark-1000 font-montserrat text-base md:text-lg">
+              {loadError ?? "Produto não encontrado."}
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
+  const getSpecValue = (label: string) => {
+    const found = view.specs.find((spec) => String(spec.label ?? "").trim() === label);
+    return String(found?.value ?? "").trim();
+  };
+  const unitLabel = getSpecValue("Unidade") || undefined;
+  const sku = getSpecValue("SKU") || undefined;
+  const embalagemUnits =
+    typeof view.qtUnit === "number" &&
+    Number.isFinite(view.qtUnit) &&
+    view.qtUnit > 0 &&
+    typeof view.qtUnitCaixa === "number" &&
+    Number.isFinite(view.qtUnitCaixa) &&
+    view.qtUnitCaixa > 0
+      ? view.qtUnit * view.qtUnitCaixa
+      : null;
+  const embalagemValue = embalagemUnits ? embalagemUnits * view.price : null;
+  const embalagemDescription = embalagemUnits ? `Embalagem: Fardo com ${embalagemUnits} Unidades` : view.shortDescription;
+
   return (
-    <div className="container mx-auto px-2 sm:px-4 md:px-6 py-6 bg-white">
-      <nav className="flex items-center gap-1 text-xs font-montserrat text-custom-light-600 mb-6">
-        <Link href="/" className="hover:text-custom-dark-1000 transition-colors">
-          Início
-        </Link>
-        <ChevronRight className="size-3" />
-        <Link href="/categorias" className="hover:text-custom-dark-1000 transition-colors">
-          Categorias
-        </Link>
-        <ChevronRight className="size-3" />
-        <span className="text-custom-dark-1000">{view.name}</span>
-      </nav>
+    <div className="bg-white pt-6 pb-28 lg:pb-6 px-4 md:px-6">
+      <div className="max-w-7xl mx-auto">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList className="text-xs font-montserrat text-custom-light-600">
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/" className="hover:text-custom-dark-1000 transition-colors">
+                  Início
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="text-custom-light-600/60" />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/categorias" className="hover:text-custom-dark-1000 transition-colors">
+                  Categorias
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="text-custom-light-600/60" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-custom-dark-1000">{view.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-        <div className="lg:col-span-5 py-4 px-4 bg-custom-light-100 border border-custom-light-400 rounded-md flex items-center justify-center min-w-0">
-          <ImageViewer images={view.images} productName={view.name} />
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+          <div className="lg:col-span-6 min-w-0 bg-white">
+            <ImageViewer images={view.images} productName={view.name} />
+          </div>
 
-        <div className="lg:col-span-4 bg-custom-light-100 border border-custom-light-400 rounded-md p-6">
-          <div className="flex flex-col gap-4">
-            {view.brand ? <BrandBlock brand={view.brand} /> : null}
+          <div className="lg:col-span-6 flex flex-col gap-6">
             <ProductSummary
               name={view.name}
+              category={view.category}
+              description={embalagemDescription}
               price={view.price}
               oldPrice={view.oldPrice}
-              specs={view.specs}
-              description={view.shortDescription}
+              embalagemValue={embalagemValue}
+              inStock={view.inStock}
+              unitLabel={unitLabel}
+              brand={view.brand ?? null}
             />
+
+            <div className="lg:sticky lg:top-6 w-full">
+              <ProductActivity
+                price={view.price}
+                oldPrice={view.oldPrice}
+                productId={view.id || undefined}
+                productName={view.name}
+                productImageUrl={view.images[0]}
+                productCategory={view.category}
+                sku={sku}
+                embalagemValue={embalagemValue}
+                inStock={view.inStock}
+                showHeaderPrice={false}
+              />
+            </div>
           </div>
         </div>
-
-        <div className="lg:col-span-3">
-          <ProductActivity
-            price={view.price}
-            oldPrice={view.oldPrice}
-            productId={view.id || undefined}
-            productName={view.name}
-            productImageUrl={view.images[0]}
-            productCategory={view.category}
-            inStock={view.inStock}
-          />
+        <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-10 md:gap-12">
+          <div className="md:col-span-7">
+            <ProductInfoTabs
+              fullDescription={view.fullDescription}
+              technicalSpecs={view.technicalSpecs}
+            />
+          </div>
+          <aside className="md:col-span-3 space-y-4">
+            <FreightConsult />
+            <section className="space-y-4">
+              <h2 className="text-custom-dark-1000 font-montserrat font-bold text-sm tracking-wide uppercase">
+                Informações
+              </h2>
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-custom-dark-1000 font-montserrat font-semibold text-xs">Ingredientes</h3>
+                  <p className="text-custom-dark-700 font-montserrat text-xs leading-relaxed mt-1">{view.ingredients}</p>
+                </div>
+                <div>
+                  <h3 className="text-custom-dark-1000 font-montserrat font-semibold text-xs">Aviso legal</h3>
+                  <p className="text-custom-light-600 font-montserrat text-[10px] leading-relaxed mt-1">
+                    {view.legalNotice}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </aside>
         </div>
-      </div>
 
-      <div className="max-w-4xl">
-        <ProductInfo
-          ingredients={view.ingredients}
-          legalNotice={view.legalNotice}
-          fullDescription={view.fullDescription}
-          technicalSpecs={view.technicalSpecs}
-        />
+        <section className="mt-10">
+          <h2 className="text-custom-dark-1000 font-league-spartan font-bold text-2xl mb-4">
+            Você também pode gostar
+          </h2>
+          {relatedLoading ? (
+            <div className="w-full py-10 text-center text-custom-dark-700 font-montserrat text-sm">
+              Carregando recomendações...
+            </div>
+          ) : relatedError ? (
+            <div className="w-full py-10 text-center text-custom-dark-700 font-montserrat text-sm">
+              {relatedError}
+            </div>
+          ) : (
+            <ProductCarousel products={relatedProducts} />
+          )}
+        </section>
       </div>
     </div>
   );

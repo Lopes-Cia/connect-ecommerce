@@ -16,10 +16,13 @@ export type ProdutoDetailViewModel = {
   id: string;
   name: string;
   category: string;
+  categoryId?: number;
   brand?: ProdutoBrandViewModel;
   price: number;
   oldPrice?: number;
   images: string[];
+  qtUnit: number | null;
+  qtUnitCaixa: number | null;
   specs: ProdutoSpecViewModel[];
   shortDescription: string;
   ingredients: string;
@@ -72,6 +75,7 @@ const ProdutoSchema = z
     compareAtPrice: z.coerce.number().nullable().optional(),
     stock: z.coerce.number().optional(),
     inStock: z.boolean().optional(),
+    categoryId: z.coerce.number().optional(),
     category: CategoriaSchema.optional(),
     categoryName: z.string().optional(),
     brand: z.union([BrandSchema, z.string()]).optional(),
@@ -156,6 +160,9 @@ export function toProdutoDetailViewModel(
   const id = String(parsed.id ?? "").trim();
   const name = normalizeText(parsed.name) || "Produto";
   const category = toCategoryName(parsed);
+  const categoryId =
+    (typeof parsed.category?.id === "number" && Number.isFinite(parsed.category.id) ? parsed.category.id : undefined) ??
+    (typeof parsed.categoryId === "number" && Number.isFinite(parsed.categoryId) ? parsed.categoryId : undefined);
 
   const basePrice = Number.isFinite(parsed.price) ? (parsed.price as number) : 0;
   const compareAt = Number.isFinite(parsed.compareAtPrice ?? NaN) ? (parsed.compareAtPrice as number) : 0;
@@ -190,14 +197,22 @@ export function toProdutoDetailViewModel(
   const sizeLabel = normalizeText(parsed.sizeLabel);
   const sku = normalizeText(parsed.sku);
 
+  const qtUnit =
+    typeof parsed.qtUnit === "number" && Number.isFinite(parsed.qtUnit) && parsed.qtUnit > 0 ? parsed.qtUnit : null;
+  const qtUnitCaixa =
+    typeof parsed.qtUnitCaixa === "number" && Number.isFinite(parsed.qtUnitCaixa) && parsed.qtUnitCaixa > 0
+      ? parsed.qtUnitCaixa
+      : null;
+
   const specs: ProdutoSpecViewModel[] = [
     { label: "Categoria", value: category },
     ...(brand ? [{ label: "Marca", value: brand.name }] : []),
     { label: "Unidade", value: unitLabel || "-" },
     { label: "Tamanho", value: sizeLabel || "-" },
+    ...(qtUnit != null ? [{ label: "Quantidade por unidade", value: String(qtUnit) }] : []),
+    ...(qtUnitCaixa != null ? [{ label: "Quantidade por caixa", value: String(qtUnitCaixa) }] : []),
     { label: "SKU", value: sku || "-" },
     { label: "Disponibilidade", value: inStock ? "Em estoque" : "Indisponível" },
-    { label: "Estoque", value: stock > 0 ? String(stock) : "-" },
   ];
 
   const shortDescription = [brand?.name, category, unitLabel, sizeLabel].filter(Boolean).join(" · ") || name;
@@ -215,6 +230,8 @@ export function toProdutoDetailViewModel(
     { label: "SKU", value: sku || "-" },
     { label: "Unidade", value: unitLabel || "-" },
     { label: "Tamanho", value: sizeLabel || "-" },
+    ...(qtUnit != null ? [{ label: "Quantidade por unidade", value: String(qtUnit) }] : []),
+    ...(qtUnitCaixa != null ? [{ label: "Quantidade por caixa", value: String(qtUnitCaixa) }] : []),
     { label: "Preço", value: formatCurrency(price) },
     ...(oldPrice != null ? [{ label: "Preço anterior", value: formatCurrency(oldPrice) }] : []),
     { label: "Disponibilidade", value: inStock ? "Em estoque" : "Indisponível" },
@@ -224,10 +241,13 @@ export function toProdutoDetailViewModel(
     id,
     name,
     category,
+    categoryId,
     brand,
     price,
     oldPrice,
     images: normalizedImages,
+    qtUnit,
+    qtUnitCaixa,
     specs,
     shortDescription,
     ingredients,

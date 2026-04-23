@@ -1,0 +1,6 @@
+- [x] Layout da PDP segue a estrutura: breadcrumb + galeria/infos/compra + tabs + “Você também pode gostar”.
+- [x] Breadcrumb do produto usa `components/ui/breadcrumb` e navega corretamente para `/` e `/categorias`.
+- [x] “Adicionar ao carrinho” e “Comprar agora” continuam funcionando (sem mudança de contrato).
+- [x] Tabs alternam conteúdo sem navegar de página e com estado visual claro.
+- [x] Seção “Você também pode gostar” reutiliza `ProductCarousel` e possui estado vazio discreto.
+- [x] Sem erros de TypeScript (diagnósticos) nos arquivos tocados.

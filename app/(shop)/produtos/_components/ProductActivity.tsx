@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Truck, Search } from "lucide-react";
-import Link from "next/link";
+import { Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/formatting";
 import { frontModal } from "@/stores/front-modal-store";
@@ -15,6 +14,9 @@ interface ProductActivityProps {
   productName?: string;
   productImageUrl?: string;
   productCategory?: string;
+  sku?: string;
+  embalagemValue?: number | null;
+  showHeaderPrice?: boolean;
   pricePerUnit?: string;
   installments?: number;
   installmentValue?: number;
@@ -30,6 +32,9 @@ export default function ProductActivity({
   productName,
   productImageUrl,
   productCategory,
+  sku,
+  embalagemValue,
+  showHeaderPrice = true,
   pricePerUnit,
   installments = 10,
   installmentValue,
@@ -42,13 +47,13 @@ export default function ProductActivity({
   const items = useCarrinhoStore((s) => s.items);
   const addItem = useCarrinhoStore((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
-  const [cep, setCep] = useState("");
 
   const calculatedInstallmentValue = installmentValue || price / installments;
-
-  const handleConsultCep = () => {
-    console.log("Consulting CEP:", cep);
-  };
+  const maxQuantity = 10;
+  const safeSku = String(sku ?? "").trim();
+  const safeEmbalagemValue =
+    typeof embalagemValue === "number" && Number.isFinite(embalagemValue) && embalagemValue > 0 ? embalagemValue : null;
+  const totalValue = safeEmbalagemValue != null ? safeEmbalagemValue * quantity : null;
 
   const addCurrentProductToCart = async (selectedQuantity: number) => {
     if (!productId || !productName) {
@@ -100,93 +105,77 @@ export default function ProductActivity({
   };
 
   return (
-    <div className="bg-custom-light-100 border border-custom-light-400 rounded-md p-4 flex flex-col gap-3">
-      {oldPrice && oldPrice > price && (
-        <p className="text-custom-light-600 font-montserrat text-xs line-through">{formatCurrency(oldPrice)}</p>
-      )}
-      <div className="flex items-baseline gap-1">
-        <span className="text-custom-dark-1000 font-montserrat text-xs">R$</span>
-        <span className="text-custom-dark-1000 font-montserrat font-bold text-2xl">{price.toFixed(2).replace(".", ",")}</span>
-        {pricePerUnit && <span className="text-custom-light-600 font-montserrat text-[10px]">({pricePerUnit})</span>}
-      </div>
+    <>
+      <div className="flex flex-col gap-5">
+        {showHeaderPrice ? (
+          <div>
+            {oldPrice && oldPrice > price && (
+              <p className="text-custom-light-600 font-montserrat text-xs line-through">{formatCurrency(oldPrice)}</p>
+            )}
+            <div className="flex items-baseline gap-1">
+              <span className="text-custom-dark-1000 font-montserrat text-xs">R$</span>
+              <span className="text-custom-dark-1000 font-montserrat font-bold text-3xl">
+                {price.toFixed(2).replace(".", ",")}
+              </span>
+              {pricePerUnit ? (
+                <span className="text-custom-light-600 font-montserrat text-[10px]">({pricePerUnit})</span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
-      <div className="text-custom-dark-1000 font-montserrat text-xs">
-        <p>À vista no PIX</p>
-        <p>
-          {formatCurrency(price)} em até {installments}x de{" "}
-          <span className="font-semibold">{formatCurrency(calculatedInstallmentValue)}</span> sem juros
-        </p>
-      </div>
+      <div className="grid grid-cols-12 gap-3 items-stretch">
+        <div className="col-span-5 flex flex-col gap-2">
+          <div className="grid grid-cols-3 border border-custom-light-400 bg-white">
+            <button
+              type="button"
+              aria-label="Diminuir quantidade"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              disabled={!inStock || quantity <= 1}
+              className="h-11 flex items-center justify-center text-custom-dark-1000 disabled:opacity-40"
+            >
+              -
+            </button>
+            <div className="h-11 flex items-center justify-center text-custom-dark-1000 font-montserrat text-sm border-x border-custom-light-400">
+              {quantity}
+            </div>
+            <button
+              type="button"
+              aria-label="Aumentar quantidade"
+              onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
+              disabled={!inStock || quantity >= maxQuantity}
+              className="h-11 flex items-center justify-center text-custom-dark-1000 disabled:opacity-40"
+            >
+              +
+            </button>
+          </div>
+          <div className="h-11 border border-custom-light-400 bg-white px-3 flex items-center justify-between text-custom-dark-1000 font-montserrat text-xs">
+            <span className="text-custom-light-700">Total:</span>
+            <span className="font-semibold text-custom-dark-1000">
+              {totalValue != null ? formatCurrency(totalValue) : "-"}
+            </span>
+          </div>
+        </div>
 
-      <Link href="#" className="text-tints-french-blue font-montserrat text-[10px] underline hover:opacity-80">
-        Ver mais opções de pagamento e parcelamento
-      </Link>
-
-      <div className="mt-2">
-        {inStock ? (
-          <span className="text-green-600 font-montserrat font-semibold text-sm">Em estoque</span>
-        ) : (
-          <span className="text-red-600 font-montserrat font-semibold text-sm">Fora de estoque</span>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label className="text-custom-dark-1000 font-montserrat text-xs">Quantidade</label>
-        <select
-          value={quantity}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-custom-light-400 rounded bg-white text-custom-dark-1000 font-montserrat text-sm focus:outline-none focus:ring-1 focus:ring-tints-french-blue"
-        >
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-            <option key={num} value={num}>
-              {num}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="flex flex-col gap-2 mt-2">
+        <div className="col-span-7 flex flex-col gap-2">
         <button
           onClick={() => void handleAddToCart()}
           disabled={!inStock}
-          className="w-full py-2.5 bg-tints-french-blue cursor-pointer text-white font-montserrat font-semibold text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-11 bg-tints-french-blue cursor-pointer text-white font-montserrat font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Adicionar ao carrinho
         </button>
         <button
           onClick={() => void handleBuyNow()}
           disabled={!inStock}
-          className="w-full py-2.5 bg-tints-french-blue cursor-pointer text-white font-montserrat font-semibold text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-11 border border-custom-light-400 bg-white cursor-pointer text-custom-dark-1000 font-montserrat font-semibold text-sm hover:bg-custom-light-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Comprar agora
         </button>
       </div>
-
-      <div className="mt-4 pt-4 border-t border-custom-light-400">
-        <div className="flex items-center gap-2 mb-3">
-          <Truck className="w-4 h-4 text-tints-french-blue" />
-          <span className="text-custom-dark-1000 font-montserrat font-semibold text-xs uppercase">Consulte Frete</span>
-        </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={cep}
-            onChange={(e) => setCep(e.target.value)}
-            placeholder="Inserir CEP*"
-            maxLength={9}
-            className="flex-1 px-3 py-2 border border-custom-light-400 rounded bg-white text-custom-dark-1000 font-montserrat text-xs placeholder:text-custom-light-500 focus:outline-none focus:ring-1 focus:ring-tints-french-blue"
-          />
-          <button
-            onClick={handleConsultCep}
-            className="px-3 py-2 border border-custom-light-400 rounded bg-white hover:bg-custom-light-200 transition-colors"
-          >
-            <Search className="w-4 h-4 text-custom-dark-1000" />
-          </button>
-        </div>
-        <Link href="#" className="text-tints-french-blue font-montserrat text-[10px] underline hover:opacity-80 mt-2 block">
-          Não lembra meu CEP
-        </Link>
       </div>
-    </div>
+
+      </div>
+    </>
   );
 }
