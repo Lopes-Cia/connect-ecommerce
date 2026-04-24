@@ -16,7 +16,7 @@ Este mapa serve para escolher rotas piloto e para migrar por domínio com segura
 - **Back → Back**: `app/api/**/route.ts` → `lib/integration/**` → upstream (serviço externo).
 - **Back → Front**: `route.ts` retorna `NextResponse.json(...)` e o client trata erros via `ApiError` em [apiClient](file:///c:/LOPES/www/connect-ecommerce/lib/api/client.ts).
 
-## Auth (operador/dashboard)
+## Auth (cliente)
 
 - `POST /api/auth/send-token` → [send-token/route.ts](file:///c:/LOPES/www/connect-ecommerce/app/api/auth/send-token/route.ts) → usa token do auth webservice em [authWebserviceClient](file:///c:/LOPES/www/connect-ecommerce/lib/integration/authWebserviceClient.ts)
 - `POST /api/auth/verify-token` → [verify-token/route.ts](file:///c:/LOPES/www/connect-ecommerce/app/api/auth/verify-token/route.ts) → grava cookie de sessão via [session.ts](file:///c:/LOPES/www/connect-ecommerce/lib/auth/session.ts)
@@ -31,7 +31,6 @@ Este mapa serve para escolher rotas piloto e para migrar por domínio com segura
 
 ## Clientes
 
-- `POST /api/clientes/login` → [clientes/login/route.ts](file:///c:/LOPES/www/connect-ecommerce/app/api/clientes/login/route.ts) → [clientesService.ts](file:///c:/LOPES/www/connect-ecommerce/lib/integration/clientesService.ts)
 - `PUT /api/clientes/meus-dados` → [clientes/meus-dados/route.ts](file:///c:/LOPES/www/connect-ecommerce/app/api/clientes/meus-dados/route.ts) → [clientesService.ts](file:///c:/LOPES/www/connect-ecommerce/lib/integration/clientesService.ts)
 - `PUT /api/clientes/privacidade` → [clientes/privacidade/route.ts](file:///c:/LOPES/www/connect-ecommerce/app/api/clientes/privacidade/route.ts) → [clientesService.ts](file:///c:/LOPES/www/connect-ecommerce/lib/integration/clientesService.ts)
 - Endereços:
@@ -39,10 +38,9 @@ Este mapa serve para escolher rotas piloto e para migrar por domínio com segura
   - `PUT|DELETE /api/clientes/enderecos/:enderecoId` → [clientes/enderecos/[enderecoId]/route.ts](file:///c:/LOPES/www/connect-ecommerce/app/api/clientes/enderecos/%5BenderecoId%5D/route.ts)
   - `GET /api/clientes/enderecos/cliente/:clienteId` → [clientes/enderecos/cliente/[clienteId]/route.ts](file:///c:/LOPES/www/connect-ecommerce/app/api/clientes/enderecos/cliente/%5BclienteId%5D/route.ts)
 
-**Fluxo (exemplo real: login de cliente)**
-- Front: formulário [LoginForm](file:///c:/LOPES/www/connect-ecommerce/app/(auth)/login/_components/LoginForm.tsx) chama `useClientesStore().login(...)`.
-- Front: store [clientes-store.ts](file:///c:/LOPES/www/connect-ecommerce/stores/clientes-store.ts) executa `apiClient("clientes/login", { method:"POST", body: ... })`, ou seja, chama `POST /api/clientes/login`.
-- Back: `/api/clientes/login` é atendido por [clientes/login/route.ts](file:///c:/LOPES/www/connect-ecommerce/app/api/clientes/login/route.ts) e delega para [clientesService](file:///c:/LOPES/www/connect-ecommerce/lib/integration/clientesService).
+**Fluxo (login de cliente — token)**
+- Front: formulário [LoginForm](file:///c:/LOPES/www/connect-ecommerce/app/(auth)/login/_components/LoginForm.tsx) chama `sendLoginToken(...)` e depois `verifyLoginToken(...)` ([lib/api/auth.ts](file:///c:/LOPES/www/connect-ecommerce/lib/api/auth.ts)).
+- Back: `/api/auth/send-token` e `/api/auth/verify-token` são atendidos em [app/api/auth](file:///c:/LOPES/www/connect-ecommerce/app/api/auth) e gravam cookie de sessão.
 
 ## Carrinho
 

@@ -6,29 +6,16 @@ import Image from "next/image";
 import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/formatting";
+import type {
+  ProductCardType,
+  ProductCardViewModel,
+} from "@/lib/products/viewModels";
 import { frontModal } from "@/stores/front-modal-store";
 import { useControlStore } from "@/stores/control-store";
 
-type ProductCardType =
-  | "standard"
-  | "discount"
-  | "highlighted"
-  | "highlighted-discount"
-  | "coming-soon";
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  discountPrice?: number;
-  image_url: string;
-  slug?: string;
-}
-
 interface ProductCardProps {
   type: ProductCardType;
-  product: Product;
+  product: ProductCardViewModel;
 }
 
 function normalizeProductHref(value: unknown): string | null {

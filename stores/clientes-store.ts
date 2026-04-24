@@ -65,7 +65,6 @@ export type ClientesState = {
   loginError: string | null;
   loginData: ClienteLoginData | null;
   isLoggedIn: boolean;
-  login: (input: { email: string; senha: string }) => Promise<ClienteLoginData>;
   setLoggedIn: (next: { isLoggedIn: boolean; loginData?: ClienteLoginData | null }) => void;
   updateMeusDados: (patch: Record<string, unknown>) => Promise<ClienteLoginData>;
   updatePrivacidade: (patch: Record<string, unknown>) => Promise<ClienteLoginData>;
@@ -116,32 +115,6 @@ export const useClientesStore = create<ClientesState>((set, get) => ({
       loginError: null,
       ...(loginData !== undefined ? { loginData } : {}),
     }));
-  },
-
-  login: async ({ email, senha }) => {
-    const safeEmail = String(email ?? "").trim();
-    const safeSenha = String(senha ?? "");
-
-    if (!safeEmail || !safeSenha) {
-      set({ loginStatus: "error", loginError: "Email e senha sao obrigatorios.", loginData: null });
-      throw new Error("Email e senha sao obrigatorios.");
-    }
-
-    set({ loginStatus: "loading", loginError: null });
-    try {
-      const result = await apiClient<{ success: true; data: ClienteLoginData }>("clientes/login", {
-        method: "POST",
-        body: JSON.stringify({ email: safeEmail, senha: safeSenha }),
-      });
-
-      const data = (result?.data ?? null) as ClienteLoginData | null;
-      set({ loginStatus: "success", loginData: data, isLoggedIn: Boolean(data?.token) });
-      return data ?? {};
-    } catch (error) {
-      const message = getApiErrorMessage(error);
-      set({ loginStatus: "error", loginError: message, loginData: null, isLoggedIn: false });
-      throw error;
-    }
   },
 
   updateMeusDados: async (patch) => {

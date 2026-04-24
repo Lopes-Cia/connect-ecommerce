@@ -67,11 +67,11 @@ export default function DashboardSidebar() {
         </Link>
 
         <Link
-          href="/dashboard"
+          href="/cliente/painel"
           className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
         >
           <LayoutDashboard size={18} />
-          <span>Dashboard</span>
+          <span>Minha conta</span>
         </Link>
 
         <Link
@@ -93,7 +93,7 @@ export default function DashboardSidebar() {
 
 
         <Link
-          href="/dashboard/orders"
+          href="/cliente/meus-pedidos"
           className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
         >
           <ShoppingBasket size={18} />
@@ -101,7 +101,7 @@ export default function DashboardSidebar() {
         </Link>
 
         <Link
-          href="/dashboard/profile"
+          href="/cliente/meus-dados"
           className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
         >
           <User size={18} />
@@ -109,11 +109,11 @@ export default function DashboardSidebar() {
         </Link>
 
         <Link
-          href="/dashboard/automations"
+          href="/cliente/privacidade"
           className="flex items-center gap-3 px-3 py-2 text-white hover:bg-white/10 rounded transition-colors text-sm"
         >
           <Settings size={18} />
-          <span>Automações</span>
+          <span>Privacidade</span>
         </Link>
       </nav>
 

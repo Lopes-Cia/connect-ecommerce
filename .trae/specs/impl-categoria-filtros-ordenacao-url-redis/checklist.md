@@ -1,0 +1,7 @@
+- [x] A URL controla `page`, `sort`, `inStock`, `priceMin`, `priceMax` e a página respeita esses valores ao carregar.
+- [x] Mudar filtro ou ordenação reseta `page` para 1 e isso fica refletido na URL.
+- [x] Paginação altera somente `page` na URL e preserva filtros/sort.
+- [x] A requisição ao endpoint `GET /api/catalog/products` inclui `categoryId`, `page`, `pageSize` e os filtros/sort quando presentes.
+- [x] A UI oferece apenas ordenações compatíveis com `sort=<field>:<dir>` (campos: id|name|price|stock|rank; dirs: asc|desc).
+- [x] Parâmetros inválidos não quebram a tela (normaliza/ignora) e mantém comportamento consistente.
+- [x] Diagnósticos TypeScript não apresentam novos erros na(s) área(s) alterada(s).

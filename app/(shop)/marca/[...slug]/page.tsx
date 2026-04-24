@@ -4,26 +4,9 @@ import { use, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
-import ProductCard from "../../_components/ProductCard";
+import ProductCardVariant from "../../_components/ProductCardVariant";
 import { useProdutosStore } from "@/stores/produtos-store";
-
-type ProductCardType =
-  | "standard"
-  | "discount"
-  | "highlighted"
-  | "highlighted-discount"
-  | "coming-soon";
-
-type ProductItem = {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  discountPrice?: number;
-  image_url: string;
-  slug?: string;
-  cardType?: ProductCardType;
-};
+import type { ProductCardViewModel } from "@/lib/products/viewModels";
 
 type UnknownRecord = Record<string, unknown>;
 type Brand = { id: number; name: string; slug: string };
@@ -53,7 +36,7 @@ function normalizeSlugPath(value: unknown): string | null {
   return raw;
 }
 
-function toProductItem(raw: unknown): ProductItem | null {
+function toProductItem(raw: unknown): ProductCardViewModel | null {
   const record = asRecord(raw);
   if (!record) return null;
 
@@ -101,7 +84,7 @@ export default function MarcaPage({ params }: { params: { slug: string[] | strin
   const [searchTerm, setSearchTerm] = useState("");
 
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [products, setProducts] = useState<ProductCardViewModel[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -129,7 +112,7 @@ export default function MarcaPage({ params }: { params: { slug: string[] | strin
 
         const payload = (await loadBrandById({ idBrand: found.id, page, pageSize: 24 })) as unknown as BrandByIdPayload;
         const list = Array.isArray(payload?.products?.data) ? payload.products.data : [];
-        const items = list.map(toProductItem).filter(Boolean) as ProductItem[];
+        const items = list.map(toProductItem).filter(Boolean) as ProductCardViewModel[];
 
         if (!active) return;
 
@@ -285,7 +268,7 @@ export default function MarcaPage({ params }: { params: { slug: string[] | strin
           {!isLoading && !loadError && filteredProducts.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
               {filteredProducts.map((product) => (
-                <ProductCard
+                <ProductCardVariant
                   key={product.id}
                   type={product.cardType ?? (product.discountPrice ? "discount" : "standard")}
                   product={product}

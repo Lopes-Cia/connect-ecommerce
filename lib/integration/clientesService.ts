@@ -56,18 +56,6 @@ async function integrationRequest<T>(
   return (data ?? ({} as T)) as T;
 }
 
-export async function loginCliente(payload: {
-  email: string;
-  senha: string;
-}): Promise<SuccessResponse<unknown>> {
-  const responsePayload = await integrationPost<unknown>(
-    "/Servidor/webservice/integration/clientes/login",
-    payload
-  );
-  const data = unwrapData<unknown>(responsePayload);
-  return { success: true, data };
-}
-
 export async function updateMeusDadosCliente(payload: {
   clienteId: number;
   patch: Record<string, unknown>;

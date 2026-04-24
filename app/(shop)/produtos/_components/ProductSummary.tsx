@@ -1,69 +1,128 @@
-interface ProductSpec {
-  label: string;
-  value: string;
-}
+import Image from "next/image";
+import Link from "next/link";
+import { formatCurrency } from "@/lib/formatting";
 
 interface ProductSummaryProps {
   name: string;
-  shop?: string;
+  category?: string;
+  description: string;
   price: number;
   oldPrice?: number;
-  pricePerUnit?: string;
-  specs: ProductSpec[];
-  description: string;
+  embalagemValue?: number | null;
+  inStock?: boolean;
+  unitLabel?: string;
+  brand?: {
+    name: string;
+    slug: string;
+    image?: string | null;
+  } | null;
+}
+
+function shouldDisableOptimization(src: string): boolean {
+  const value = String(src ?? "").trim();
+  if (!value) return false;
+
+  try {
+    const parsed = new URL(value);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "::1";
+  } catch {
+    return value.includes("localhost") || value.includes("127.0.0.1");
+  }
 }
 
 export default function ProductSummary({
   name,
-  shop,
+  category,
+  description,
   price,
   oldPrice,
-  pricePerUnit,
-  specs,
-  description,
+  embalagemValue,
+  inStock,
+  unitLabel,
+  brand,
 }: ProductSummaryProps) {
   const safeName = String(name ?? "").trim() || "Produto";
+  const safeCategory = String(category ?? "").trim();
   const safeDescription = String(description ?? "").trim() || "Descrição não disponível no momento.";
-  const safeSpecs = Array.isArray(specs) ? specs : [];
+  const safeUnitLabel = String(unitLabel ?? "").trim();
+  const brandName = String(brand?.name ?? "").trim();
+  const brandHref = String(brand?.slug ?? "").trim();
+  const brandImageSrc = String(brand?.image ?? "").trim();
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-custom-dark-1000 font-montserrat font-bold text-lg md:text-xl">{safeName}</h1>
+      {safeCategory ? (
+        <div className="text-custom-light-600 font-montserrat text-xs tracking-widest uppercase">{safeCategory}</div>
+      ) : null}
 
-      <div className="flex items-baseline gap-2">
-        <span className="text-custom-dark-1000 font-montserrat text-xs">R$</span>
-        <span className="text-custom-dark-1000 font-montserrat font-bold text-2xl">{price.toFixed(2).replace(".", ",")}</span>
-        {pricePerUnit && <span className="text-custom-light-600 font-montserrat text-xs">({pricePerUnit})</span>}
-      </div>
+      <h1 className="text-custom-dark-1000 font-league-spartan font-bold text-3xl leading-tight">{safeName}</h1>
 
-      <p className="text-custom-dark-1000 font-montserrat text-xs">
-        À vista no PIX
-        <br />
-        ou em até 10x no cartão
-      </p>
+      <p className="text-custom-light-700 font-montserrat text-sm">{safeDescription}</p>
 
-      <div className="border-t border-custom-light-400 pt-4">
-        {safeSpecs.length > 0 ? (
-          <table className="w-full">
-            <tbody>
-              {safeSpecs.map((spec, index) => (
-                <tr key={index} className="border-b border-custom-light-300">
-                  <td className="py-2 pr-4 text-custom-light-600 font-montserrat text-xs font-medium w-1/3">
-                    {spec.label}
-                  </td>
-                  <td className="py-2 text-custom-dark-1000 font-montserrat text-xs">{spec.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <div className="text-custom-light-600 font-montserrat text-xs">Nenhuma especificação disponível.</div>
-        )}
+      <div className="mt-2">
+        {oldPrice && oldPrice > price ? (
+          <p className="text-custom-light-600 font-montserrat text-xs line-through">{formatCurrency(oldPrice)}</p>
+        ) : null}
+        <div className="flex items-baseline gap-2">
+          <span className="text-custom-dark-1000 font-montserrat text-xs">R$</span>
+          <span className="text-custom-dark-1000 font-montserrat font-bold text-3xl">
+            {price.toFixed(2).replace(".", ",")}
+          </span>
+          <p className="text-custom-dark-1000 font-montserrat text-xs">por Unidade</p>
+        </div>
+        {typeof embalagemValue === "number" && Number.isFinite(embalagemValue) && embalagemValue > 0 ? (
+          <p className="text-custom-dark-1000 font-montserrat text-xs mt-1">
+            valor da embalgem, <span className="font-semibold">{formatCurrency(embalagemValue)}</span>
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-2">
-        <h3 className="text-custom-dark-1000 font-montserrat font-semibold text-sm mb-2">Sobre este produto</h3>
-        <p className="text-custom-dark-1000 font-montserrat text-xs leading-relaxed">{safeDescription}</p>
+        {brandName ? (
+          <Link
+            href={brandHref || "#"}
+            aria-disabled={!brandHref}
+            tabIndex={brandHref ? undefined : -1}
+            className={[
+              "flex items-center justify-between gap-4 py-3 border-b border-custom-light-300",
+              brandHref ? "hover:opacity-80 transition-opacity" : "pointer-events-none opacity-80",
+            ].join(" ")}
+          >
+            <div className="text-custom-dark-1000 font-montserrat text-xs font-semibold">Marca</div>
+            <div className="min-w-0 flex items-center gap-2">
+              {brandImageSrc ? (
+                <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded border border-custom-light-400 bg-white">
+                  {shouldDisableOptimization(brandImageSrc) ? (
+                    <img src={brandImageSrc} alt={brandName} width={20} height={20} className="h-full w-full object-contain" />
+                  ) : (
+                    <Image src={brandImageSrc} alt={brandName} fill className="object-contain" sizes="20px" />
+                  )}
+                </span>
+              ) : null}
+              <div className="truncate text-custom-light-700 font-montserrat text-xs">{brandName}</div>
+            </div>
+          </Link>
+        ) : null}
+
+        {safeUnitLabel ? (
+          <div className="flex items-center justify-between gap-4 py-3 border-b border-custom-light-300">
+            <div className="text-custom-dark-1000 font-montserrat text-xs font-semibold">Unidade</div>
+            <div className="flex items-center gap-2">
+              <div className="text-custom-light-700 font-montserrat text-xs">{safeUnitLabel}</div>
+            </div>
+          </div>
+        ) : null}
+
+        {typeof inStock === "boolean" ? (
+          <div className="flex items-center justify-between gap-4 py-3 border-b border-custom-light-300">
+            <div className="text-custom-dark-1000 font-montserrat text-xs font-semibold">Disponibilidade</div>
+            {inStock ? (
+              <div className="text-green-700 font-montserrat text-xs font-semibold">Em estoque</div>
+            ) : (
+              <div className="text-red-700 font-montserrat text-xs font-semibold">Indisponível</div>
+            )}
+          </div>
+        ) : null}
       </div>
     </div>
   );

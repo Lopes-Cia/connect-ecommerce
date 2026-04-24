@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "implementing-search-filter": {
+      "source": "ancoleman/ai-design-components",
+      "sourceType": "github",
+      "computedHash": "ccc78bd23266c0a98bd4a5a7c73b4ff278ec7b2a138a64264e9e61e076cdc431"
+    },
     "swagger-api-query": {
       "source": "zhihuihu/agent-skills",
       "sourceType": "github",

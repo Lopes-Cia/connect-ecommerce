@@ -4,6 +4,8 @@ export type LopesProdutoRaw = {
   descricaoErp?: unknown
   ean?: unknown
   codVol?: unknown
+  qtUnit?: unknown
+  qtUnitCaixa?: unknown
   preco?: unknown
   qtEstoque?: unknown
   imagem?: unknown
@@ -66,3 +68,11 @@ export function toNumberOrNull(value: unknown): number | null {
   return Number.isFinite(n) ? n : null
 }
 
+export function toNumberOrNullIfPresent(value: unknown): number | null {
+  if (value === undefined || value === null) return null
+  const raw = String(value).trim()
+  if (!raw) return null
+  if (raw.toLowerCase() === 'null') return null
+  const n = Number(raw.replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}

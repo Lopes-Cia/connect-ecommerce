@@ -20,6 +20,8 @@ export type Produto = {
   brand: string
   unitLabel: string
   sizeLabel: string
+  qtUnitCaixa?: number | null
+  qtUnit?: number | null
   price: number
   compareAtPrice: number | null
   badges: string[]

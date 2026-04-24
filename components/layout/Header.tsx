@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import SearchBar from "./SearchBar";
 import CartSidebarMenu from "./CartSidebarMenu";
@@ -13,27 +13,18 @@ import { LayoutDashboard, LogOut, ShieldUser } from "lucide-react";
 import { useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
 import { useAuth } from "@/contexts/AuthContext";
-import { isBackendMode } from "@/lib/runtime/appMode";
 
 export default function Header() {
-  const pathname = usePathname();
-  const isDashboard = pathname.startsWith("/dashboard");
-
-  if (isDashboard) {
-    return <DashboardHeader />;
-  }
-
   return <ShopHeader />;
 }
 
 function ShopHeader() {
   const router = useRouter();
-  const backendMode = isBackendMode();
   const clientesIsLoggedIn = useClientesStore((s) => s.isLoggedIn);
   const clientesLogout = useClientesStore((s) => s.logout);
   const { isAuthenticated, logoutUser } = useAuth();
   const isLoggedIn = isAuthenticated || clientesIsLoggedIn;
-  const myAccountHref = isAuthenticated || backendMode ? "/dashboard" : "/cliente/painel";
+  const myAccountHref = "/cliente/painel";
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const isLoggedInHydrated = mounted ? isLoggedIn : false;
@@ -123,19 +114,6 @@ function ShopHeader() {
             </Button>
           )}
         </div>
-      </div>
-    </header>
-  );
-}
-
-function DashboardHeader() {
-  return (
-    <header className="w-full h-16 max-h-fit flex justify-between items-center bg-tints-french-blue py-4 px-2 xs:px-8 gap-2">
-      <Link href="/">
-        <Image src="/logo.png" alt="Newbread Logo" width={95} height={380} />
-      </Link>
-      <div className="w-fit flex flex-row items-center gap-6">
-        <CartSidebarMenu />
       </div>
     </header>
   );
