@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { RawHttpError } from "@/liz_refator/integration/rawClient"
-import { usuariosRawEnviarToken } from "@/liz_refator/integration/usuariosRaw"
+import { clientesRawEnviarToken } from "@/liz_refator/integration/usuariosRaw"
 
 export const dynamic = "force-dynamic"
 
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await usuariosRawEnviarToken(query)
+    const result = await clientesRawEnviarToken(query)
     return NextResponse.json({ success: true, ...result })
   } catch (error) {
     if (error instanceof RawHttpError) {
@@ -33,4 +33,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message }, { status: 500 })
   }
 }
-

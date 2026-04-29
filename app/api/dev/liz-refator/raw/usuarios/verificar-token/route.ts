@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { RawHttpError } from "@/liz_refator/integration/rawClient"
-import { usuariosRawVerificarToken } from "@/liz_refator/integration/usuariosRaw"
+import { clientesRawVerificarToken } from "@/liz_refator/integration/usuariosRaw"
 
 export const dynamic = "force-dynamic"
 
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await usuariosRawVerificarToken({
+    const result = await clientesRawVerificarToken({
       token,
       idIntegradora: Number.isNaN(idIntegradora as number) ? undefined : idIntegradora,
     })

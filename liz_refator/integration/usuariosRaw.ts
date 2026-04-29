@@ -8,7 +8,7 @@ import { toRawToken } from '@/liz_refator/adapters/integration-token'
 import type { IntegrationQueryParams } from './client'
 import { RawHttpError } from './rawClient'
 import type { RawRequestInfo, RawIntegrationResponse } from './rawClient'
-import { USUARIOS_API_ROUTES } from './integrationRoutes'
+import { CLIENTES_API_ROUTES } from './integrationRoutes'
 
 function buildWebserviceApiUrl(baseUrl: string, path: string, query: IntegrationQueryParams): string {
   const normalizedBase = baseUrl.replace(/\/+$/, '')
@@ -39,7 +39,7 @@ async function rawPostJson<T>(path: string, query: IntegrationQueryParams): Prom
   try {
     response = await fetchWithRetry(url, { method: 'POST', headers }, { maxAttempts: 3 })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'User API network request failed'
+    const message = error instanceof Error ? error.message : 'Client API network request failed'
     throw new RawHttpError('Integration request failed', 500, url, { message }, requestInfo)
   }
 
@@ -68,7 +68,7 @@ async function rawPostJsonAuth<T>(path: string, query: IntegrationQueryParams): 
   try {
     response = await fetchWithRetry(url, { method: 'POST', headers }, { maxAttempts: 3 })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'User API network request failed'
+    const message = error instanceof Error ? error.message : 'Client API network request failed'
     throw new RawHttpError('Integration request failed', 500, url, { message }, requestInfo)
   }
 
@@ -81,10 +81,10 @@ async function rawPostJsonAuth<T>(path: string, query: IntegrationQueryParams): 
   return { request: requestInfo, data }
 }
 
-export async function usuariosRawEnviarToken(query: { email?: string; whatsapp?: string }): Promise<RawIntegrationResponse<string>> {
-  return rawPostJsonAuth<string>(USUARIOS_API_ROUTES.enviarToken, query)
+export async function clientesRawEnviarToken(query: { email?: string; whatsapp?: string }): Promise<RawIntegrationResponse<string>> {
+  return rawPostJsonAuth<string>(CLIENTES_API_ROUTES.enviarToken, query)
 }
 
-export async function usuariosRawVerificarToken(query: { token: string; idIntegradora?: number }): Promise<RawIntegrationResponse<unknown>> {
-  return rawPostJsonAuth<unknown>(USUARIOS_API_ROUTES.verificarToken, query)
+export async function clientesRawVerificarToken(query: { token: string; idIntegradora?: number }): Promise<RawIntegrationResponse<unknown>> {
+  return rawPostJsonAuth<unknown>(CLIENTES_API_ROUTES.verificarToken, query)
 }
