@@ -1,16 +1,10 @@
 import { NextResponse } from "next/server"
 
 import { integrationRawGetJsonAuth, RawHttpError } from "@/liz_refator/integration/rawClient"
-import { PRODUTOS_INTEGRATION_ROUTES } from "@/liz_refator/integration/integrationRoutes"
+import { CLIENTES_API_ROUTES } from "@/liz_refator/integration/integrationRoutes"
 import { redactRawRequestInfo } from "@/liz_refator/integration/redact"
 
 export const dynamic = "force-dynamic"
-
-function parseIntParam(value: string | null): number | undefined {
-  if (!value) return undefined
-  const parsed = Number.parseInt(value, 10)
-  return Number.isNaN(parsed) ? undefined : parsed
-}
 
 export async function GET(request: Request) {
   if (process.env.NODE_ENV === "production") {
@@ -18,21 +12,10 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url)
-
-  const query = {
-    codigo: parseIntParam(searchParams.get("codigo")),
-    codPai: parseIntParam(searchParams.get("codPai")),
-    categoria: searchParams.get("categoria") ?? undefined,
-    idCatMarketplace: searchParams.get("idCatMarketplace") ?? undefined,
-    nomeCatMarketplace: searchParams.get("nomeCatMarketplace") ?? undefined,
-  }
+  const cgc = searchParams.get("cgc") ?? undefined
 
   try {
-    const result = await integrationRawGetJsonAuth<unknown>(
-      PRODUTOS_INTEGRATION_ROUTES.getListCategoria,
-      query
-    )
-
+    const result = await integrationRawGetJsonAuth<unknown>(CLIENTES_API_ROUTES.getClienteLoja, { cgc })
     return NextResponse.json({ success: true, ...result, request: redactRawRequestInfo(result.request) })
   } catch (error) {
     if (error instanceof RawHttpError) {

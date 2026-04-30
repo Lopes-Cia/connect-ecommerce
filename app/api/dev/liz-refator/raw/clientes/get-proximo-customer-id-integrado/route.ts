@@ -1,29 +1,21 @@
 import { NextResponse } from "next/server"
 
-import { RawHttpError } from "@/liz_refator/integration/rawClient"
+import { parseProximoCustomerIdIntegrado } from "@/liz_refator/contracts/lopes/clientes"
+import { integrationRawGetJsonAuth, RawHttpError } from "@/liz_refator/integration/rawClient"
+import { CLIENTES_API_ROUTES } from "@/liz_refator/integration/integrationRoutes"
 import { redactRawRequestInfo } from "@/liz_refator/integration/redact"
-import { clientesRawVerificarToken } from "@/liz_refator/integration/usuariosRaw"
 
 export const dynamic = "force-dynamic"
 
-export async function POST(request: Request) {
+export async function GET() {
   if (process.env.NODE_ENV === "production") {
     return NextResponse.json({ success: false, message: "Not found" }, { status: 404 })
   }
 
-  const { searchParams } = new URL(request.url)
-  const token = searchParams.get("token")
-
-  if (!token) {
-    return NextResponse.json(
-      { success: false, message: "Missing required query param: token" },
-      { status: 400 }
-    )
-  }
-
   try {
-    const result = await clientesRawVerificarToken({ token })
-    return NextResponse.json({ success: true, ...result, request: redactRawRequestInfo(result.request) })
+    const result = await integrationRawGetJsonAuth<unknown>(CLIENTES_API_ROUTES.getProximoCustomerIdIntegrado)
+    const parsed = parseProximoCustomerIdIntegrado(result.data)
+    return NextResponse.json({ success: true, request: redactRawRequestInfo(result.request), data: parsed })
   } catch (error) {
     if (error instanceof RawHttpError) {
       const status = error.status >= 400 ? error.status : 500

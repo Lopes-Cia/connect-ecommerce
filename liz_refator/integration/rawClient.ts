@@ -54,6 +54,11 @@ function withEnvIdIntegradora(query?: IntegrationQueryParams): IntegrationQueryP
   return { ...rest, idIntegradora: env.idIntegradora }
 }
 
+function stripIdIntegradora(query?: IntegrationQueryParams): IntegrationQueryParams {
+  const { idIntegradora: _ignored, ...rest } = (query ?? {}) as IntegrationQueryParams
+  return rest
+}
+
 export async function integrationRawGetJson<T>(
   path: string,
   query?: IntegrationQueryParams
@@ -67,6 +72,44 @@ export async function integrationRawGetJson<T>(
   let response: Response
   try {
     response = await fetchWithRetry(url, { method: 'GET', headers }, { maxAttempts: 3 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Integration network request failed'
+    throw new RawHttpError('Integration request failed', 500, url, { message }, requestInfo)
+  }
+
+  const data = await readResponseData<T>(response)
+
+  if (!response.ok) {
+    throw new RawHttpError('Integration request failed', response.status, url, data, requestInfo)
+  }
+
+  return { request: requestInfo, data }
+}
+
+export async function integrationRawPostJsonAuth<T>(
+  path: string,
+  body: unknown,
+  query?: IntegrationQueryParams
+): Promise<RawIntegrationResponse<T>> {
+  const { integrationUrlApi } = getIntegrationEnvConfig()
+  const finalQuery = stripIdIntegradora(query)
+  const url = buildIntegrationUrl(integrationUrlApi, path, finalQuery)
+
+  const token = await ensureAuthWebserviceToken({ backgroundRefresh: true })
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    Authorization: toRawToken(token.hashToken),
+  }
+
+  const requestInfo: RawRequestInfo = { url, method: 'POST', headers, query: finalQuery }
+  let response: Response
+  try {
+    response = await fetchWithRetry(
+      url,
+      { method: 'POST', headers, body: JSON.stringify(body ?? {}) },
+      { maxAttempts: 3 }
+    )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Integration network request failed'
     throw new RawHttpError('Integration request failed', 500, url, { message }, requestInfo)

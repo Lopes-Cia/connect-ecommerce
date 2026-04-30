@@ -85,6 +85,7 @@ export async function clientesRawEnviarToken(query: { email?: string; whatsapp?:
   return rawPostJsonAuth<string>(CLIENTES_API_ROUTES.enviarToken, query)
 }
 
-export async function clientesRawVerificarToken(query: { token: string; idIntegradora?: number }): Promise<RawIntegrationResponse<unknown>> {
-  return rawPostJsonAuth<unknown>(CLIENTES_API_ROUTES.verificarToken, query)
+export async function clientesRawVerificarToken(query: { token: string }): Promise<RawIntegrationResponse<unknown>> {
+  const { idIntegradora } = getIntegrationEnvConfig()
+  return rawPostJsonAuth<unknown>(CLIENTES_API_ROUTES.verificarToken, { ...query, idIntegradora })
 }
