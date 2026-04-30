@@ -71,7 +71,6 @@ type VerifyInput = z.input<typeof verifySchema>;
 type VerifyOutput = z.output<typeof verifySchema>;
 
 export default function LoginForm() {
-  const fixedEmail = "eduardo.rezende@lopesecia.com.br";
   const router = useRouter();
   const { refreshSession } = useAuth();
   const isClientLoggedIn = useClientesStore((s) => s.isLoggedIn);
@@ -93,7 +92,7 @@ export default function LoginForm() {
     resolver: zodResolver(sendTokenSchema),
     defaultValues: {
       channel: "email",
-      value: fixedEmail,
+      value: "",
     },
   });
 
@@ -110,21 +109,16 @@ export default function LoginForm() {
 
   const selectedChannel = watchSend("channel");
   const contactValue = watchSend("value");
-  const displayedValue = selectedChannel === "email" ? fixedEmail : contactValue;
-
-  useEffect(() => {
-    if (selectedChannel !== "email") return;
-    setSendValue("value", fixedEmail, { shouldDirty: false, shouldTouch: false, shouldValidate: true });
-  }, [fixedEmail, selectedChannel, setSendValue]);
+  const displayedValue = contactValue;
 
   useEffect(() => {
     setSendValue("channel", loginMethod, { shouldDirty: false, shouldTouch: false, shouldValidate: false });
-    setSendValue("value", loginMethod === "email" ? fixedEmail : "", {
+    setSendValue("value", "", {
       shouldDirty: false,
       shouldTouch: false,
       shouldValidate: false,
     });
-  }, [fixedEmail, loginMethod, setSendValue]);
+  }, [loginMethod, setSendValue]);
 
   const onSendToken = async (data: SendTokenOutput) => {
     setIsLoading(true);
@@ -177,7 +171,11 @@ export default function LoginForm() {
         isLoggedIn: true,
         loginData: {
           token: "mock-token",
-          meus_dados: { id: "1", email: fixedEmail, nome: "Mock" },
+          meus_dados: {
+            id: "1",
+            email: selectedChannel === "email" ? contactValue.trim() : "mock@exemplo.com",
+            nome: "Mock",
+          },
         },
       });
       router.push("/cliente/painel");
@@ -245,9 +243,7 @@ export default function LoginForm() {
                   type={selectedChannel === "email" ? "email" : "tel"}
                   {...registerSend("value")}
                   value={displayedValue ?? ""}
-                  readOnly={selectedChannel === "email"}
                   onChange={(event) => {
-                    if (selectedChannel === "email") return;
                     const nextValue =
                       selectedChannel === "whatsapp"
                         ? formatWhatsapp(event.target.value)
