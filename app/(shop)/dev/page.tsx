@@ -434,6 +434,12 @@ export default function DevPage() {
               >
                 Clientes
               </Link>
+              <Link
+                href="/dev/registro"
+                className="h-9 inline-flex items-center rounded-md border border-custom-light-300 bg-white px-3 font-montserrat text-sm font-semibold text-custom-dark-1000 hover:bg-custom-light-100"
+              >
+                Registro
+              </Link>
             </div>
           </div>
           <p className="text-sm font-montserrat text-custom-dark-700">

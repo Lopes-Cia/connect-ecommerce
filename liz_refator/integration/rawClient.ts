@@ -155,3 +155,73 @@ export async function integrationRawGetJsonAuth<T>(
 
   return { request: requestInfo, data }
 }
+
+export async function authRawPostJsonAuth<T>(
+  path: string,
+  body: unknown,
+  query?: IntegrationQueryParams
+): Promise<RawIntegrationResponse<T>> {
+  const { authBaseUrl } = getIntegrationEnvConfig()
+  const finalQuery = stripIdIntegradora(query)
+  const url = buildIntegrationUrl(authBaseUrl, path, finalQuery)
+
+  const token = await ensureAuthWebserviceToken({ backgroundRefresh: true })
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    Authorization: toRawToken(token.hashToken),
+  }
+
+  const requestInfo: RawRequestInfo = { url, method: 'POST', headers, query: finalQuery }
+  let response: Response
+  try {
+    response = await fetchWithRetry(
+      url,
+      { method: 'POST', headers, body: JSON.stringify(body ?? {}) },
+      { maxAttempts: 3 }
+    )
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Auth network request failed'
+    throw new RawHttpError('Auth request failed', 500, url, { message }, requestInfo)
+  }
+
+  const data = await readResponseData<T>(response)
+
+  if (!response.ok) {
+    throw new RawHttpError('Auth request failed', response.status, url, data, requestInfo)
+  }
+
+  return { request: requestInfo, data }
+}
+
+export async function authRawGetJsonAuth<T>(
+  path: string,
+  query?: IntegrationQueryParams
+): Promise<RawIntegrationResponse<T>> {
+  const { authBaseUrl } = getIntegrationEnvConfig()
+  const finalQuery = withEnvIdIntegradora(query)
+  const url = buildIntegrationUrl(authBaseUrl, path, finalQuery)
+
+  const token = await ensureAuthWebserviceToken({ backgroundRefresh: true })
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    Authorization: toRawToken(token.hashToken),
+  }
+
+  const requestInfo: RawRequestInfo = { url, method: 'GET', headers, query: finalQuery }
+  let response: Response
+  try {
+    response = await fetchWithRetry(url, { method: 'GET', headers }, { maxAttempts: 3 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Auth network request failed'
+    throw new RawHttpError('Auth request failed', 500, url, { message }, requestInfo)
+  }
+
+  const data = await readResponseData<T>(response)
+
+  if (!response.ok) {
+    throw new RawHttpError('Auth request failed', response.status, url, data, requestInfo)
+  }
+
+  return { request: requestInfo, data }
+}

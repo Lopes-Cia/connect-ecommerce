@@ -67,7 +67,7 @@ export function getIntegrationEnvConfig(): IntegrationEnvConfig {
       : ['INTEGRATION_URL_API_BACK', 'INTEGRATION_URL_API']
 
   cachedConfig = {
-    authBaseUrl: normalizeBaseUrl(readFirstEnv(['AUTH_BASE_URL'])),
+    authBaseUrl: normalizeBaseUrl(readFirstEnv(['BACK_AUTH_BASE_URL', 'AUTH_BASE_URL'])),
     produto: readFirstEnv(['PRODUTO']),
     ean: readFirstEnv(['EAN']),
     integrationUrlApi: normalizeBaseUrl(readFirstEnv(integrationUrlKeys)),

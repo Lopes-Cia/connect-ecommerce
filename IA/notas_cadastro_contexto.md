@@ -10,6 +10,7 @@ Este arquivo existe para registrar as informações que você vai enviar nesta c
   - `IA/diagrama_registro_def.excalidraw`
   - `IA/fluxo_registro_usuario.md`
 - A página de testes do fluxo/endereços de cliente é `app/(shop)/dev/clientes/page.tsx`.
+- A página de testes do fluxo de autenticação/vínculo (Auth) é `app/(shop)/dev/registro/page.tsx`.
 - Padrão geral de testes DEV/RAW documentado em `IA/padrao_dev_testes_endpoints.md`.
 - O teste em DEV simula o fluxo **após** o cliente já ter enviado os dados do formulário de cadastro.
 - Quando o cliente preenche o formulário, os valores viram um objeto (payload) que pode ser representado como JSON; este JSON é a base do `body` enviado no POST do cadastro.
@@ -29,7 +30,7 @@ Este arquivo existe para registrar as informações que você vai enviar nesta c
 - Os endpoints `/enviarToken` e `/verificarTokenSistema` serão usados mais pra frente, mas no momento não entram no foco do “Fluxo cliente novo” (ERP).
 - Base URLs do fluxo vêm do `.env`:
   - `INTEGRATION_URL_API` (Fase de Integração / ERP)
-  - `AUTH_BASE_URL` (Fase de Autenticação / Auth)
+  - `AUTH_BASE_URL` (Fase de Autenticação / Auth; quando configurado, `BACK_AUTH_BASE_URL` pode ser usado como base do Auth)
 - Regra do fluxo cliente novo (ERP) para `insertClienteLoja`: `enderecos[0].codigoIbge = 0` (por enquanto).
 - Defaults do payload estão OK: `status="PEN"`, `idTabPreco=1`, `enderecos[0].principal="Sim"`.
 - Para o `insertClienteLoja` no DEV: usar 2 ações separadas — botão "Gerar payload" e botão "EXECUTAR insertClienteLoja".

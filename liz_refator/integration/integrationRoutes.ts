@@ -13,3 +13,11 @@ export const CLIENTES_API_ROUTES = {
   getProximoCustomerIdIntegrado: '/Servidor/webservice/integration/getProximoCustomerIdIntegrado',
   insertClienteLoja: '/Servidor/webservice/integration/insertClienteLoja',
 } as const
+
+export const AUTH_API_ROUTES = {
+  postAutenticaAplicativo: '/postAutenticaAplicativo',
+  insertOperadorSistema: '/insertOperadorSistema',
+  getOperadorSistema: '/getOperadorSistema',
+  insertVinculoUsuarioSite: '/insertVinculoUsuarioSite',
+  getVinculoUsuarioSite: '/getVinculoUsuarioSite',
+} as const
