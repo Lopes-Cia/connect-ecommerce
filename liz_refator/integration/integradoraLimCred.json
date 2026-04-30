@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "request": {
+    "url": "https://gp.lopesecia.com.br:9004/Servidor/webservice/integration/getIntegradora?id=8&idIntegradora=8",
+    "method": "GET",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "<redacted>"
+    },
+    "query": {
+      "id": 8,
+      "idIntegradora": 8
+    }
+  },
+  "data": {
+    "id": 8,
+    "idFilial": 16,
+    "filialWinthor": {
+      "id": 16,
+      "idIntegradora": 8,
+      "limiteCredito": 5000
+    }
+  }
+}

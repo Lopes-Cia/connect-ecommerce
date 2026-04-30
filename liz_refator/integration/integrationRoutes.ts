@@ -9,6 +9,7 @@ export const CLIENTES_API_ROUTES = {
   enviarToken: '/webservice/api/enviarToken',
   verificarToken: '/webservice/api/verificarTokenSistema',
   getClienteLoja: '/Servidor/webservice/integration/getClienteLoja',
+  getIntegradora: '/Servidor/webservice/integration/getIntegradora',
   getProximoCustomerIdIntegrado: '/Servidor/webservice/integration/getProximoCustomerIdIntegrado',
   insertClienteLoja: '/Servidor/webservice/integration/insertClienteLoja',
 } as const

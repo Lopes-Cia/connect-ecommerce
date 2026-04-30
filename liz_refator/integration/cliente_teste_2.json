@@ -1,0 +1,16 @@
+{
+  "responsavel": "Carla Souza",
+  "email": "carla.souza@exemplo.com",
+  "whatsapp": "62988887777",
+  "cnpj": "11222333000181",
+  "fantasia": "Mercearia Souza",
+  "inscicao": "",
+  "cep": "74010010",
+  "rua": "Rua 10",
+  "numero": "250",
+  "complemento": "Loja 2",
+  "bairro": "Setor Central",
+  "municipio": "Goiânia",
+  "uf": "GO",
+  "acceptTerms": true
+}

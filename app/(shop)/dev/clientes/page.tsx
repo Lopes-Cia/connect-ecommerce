@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 
 import { CLIENTES_API_ROUTES } from "@/liz_refator/integration/integrationRoutes";
-import clienteNovoForm from "@/liz_refator/integration/clienteNovoForm.json";
+import clienteTeste1 from "@/liz_refator/integration/cliente_teste_3.json";
 
 type CallResult = {
   url: string;
@@ -68,37 +68,42 @@ export default function DevClientesPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [token, setToken] = useState("");
   const [customerId, setCustomerId] = useState<number>(0);
+  const [limCred, setLimCred] = useState<number>(0);
   const [responses, setResponses] = useState<{
     enviarToken: CallResult | null;
     verificarToken: CallResult | null;
     getClienteLoja: CallResult | null;
+    getIntegradora: CallResult | null;
     getProximoCustomerIdIntegrado: CallResult | null;
     insertClienteLoja: CallResult | null;
   }>({
     enviarToken: null,
     verificarToken: null,
     getClienteLoja: null,
+    getIntegradora: null,
     getProximoCustomerIdIntegrado: null,
     insertClienteLoja: null,
   });
   const [params, setParams] = useState({
     email: "",
     whatsapp: "",
-    cgc: clienteNovoForm.cnpj,
+    cgc: String(clienteTeste1.cnpj ?? "").trim(),
   });
-  const [clienteNovoFormBody, setClienteNovoFormBody] = useState(() => JSON.stringify(clienteNovoForm, null, 2));
+  const [clienteNovoFormBody, setClienteNovoFormBody] = useState(() =>
+    JSON.stringify(clienteTeste1, null, 2)
+  );
   const [insertClienteLojaBody, setInsertClienteLojaBody] = useState(() => {
-    const base = clienteNovoForm
+    const base = clienteTeste1;
     const normalizeNullable = (value: unknown): string | null => {
-      const trimmed = String(value ?? "").trim()
-      return trimmed ? trimmed : null
-    }
+      const trimmed = String(value ?? "").trim();
+      return trimmed ? trimmed : null;
+    };
     const payload = {
       limCred: 0,
-      cliente: String(base.responsavel ?? "").trim(),
-      fantasia: String(base.fantasia ?? "").trim(),
+      cliente: String((base as UnknownRecord).responsavel ?? "").trim(),
+      fantasia: String((base as UnknownRecord).fantasia ?? "").trim(),
       cgc: String(base.cnpj ?? "").trim(),
-      inscicao: String(base.inscicao ?? "").trim(),
+      inscicao: String((base as UnknownRecord).inscicao ?? "").trim(),
       email: String(base.email ?? "").trim(),
       telefone: String(base.whatsapp ?? "").trim(),
       status: "PEN",
@@ -108,18 +113,18 @@ export default function DevClientesPage() {
         {
           customerId: 0,
           codigoIbge: 0,
-          rua: String(base.rua ?? "").trim(),
+          rua: String((base as UnknownRecord).rua ?? "").trim(),
           numero: normalizeNullable((base as UnknownRecord).numero),
           complemento: normalizeNullable((base as UnknownRecord).complemento),
-          bairro: String(base.bairro ?? "").trim(),
-          cep: String(base.cep ?? "").trim(),
-          municipio: String(base.municipio ?? "").trim(),
-          uf: String(base.uf ?? "").trim(),
+          bairro: String((base as UnknownRecord).bairro ?? "").trim(),
+          cep: String((base as UnknownRecord).cep ?? "").trim(),
+          municipio: String((base as UnknownRecord).municipio ?? "").trim(),
+          uf: String((base as UnknownRecord).uf ?? "").trim(),
           principal: "Sim",
         },
       ],
-    }
-    return JSON.stringify(payload, null, 2)
+    };
+    return JSON.stringify(payload, null, 2);
   });
 
   const enviarTokenUrl = useMemo(
@@ -143,6 +148,7 @@ export default function DevClientesPage() {
 
   const verificarTokenRequest = useMemo(() => ({ token }), [token]);
   const getClienteLojaRequest = useMemo(() => ({ cgc: params.cgc || undefined }), [params.cgc]);
+  const getIntegradoraRequest = useMemo(() => ({}), []);
   const getProximoCustomerIdIntegradoRequest = useMemo(() => ({}), []);
   const clienteNovoFormRequest = useMemo(() => {
     try {
@@ -288,6 +294,36 @@ export default function DevClientesPage() {
         },
       },
       {
+        key: "getIntegradora" as const,
+        title: "limCred",
+        endpoint: CLIENTES_API_ROUTES.getIntegradora,
+        request: getIntegradoraRequest,
+        response: responses.getIntegradora?.payload ?? null,
+        disabled: false,
+        requestUi: null,
+        onRun: async () => {
+          setLoading("getIntegradora");
+          try {
+            const url = "/api/dev/liz-refator/raw/clientes/get-integradora";
+            const next = await callApi(url, { method: "GET" });
+            const record = asRecord(next.payload);
+            const data = record && "data" in record ? record.data : null;
+            if (typeof data === "number") {
+              setLimCred(data);
+            } else {
+              const dataRecord = asRecord(data);
+              const filialWinthor = asRecord(dataRecord?.filialWinthor);
+              const value = filialWinthor?.limiteCredito ?? dataRecord?.limiteCredito ?? dataRecord?.limCred;
+              const parsed = Number(String(value ?? "").trim());
+              if (Number.isFinite(parsed)) setLimCred(parsed);
+            }
+            setResponses((p) => ({ ...p, getIntegradora: next }));
+          } finally {
+            setLoading(null);
+          }
+        },
+      },
+      {
         key: "insertClienteLoja" as const,
         title: "insertClienteLoja",
         endpoint: CLIENTES_API_ROUTES.insertClienteLoja,
@@ -305,7 +341,8 @@ export default function DevClientesPage() {
               <div>
                 Gerado/default: <span className="font-mono">status=\"PEN\"</span>, <span className="font-mono">principal=\"Sim\"</span>,{" "}
                 <span className="font-mono">idTabPreco=1</span>, <span className="font-mono">codigoIbge=0</span>,{" "}
-                <span className="font-mono">customerId</span> (vem do getProximoCustomerIdIntegrado)
+                <span className="font-mono">customerId</span> (vem do getProximoCustomerIdIntegrado),{" "}
+                <span className="font-mono">limCred</span> (vem do getIntegradora)
               </div>
               <div>
                 Env (server): <span className="font-mono">idIntegradora</span> (não vem do client)
@@ -315,10 +352,13 @@ export default function DevClientesPage() {
               <div className="text-xs font-montserrat text-custom-dark-700">
                 customerId atual: <span className="font-mono">{customerId || 0}</span>
               </div>
+              <div className="text-xs font-montserrat text-custom-dark-700">
+                limCred atual: <span className="font-mono">{limCred || 0}</span>
+              </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => setClienteNovoFormBody(JSON.stringify(clienteNovoForm, null, 2))}
+                  onClick={() => setClienteNovoFormBody(JSON.stringify(clienteTeste1, null, 2))}
                   className="h-9 inline-flex items-center rounded-md border border-custom-light-300 bg-white px-3 font-montserrat text-xs font-semibold text-custom-dark-1000 hover:bg-custom-light-100"
                 >
                   Reset form
@@ -332,7 +372,7 @@ export default function DevClientesPage() {
                       return trimmed ? trimmed : null
                     }
                     const payload = {
-                      limCred: 0,
+                      limCred: limCred || 0,
                       cliente: String(form.responsavel ?? "").trim(),
                       fantasia: String(form.fantasia ?? "").trim(),
                       cgc: String(form.cnpj ?? "").trim(),
@@ -419,10 +459,12 @@ export default function DevClientesPage() {
       enviarTokenRequest,
       enviarTokenUrl,
       getClienteLojaRequest,
+      getIntegradoraRequest,
       getProximoCustomerIdIntegradoRequest,
       clienteNovoFormBody,
       clienteNovoFormRequest,
       customerId,
+      limCred,
       insertClienteLojaBody,
       insertClienteLojaRequest,
       params.cgc,
@@ -460,44 +502,105 @@ export default function DevClientesPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          {cards.map((card) => (
-            <div key={card.key} className="rounded-xl border border-custom-light-300 bg-white p-4 shadow-sm">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-[240px]">
-                  <div className="text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700">
-                    {card.title}
-                  </div>
-                  <div className="mt-1 text-sm font-montserrat text-custom-dark-1000">
-                    <span className="font-semibold">End-point:</span>{" "}
-                    <span className="font-mono text-[13px]">{card.endpoint}</span>
-                  </div>
-                </div>
-                <button
-                  onClick={card.onRun}
-                  disabled={Boolean(loading) || card.disabled}
-                  className="min-h-10 px-3 py-2 rounded-md bg-tints-french-blue text-white font-montserrat text-sm font-semibold disabled:opacity-60"
-                >
-                  {loading === card.key ? "Carregando..." : "Executar"}
-                </button>
+        <div className="rounded-xl border border-custom-light-300 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-[240px]">
+              <div className="text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700">
+                Cliente de teste (default)
               </div>
-
-              <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
-                <div className="rounded-lg border border-custom-light-300 bg-custom-light-100 p-3">
-                  <div className="text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700 mb-2">
-                    JSON Request
-                  </div>
-                  {card.requestUi ? <div className="mb-3">{card.requestUi}</div> : null}
-                  <pre className="text-xs overflow-auto">{prettyJson(card.request)}</pre>
-                </div>
-                <div className="rounded-lg border border-custom-light-300 bg-custom-light-100 p-3">
-                  <div className="text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700 mb-2">
-                    JSON Response
-                  </div>
-                  <pre className="text-xs overflow-auto">{prettyJson(card.response)}</pre>
-                </div>
+              <div className="mt-1 text-sm font-montserrat text-custom-dark-1000">
+                <span className="font-semibold">Fonte:</span>{" "}
+                <span className="font-mono text-[13px]">liz_refator/integration/cliente_teste_3.json</span>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setClienteNovoFormBody(JSON.stringify(clienteTeste1, null, 2));
+                setParams((p) => ({
+                  ...p,
+                  cgc: String(clienteTeste1.cnpj ?? "").trim(),
+                }));
+              }}
+              className="h-9 inline-flex items-center rounded-md border border-custom-light-300 bg-white px-3 font-montserrat text-xs font-semibold text-custom-dark-1000 hover:bg-custom-light-100"
+            >
+              Reset default
+            </button>
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 gap-3">
+            <label className="grid gap-1">
+              <div className="text-xs font-montserrat text-custom-dark-700">form (JSON)</div>
+              <textarea
+                value={clienteNovoFormBody}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setClienteNovoFormBody(next);
+                  try {
+                    const parsed = JSON.parse(next || "{}") as UnknownRecord;
+                    const cnpj = String(parsed.cnpj ?? "").trim();
+                    if (cnpj) setParams((p) => ({ ...p, cgc: cnpj }));
+                  } catch {
+                  }
+                }}
+                className="min-h-40 px-3 py-2 rounded-md border border-custom-light-300 bg-white font-mono text-xs text-custom-dark-1000"
+                spellCheck={false}
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {cards.map((card) => (
+            <Fragment key={card.key}>
+              <div className="rounded-xl border border-custom-light-300 bg-white p-4 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-[240px]">
+                    <div className="text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700">
+                      {card.title}
+                    </div>
+                    <div className="mt-1 text-sm font-montserrat text-custom-dark-1000">
+                      <span className="font-semibold">End-point:</span>{" "}
+                      <span className="font-mono text-[13px]">{card.endpoint}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-custom-light-300 bg-custom-light-100 p-3">
+                    <div className="text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700 mb-2">
+                      JSON Request
+                    </div>
+                    {card.requestUi ? <div className="mb-3">{card.requestUi}</div> : null}
+                    <pre className="text-xs overflow-auto">{prettyJson(card.request)}</pre>
+                  </div>
+                  <div className="rounded-lg border border-custom-light-300 bg-custom-light-100 p-3">
+                    <div className="text-xs font-montserrat font-semibold uppercase tracking-wide text-custom-dark-700 mb-2">
+                      JSON Response
+                    </div>
+                    <pre className="text-xs overflow-auto">{prettyJson(card.response)}</pre>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={card.onRun}
+                    disabled={Boolean(loading) || card.disabled}
+                    className="min-h-10 px-3 py-2 rounded-md bg-tints-french-blue text-white font-montserrat text-sm font-semibold disabled:opacity-60"
+                  >
+                    {loading === card.key ? `Carregando... ${card.title}` : `EXECUTAR ${card.title}`}
+                  </button>
+                </div>
+              </div>
+
+              {card.key === "verificarToken" ? (
+                <div className="rounded-xl border border-custom-light-300 bg-white px-4 py-3 shadow-sm">
+                  <h2 className="text-sm font-montserrat font-semibold text-custom-dark-1000">
+                    Fluxo cliente novo
+                  </h2>
+                </div>
+              ) : null}
+            </Fragment>
           ))}
         </div>
       </div>

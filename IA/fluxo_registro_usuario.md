@@ -13,7 +13,7 @@ Base URL: `INTEGRATION_URL_API`
 
 ### Passo 1.2: Coleta de Dados Mandatórios
 1. **Limite:** `GET /Servidor/webservice/integration/getIntegradora?id={id}` -> Obter `limiteCredito`.
-2. **ID Integração:** `GET /Servidor/webservice/integration/getProximoCustomerIdIntegrado?idIntegradora={id}` -> Obter o valor numerico cru que é enviado.
+2. **CustomerId:** `GET /Servidor/webservice/integration/getProximoCustomerIdIntegrado?idIntegradora={id}` -> Obter o valor numérico cru (`customerId`) que é enviado.
 
 ### Passo 1.3: Cadastro de Cliente
 `POST /Servidor/webservice/integration/insertClienteLoja`
