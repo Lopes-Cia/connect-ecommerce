@@ -18,6 +18,7 @@ Este arquivo existe para registrar as informações que você vai enviar nesta c
 - Processo de teste no próprio sistema (sem terminal): abrir `http://localhost:3000/dev/clientes` → no card `getClienteLoja` conferir `cgc` (vem do cliente default) → clicar `Executar` → ler o `JSON Response` para decidir se o cliente existe.
 - Teste executado (cliente_teste_2 / cnpj 11222333000181): `getClienteLoja` retornou cliente não encontrado (interpretação: não cadastrado no ERP).
 - Foi criado um terceiro JSON de teste em `liz_refator/integration/cliente_teste_3.json` para repetir o fluxo com outro CNPJ quando um teste anterior ficar “sujo”.
+- Foi criado um quarto JSON de teste em `liz_refator/integration/cliente_teste_4.json` para repetir o fluxo quando um cliente anterior já tiver sido cadastrado.
 - Regra prática para os JSONs de teste: `cnpj`, `whatsapp` e `cep` sempre como string só com números.
 - Exemplos de resposta do `getClienteLoja` para amarrar contratos:
   - Caso cadastrado: `liz_refator/integration/clienteExiste.json` (success=true, `data` com `codCli`, `limCred`, `enderecos[]`, etc.)
@@ -31,3 +32,4 @@ Este arquivo existe para registrar as informações que você vai enviar nesta c
   - `AUTH_BASE_URL` (Fase de Autenticação / Auth)
 - Regra do fluxo cliente novo (ERP) para `insertClienteLoja`: `enderecos[0].codigoIbge = 0` (por enquanto).
 - Defaults do payload estão OK: `status="PEN"`, `idTabPreco=1`, `enderecos[0].principal="Sim"`.
+- Para o `insertClienteLoja` no DEV: usar 2 ações separadas — botão "Gerar payload" e botão "EXECUTAR insertClienteLoja".

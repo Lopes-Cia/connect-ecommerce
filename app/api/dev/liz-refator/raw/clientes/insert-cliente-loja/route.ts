@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server"
 
 import { getIntegrationEnvConfig } from "@/liz_refator/adapters/integration-config"
-import { parseInsertClienteLojaResult } from "@/liz_refator/contracts/lopes/clientes"
 import { integrationRawPostJsonAuth, RawHttpError } from "@/liz_refator/integration/rawClient"
 import { CLIENTES_API_ROUTES } from "@/liz_refator/integration/integrationRoutes"
 import { redactRawRequestInfo } from "@/liz_refator/integration/redact"
+
+function parseInsertClienteLojaResult(input: unknown): boolean {
+  if (input === true) return true
+  if (input === false) return false
+  if (input === "true") return true
+  if (input === "false") return false
+  return Boolean(input)
+}
 
 export const dynamic = "force-dynamic"
 
@@ -29,8 +36,12 @@ export async function POST(request: Request) {
 
   try {
     const result = await integrationRawPostJsonAuth<unknown>(CLIENTES_API_ROUTES.insertClienteLoja, normalizedBody)
-    const parsed = parseInsertClienteLojaResult(result.data)
-    return NextResponse.json({ success: true, request: redactRawRequestInfo(result.request), data: parsed })
+    return NextResponse.json({
+      success: true,
+      request: redactRawRequestInfo(result.request),
+      data: result.data,
+      parsed: parseInsertClienteLojaResult(result.data),
+    })
   } catch (error) {
     if (error instanceof RawHttpError) {
       const status = error.status >= 400 ? error.status : 500
@@ -44,3 +55,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message }, { status: 500 })
   }
 }
+

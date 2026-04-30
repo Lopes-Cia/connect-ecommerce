@@ -10,20 +10,6 @@ export function parseProximoCustomerIdIntegrado(input: unknown): number {
   return id
 }
 
-export function parseInsertClienteLojaResult(input: unknown): boolean {
-  if (input === true) return true
-  if (input === false) return false
-  if (input === 'true') return true
-  if (input === 'false') return false
-
-  const record = asRecord(input)
-  if (record && 'success' in record) {
-    return Boolean((record as { success?: unknown }).success)
-  }
-
-  throw new Error('Unexpected response from insertClienteLoja')
-}
-
 export type ClienteLojaEndereco = {
   customerId: number
   codigoIbge: number

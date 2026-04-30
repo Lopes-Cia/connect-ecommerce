@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
 
 import { CLIENTES_API_ROUTES } from "@/liz_refator/integration/integrationRoutes";
-import clienteTeste1 from "@/liz_refator/integration/cliente_teste_3.json";
+import clienteTeste1 from "@/liz_refator/integration/cliente_teste_4.json";
 
 type CallResult = {
   url: string;
@@ -19,6 +19,15 @@ type UnknownRecord = Record<string, unknown>;
 function asRecord(value: unknown): UnknownRecord | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   return value as UnknownRecord;
+}
+
+function parseJsonBody(text: string): { value: unknown; error: string | null } {
+  try {
+    return { value: JSON.parse(text || "{}") as unknown, error: null };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid JSON";
+    return { value: { error: message }, error: message };
+  }
 }
 
 function buildQueryString(params: Record<string, string>): string {
@@ -55,15 +64,6 @@ async function callApi(url: string, init: RequestInit): Promise<CallResult> {
   };
 }
 
-function parseJsonBody(text: string): { value: unknown; error: string | null } {
-  try {
-    return { value: JSON.parse(text || "{}") as unknown, error: null };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid JSON";
-    return { value: { error: message }, error: message };
-  }
-}
-
 export default function DevClientesPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [token, setToken] = useState("");
@@ -92,40 +92,7 @@ export default function DevClientesPage() {
   const [clienteNovoFormBody, setClienteNovoFormBody] = useState(() =>
     JSON.stringify(clienteTeste1, null, 2)
   );
-  const [insertClienteLojaBody, setInsertClienteLojaBody] = useState(() => {
-    const base = clienteTeste1;
-    const normalizeNullable = (value: unknown): string | null => {
-      const trimmed = String(value ?? "").trim();
-      return trimmed ? trimmed : null;
-    };
-    const payload = {
-      limCred: 0,
-      cliente: String((base as UnknownRecord).responsavel ?? "").trim(),
-      fantasia: String((base as UnknownRecord).fantasia ?? "").trim(),
-      cgc: String(base.cnpj ?? "").trim(),
-      inscicao: String((base as UnknownRecord).inscicao ?? "").trim(),
-      email: String(base.email ?? "").trim(),
-      telefone: String(base.whatsapp ?? "").trim(),
-      status: "PEN",
-      idTabPreco: 1,
-      customerId: 0,
-      enderecos: [
-        {
-          customerId: 0,
-          codigoIbge: 0,
-          rua: String((base as UnknownRecord).rua ?? "").trim(),
-          numero: normalizeNullable((base as UnknownRecord).numero),
-          complemento: normalizeNullable((base as UnknownRecord).complemento),
-          bairro: String((base as UnknownRecord).bairro ?? "").trim(),
-          cep: String((base as UnknownRecord).cep ?? "").trim(),
-          municipio: String((base as UnknownRecord).municipio ?? "").trim(),
-          uf: String((base as UnknownRecord).uf ?? "").trim(),
-          principal: "Sim",
-        },
-      ],
-    };
-    return JSON.stringify(payload, null, 2);
-  });
+  const [insertClienteLojaBody, setInsertClienteLojaBody] = useState("{}");
 
   const enviarTokenUrl = useMemo(
     () =>
@@ -150,14 +117,6 @@ export default function DevClientesPage() {
   const getClienteLojaRequest = useMemo(() => ({ cgc: params.cgc || undefined }), [params.cgc]);
   const getIntegradoraRequest = useMemo(() => ({}), []);
   const getProximoCustomerIdIntegradoRequest = useMemo(() => ({}), []);
-  const clienteNovoFormRequest = useMemo(() => {
-    try {
-      return JSON.parse(clienteNovoFormBody || "{}") as unknown;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Invalid JSON";
-      return { error: message };
-    }
-  }, [clienteNovoFormBody]);
   const insertClienteLojaRequest = useMemo(() => {
     try {
       return JSON.parse(insertClienteLojaBody || "{}") as unknown;
@@ -332,22 +291,20 @@ export default function DevClientesPage() {
         disabled: false,
         requestUi: (
           <div className="grid grid-cols-1 gap-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-xs font-montserrat text-custom-dark-700">
-                Form: <span className="font-mono">responsavel/fantasia/cnpj/inscicao/email/whatsapp</span> + Endereço
-              </div>
-            </div>
             <div className="grid grid-cols-1 gap-1 text-[11px] font-montserrat text-custom-dark-700">
               <div>
-                Gerado/default: <span className="font-mono">status=\"PEN\"</span>, <span className="font-mono">principal=\"Sim\"</span>,{" "}
-                <span className="font-mono">idTabPreco=1</span>, <span className="font-mono">codigoIbge=0</span>,{" "}
-                <span className="font-mono">customerId</span> (vem do getProximoCustomerIdIntegrado),{" "}
-                <span className="font-mono">limCred</span> (vem do getIntegradora)
+                Defaults: <span className="font-mono">status=\"PEN\"</span>, <span className="font-mono">idTabPreco=1</span>,{" "}
+                <span className="font-mono">codigoIbge=0</span>, <span className="font-mono">principal=\"Sim\"</span>
+              </div>
+              <div>
+                Dinâmicos: <span className="font-mono">customerId</span> (getProximoCustomerIdIntegrado),{" "}
+                <span className="font-mono">limCred</span> (getIntegradora → filialWinthor.limiteCredito)
               </div>
               <div>
                 Env (server): <span className="font-mono">idIntegradora</span> (não vem do client)
               </div>
             </div>
+
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="text-xs font-montserrat text-custom-dark-700">
                 customerId atual: <span className="font-mono">{customerId || 0}</span>
@@ -358,20 +315,15 @@ export default function DevClientesPage() {
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => setClienteNovoFormBody(JSON.stringify(clienteTeste1, null, 2))}
-                  className="h-9 inline-flex items-center rounded-md border border-custom-light-300 bg-white px-3 font-montserrat text-xs font-semibold text-custom-dark-1000 hover:bg-custom-light-100"
-                >
-                  Reset form
-                </button>
-                <button
-                  type="button"
                   onClick={() => {
-                    const form = clienteNovoFormRequest as UnknownRecord
+                    const parsedForm = parseJsonBody(clienteNovoFormBody);
+                    if (parsedForm.error) return;
+                    const form = asRecord(parsedForm.value) ?? {};
                     const normalizeNullable = (value: unknown): string | null => {
-                      const trimmed = String(value ?? "").trim()
-                      return trimmed ? trimmed : null
-                    }
-                    const payload = {
+                      const trimmed = String(value ?? "").trim();
+                      return trimmed ? trimmed : null;
+                    };
+                    const nextPayload = {
                       limCred: limCred || 0,
                       cliente: String(form.responsavel ?? "").trim(),
                       fantasia: String(form.fantasia ?? "").trim(),
@@ -396,8 +348,8 @@ export default function DevClientesPage() {
                           principal: "Sim",
                         },
                       ],
-                    }
-                    setInsertClienteLojaBody(JSON.stringify(payload, null, 2))
+                    };
+                    setInsertClienteLojaBody(JSON.stringify(nextPayload, null, 2));
                   }}
                   className="h-9 inline-flex items-center rounded-md bg-tints-french-blue px-3 font-montserrat text-xs font-semibold text-white hover:opacity-95"
                 >
@@ -405,15 +357,7 @@ export default function DevClientesPage() {
                 </button>
               </div>
             </div>
-            <label className="grid gap-1">
-              <div className="text-xs font-montserrat text-custom-dark-700">form (JSON)</div>
-              <textarea
-                value={clienteNovoFormBody}
-                onChange={(e) => setClienteNovoFormBody(e.target.value)}
-                className="min-h-40 px-3 py-2 rounded-md border border-custom-light-300 bg-white font-mono text-xs text-custom-dark-1000"
-                spellCheck={false}
-              />
-            </label>
+
             <label className="grid gap-1">
               <div className="text-xs font-montserrat text-custom-dark-700">body (JSON)</div>
               <textarea
@@ -461,10 +405,9 @@ export default function DevClientesPage() {
       getClienteLojaRequest,
       getIntegradoraRequest,
       getProximoCustomerIdIntegradoRequest,
-      clienteNovoFormBody,
-      clienteNovoFormRequest,
       customerId,
       limCred,
+      clienteNovoFormBody,
       insertClienteLojaBody,
       insertClienteLojaRequest,
       params.cgc,
@@ -510,7 +453,7 @@ export default function DevClientesPage() {
               </div>
               <div className="mt-1 text-sm font-montserrat text-custom-dark-1000">
                 <span className="font-semibold">Fonte:</span>{" "}
-                <span className="font-mono text-[13px]">liz_refator/integration/cliente_teste_3.json</span>
+                <span className="font-mono text-[13px]">liz_refator/integration/cliente_teste_4.json</span>
               </div>
             </div>
             <button
