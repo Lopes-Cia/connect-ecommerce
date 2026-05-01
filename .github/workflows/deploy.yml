@@ -37,5 +37,5 @@ jobs:
             rm -rf node_modules .next
             npm ci --production
             npm run build
-            pm2 restart connect-ecommerce || pm2 start npm --name "connect-ecommerce" -- start
+            pm2 restart connect-ecommerce || pm2 start npm --name "connect-ecommerce" -- start -- -p 3000
             pm2 save
