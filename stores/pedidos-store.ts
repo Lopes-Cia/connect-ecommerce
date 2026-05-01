@@ -104,28 +104,16 @@ export type PedidosState = {
   }) => Promise<PedidoDraft>;
 };
 
-const pedido_itens_mockup = [
-  {
-    codProd: 9,
-    produto: "Cerveja Brahma Chopp Lata 473 ml",
-    brinde: "N",
-    qt: 5,
-    valorUnitario: 14.99,
-    desconto: 0,
-    subTotal: 74.95,
-  },
-  {
-    codProd: 94,
-    produto: "Lava-roupas em pó Tixan Ypê Maciez, caixa com 9 unidades de 2,2 kg",
-    brinde: "N",
-    qt: 25,
-    valorUnitario: 14.99,
-    desconto: 0,
-    subTotal: 374.75,
-  },
-] as const;
+function unixTimestampMicros(): string {
+  const micros = Math.floor(Date.now());
+  return String(micros);
+}
 
-export const pedido_mockup = {
+/*
+Exemplo do JSON antigo usado para comparação manual durante os testes.
+Não é usado pelo código em runtime.
+*/
+export const pedido_mockup_exemplo = {
   idIntegradora: 8,
   tipo: "OrderLopes",
   orderId: "009200417042026",
@@ -149,7 +137,26 @@ export const pedido_mockup = {
       numero: null,
       UF: "SC",
     },
-    itens: pedido_itens_mockup,
+    itens: [
+      {
+        codProd: 9,
+        produto: "Cerveja Brahma Chopp Lata 473 ml",
+        brinde: "N",
+        qt: 5,
+        valorUnitario: 14.99,
+        desconto: 0,
+        subTotal: 74.95,
+      },
+      {
+        codProd: 94,
+        produto: "Lava-roupas em pó Tixan Ypê Maciez, caixa com 9 unidades de 2,2 kg",
+        brinde: "N",
+        qt: 25,
+        valorUnitario: 14.99,
+        desconto: 0,
+        subTotal: 374.75,
+      },
+    ],
     idTransp: 5,
     transportadora: "Transportadora retira",
     planoCodigo: "PIX",
@@ -171,29 +178,27 @@ export const pedido_mockup = {
 
 export function buildPedidoItensFromCarrinho(items: CartItem[]) {
   const list = Array.isArray(items) ? items : [];
-  if (list.length === 0) return pedido_itens_mockup.map((item) => ({ ...item, desconto: 0 }));
+  if (list.length === 0) return [];
 
-  return list.map((item, index) => {
-    const fallback = pedido_itens_mockup[Math.min(index, pedido_itens_mockup.length - 1)];
-
+  return list.map((item) => {
     const codProdCandidate = Number.parseInt(String(item.id ?? "").trim(), 10);
-    const codProd = Number.isFinite(codProdCandidate) ? codProdCandidate : fallback.codProd;
+    const codProd = Number.isFinite(codProdCandidate) ? codProdCandidate : NaN;
 
-    const produto = String(item.name ?? "").trim() || fallback.produto;
+    const produto = String(item.name ?? "").trim();
 
     const qtCandidate = Number(item.quantity);
-    const qt = Number.isFinite(qtCandidate) && qtCandidate > 0 ? Math.floor(qtCandidate) : fallback.qt;
+    const qt = Number.isFinite(qtCandidate) && qtCandidate > 0 ? Math.floor(qtCandidate) : 0;
 
     const valorUnitarioCandidate = Number(item.unitPrice);
-    const valorUnitario = Number.isFinite(valorUnitarioCandidate) ? valorUnitarioCandidate : fallback.valorUnitario;
+    const valorUnitario = Number.isFinite(valorUnitarioCandidate) ? valorUnitarioCandidate : 0;
 
     const subtotalCandidate = valorUnitario * qt;
-    const subTotal = Number.isFinite(subtotalCandidate) ? Number(subtotalCandidate.toFixed(2)) : fallback.subTotal;
+    const subTotal = Number.isFinite(subtotalCandidate) ? Number(subtotalCandidate.toFixed(2)) : 0;
 
     return {
-      ...fallback,
       codProd,
       produto,
+      brinde: "N",
       qt,
       valorUnitario,
       desconto: 0,
@@ -227,13 +232,44 @@ type OrderLopesCliente = {
   UF: string;
 };
 
+function formatDateTime(value: Date): string {
+  const d = value;
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(
+    d.getMinutes()
+  )}:${pad2(d.getSeconds())}`;
+}
+
 export function buildPedidoMockupFromCarrinho(
   items: CartItem[],
   options?: { checkoutForm?: CheckoutFormData; loginData?: unknown }
 ) {
+  const orderId = unixTimestampMicros();
   const itens = buildPedidoItensFromCarrinho(items);
+  const itensValidos = itens.filter(
+    (it) => Number.isFinite(Number((it as { codProd?: unknown }).codProd)) && Number((it as { qt?: unknown }).qt) > 0
+  );
+  if (itensValidos.length === 0) {
+    throw new Error("Carrinho vazio. Adicione itens antes de finalizar.");
+  }
+
+  const dateOrder = formatDateTime(new Date());
   const total = sumPedidoItensTotal(itens);
-  const cliente: OrderLopesCliente = { ...(pedido_mockup.payload.cliente as unknown as OrderLopesCliente) };
+  const cliente: OrderLopesCliente = {
+    nome: "",
+    fantasia: "",
+    CPFCNPJ: "",
+    inscRg: "",
+    email: "",
+    bairro: "",
+    CEP: "",
+    cidade: "",
+    complemento: null,
+    endereco: "",
+    fone: "",
+    numero: null,
+    UF: "",
+  };
 
   const loginObj =
     options?.loginData && typeof options.loginData === "object" && !Array.isArray(options.loginData)
@@ -278,19 +314,38 @@ export function buildPedidoMockupFromCarrinho(
     if (endereco.uf) cliente.UF = String(endereco.uf).trim();
   }
 
+  if (!cliente.CPFCNPJ) {
+    throw new Error("Cliente sem CPFCNPJ/CNPJ. Faça login novamente.");
+  }
+
   return {
-    ...pedido_mockup,
+    idIntegradora: 0,
+    tipo: "OrderLopes",
+    orderId,
     payload: {
-      ...pedido_mockup.payload,
+      orderId,
+      orderMarketplace: null,
+      tipo: "OrderLopes",
+      dateOrder,
       cliente,
-      itens,
+      itens: itensValidos,
       valor: total,
       valorDesconto: 0,
+      valorFrete: 0,
+      valorTaxas: 0,
+      idTransp: 5,
+      transportadora: "Transportadora retira",
+      planoCodigo: "PIX",
+      planoDescricao: "A VISTA",
+      posicao: "Aguardando Pagamento",
       pagamento: {
-        ...pedido_mockup.payload.pagamento,
+        codAutorizacao: null,
+        nsu: null,
+        dataPagamento: dateOrder,
         valorPago: total,
       },
     },
+    integrado: "N",
   };
 }
 
