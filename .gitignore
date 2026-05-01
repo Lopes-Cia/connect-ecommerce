@@ -32,7 +32,6 @@ yarn-error.log*
 
 # editor
 .claude/
-.github/
 openspec
 .vscode
 
