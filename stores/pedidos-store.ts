@@ -211,13 +211,29 @@ function sumPedidoItensTotal(itens: Array<{ subTotal?: unknown }>): number {
   return Number.isFinite(total) ? Number(total.toFixed(2)) : 0;
 }
 
+type OrderLopesCliente = {
+  nome: string;
+  fantasia: string;
+  CPFCNPJ: string;
+  inscRg: string;
+  email: string;
+  bairro: string;
+  CEP: string;
+  cidade: string;
+  complemento: string | null;
+  endereco: string;
+  fone: string;
+  numero: string | null;
+  UF: string;
+};
+
 export function buildPedidoMockupFromCarrinho(
   items: CartItem[],
   options?: { checkoutForm?: CheckoutFormData; loginData?: unknown }
 ) {
   const itens = buildPedidoItensFromCarrinho(items);
   const total = sumPedidoItensTotal(itens);
-  const cliente = { ...pedido_mockup.payload.cliente };
+  const cliente: OrderLopesCliente = { ...(pedido_mockup.payload.cliente as unknown as OrderLopesCliente) };
 
   const loginObj =
     options?.loginData && typeof options.loginData === "object" && !Array.isArray(options.loginData)

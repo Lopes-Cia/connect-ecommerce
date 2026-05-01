@@ -187,7 +187,7 @@ export default function LoginForm() {
         loginData: {
           token:
             response.data && typeof response.data === "object" && !Array.isArray(response.data)
-              ? String((response.data as Record<string, unknown>).hashToken ?? "").trim() || data.token.trim()
+              ? String((response.data as unknown as { hashToken?: unknown })?.hashToken ?? "").trim() || data.token.trim()
               : data.token.trim(),
           meus_dados: {
             id: Number.isFinite(customerId) && customerId > 0 ? String(customerId) : "",
