@@ -1,0 +1,27 @@
+{
+  "limCred": 0,
+  "cliente": "NOME DO RESPONSÁVEL (FORM)",
+  "fantasia": "NOME FANTASIA (FORM)",
+  "cgc": "30873832000183",
+  "inscicao": "",
+  "email": "email@dominio.com",
+  "telefone": "41999999999",
+  "status": "PEN",
+  "idTabPreco": 1,
+  "customerId": 0,
+  "enderecos": [
+    {
+      "customerId": 0,
+      "codigoIbge": 0,
+      "rua": "RUA (FORM)",
+      "numero": null,
+      "complemento": null,
+      "bairro": "BAIRRO (FORM)",
+      "cep": "00000000",
+      "municipio": "CIDADE (FORM)",
+      "uf": "SC",
+      "principal": "Sim"
+    }
+  ]
+}
+

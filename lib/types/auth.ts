@@ -1,8 +1,17 @@
 export interface RegisterUserInput {
   responsavel: string
+  fantasia?: string
   cnpj: string
+  inscicao?: string
   email: string
   whatsapp: string
+  cep?: string
+  rua?: string
+  numero?: string | null
+  complemento?: string | null
+  bairro?: string
+  municipio?: string
+  uf?: string
 }
 
 export interface SendLoginTokenInput {

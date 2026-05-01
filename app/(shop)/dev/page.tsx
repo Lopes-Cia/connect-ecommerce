@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 import { CardCompM1 } from "@/components/cards/cardCompM1";
 import { CardCompM2 } from "@/components/cards/cardCompM2";
@@ -25,6 +26,7 @@ type Action = {
   group: ActionGroup;
   uses: string[];
   variant?: ActionVariant;
+  enabled?: boolean;
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -82,6 +84,7 @@ async function callApi(url: string, init: RequestInit): Promise<CallResult> {
 export default function DevPage() {
   const [result, setResult] = useState<CallResult | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const [clienteToken, setClienteToken] = useState<string>("");
   const [params, setParams] = useState({
     codigo: "1",
     codPai: "",
@@ -91,8 +94,6 @@ export default function DevPage() {
     categoriaSlugPath: "categoria/bebidas",
     email: "",
     whatsapp: "",
-    token: "",
-    idIntegradoraUsuario: "",
     idProduto: "",
     produtoSlug: "",
     includeDescendants: "1",
@@ -304,7 +305,7 @@ export default function DevPage() {
         {
           group: "raw",
           uses: ["email", "whatsapp"],
-          label: "RAW Usuarios: enviarToken",
+          label: "RAW Clientes: enviarToken",
           url:
             "/api/dev/liz-refator/raw/usuarios/enviar-token" +
             buildQueryString({
@@ -315,15 +316,15 @@ export default function DevPage() {
         },
         {
           group: "raw",
-          uses: ["token", "idIntegradoraUsuario"],
-          label: "RAW Usuarios: verificarToken",
+          uses: [],
+          label: "RAW Clientes: verificarToken",
           url:
             "/api/dev/liz-refator/raw/usuarios/verificar-token" +
             buildQueryString({
-              token: params.token,
-              idIntegradora: params.idIntegradoraUsuario,
+              token: clienteToken,
             }),
           init: { method: "POST" as const },
+          enabled: Boolean(clienteToken),
         },
         {
           group: "raw",
@@ -386,7 +387,7 @@ export default function DevPage() {
         },
       ] as Action[];
     },
-    [params]
+    [clienteToken, params]
   );
 
   const backRequestPretty = useMemo(() => {
@@ -424,7 +425,23 @@ export default function DevPage() {
     <div className="min-h-screen bg-linear-to-br from-custom-light-100 to-custom-light-300 px-4 py-6">
       <div className="max-w-5xl mx-auto space-y-4">
         <div className="rounded-xl border border-custom-light-300 bg-white p-4 shadow-sm">
-          <h1 className="text-lg font-montserrat font-semibold text-custom-dark-1000">Dev — Motor de Testes</h1>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-lg font-montserrat font-semibold text-custom-dark-1000">Dev — Motor de Testes</h1>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/dev/clientes"
+                className="h-9 inline-flex items-center rounded-md border border-custom-light-300 bg-white px-3 font-montserrat text-sm font-semibold text-custom-dark-1000 hover:bg-custom-light-100"
+              >
+                Clientes
+              </Link>
+              <Link
+                href="/dev/registro"
+                className="h-9 inline-flex items-center rounded-md border border-custom-light-300 bg-white px-3 font-montserrat text-sm font-semibold text-custom-dark-1000 hover:bg-custom-light-100"
+              >
+                Registro
+              </Link>
+            </div>
+          </div>
           <p className="text-sm font-montserrat text-custom-dark-700">
             Endpoints para validar tokenService e chamadas do piloto.
           </p>
@@ -552,23 +569,6 @@ export default function DevPage() {
               />
             </label>
             <label className="grid gap-1">
-              <div className="text-xs font-montserrat text-custom-dark-700">token</div>
-              <input
-                value={params.token}
-                onChange={(e) => setParams((p) => ({ ...p, token: e.target.value }))}
-                className="h-10 px-3 rounded-md border border-custom-light-300 bg-white font-montserrat text-sm text-custom-dark-1000"
-              />
-            </label>
-            <label className="grid gap-1">
-              <div className="text-xs font-montserrat text-custom-dark-700">idIntegradora (opcional)</div>
-              <input
-                value={params.idIntegradoraUsuario}
-                onChange={(e) => setParams((p) => ({ ...p, idIntegradoraUsuario: e.target.value }))}
-                className="h-10 px-3 rounded-md border border-custom-light-300 bg-white font-montserrat text-sm text-custom-dark-1000"
-                placeholder="ex: 8"
-              />
-            </label>
-            <label className="grid gap-1">
               <div className="text-xs font-montserrat text-custom-dark-700">idProduto</div>
               <input
                 value={params.idProduto}
@@ -685,8 +685,6 @@ export default function DevPage() {
                   categoriaSlugPath: "categoria/bebidas",
                   email: "",
                   whatsapp: "",
-                  token: "",
-                  idIntegradoraUsuario: "",
                   idProduto: "",
                   produtoSlug: "",
                   includeDescendants: "1",
@@ -725,12 +723,17 @@ export default function DevPage() {
                   setLoading(action.url);
                   try {
                     const res = await callApi(action.url, action.init);
+                    if (action.url.startsWith("/api/dev/liz-refator/raw/usuarios/enviar-token")) {
+                      const payload = res.payload as { data?: unknown } | null;
+                      const nextToken = payload && typeof payload === "object" ? payload.data : null;
+                      if (typeof nextToken === "string") setClienteToken(nextToken);
+                    }
                     setResult(res);
                   } finally {
                     setLoading(null);
                   }
                 }}
-                disabled={Boolean(loading)}
+                disabled={Boolean(loading) || action.enabled === false}
                 className={[
                   "min-h-10 px-3 py-2 rounded-md text-white font-montserrat text-sm font-semibold disabled:opacity-60 text-left transition-colors",
                   action.group === "raw"

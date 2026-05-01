@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "request": {
+    "url": "https://gp.lopesecia.com.br:9004/Servidor/webservice/integration/getProximoCustomerIdIntegrado?idIntegradora=8",
+    "method": "GET",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "<redacted>"
+    },
+    "query": {
+      "idIntegradora": 8
+    }
+  },
+  "data": 7
+}

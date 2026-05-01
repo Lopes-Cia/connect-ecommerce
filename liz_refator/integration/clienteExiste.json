@@ -1,0 +1,42 @@
+{
+  "success": true,
+  "request": {
+    "url": "https://gp.lopesecia.com.br:9004/Servidor/webservice/integration/getClienteLoja?cgc=25231575000146&idIntegradora=8",
+    "method": "GET",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "<redacted>"
+    },
+    "query": {
+      "cgc": "25231575000146",
+      "idIntegradora": 8
+    }
+  },
+  "data": {
+    "codCli": 374,
+    "limCred": 100000,
+    "cliente": "COMERCIO DE BEBIDAS POLIDORO LTDA",
+    "fantasia": "BEBIDAS POLIDORO",
+    "cgc": "25231575000146",
+    "inscicao": "258076992",
+    "email": "smbebidas91@gmail.com",
+    "telefone": "48988088888",
+    "status": "PEN",
+    "idIntegradora": 8,
+    "idTabPreco": 1,
+    "customerId": 1,
+    "enderecos": [
+      {
+        "customerId": 1,
+        "codigoIbge": 4211900,
+        "rua": "RODOVIA BR-101",
+        "bairro": "PACHECOS",
+        "cep": "88135010",
+        "municipio": "PALHOCA",
+        "uf": "SC",
+        "principal": "Sim"
+      }
+    ]
+  }
+}
+

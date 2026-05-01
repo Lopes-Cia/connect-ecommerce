@@ -1,21 +1,16 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server"
 
-import { getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
-import { ensureAuthWebserviceToken } from '@/lib/integration/authWebserviceClient'
-import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
-import { toRawToken } from '@/lib/integration/token'
+import { RawHttpError } from "@/liz_refator/integration/rawClient"
+import { redactRawRequestInfo } from "@/liz_refator/integration/redact"
+import { clientesRawEnviarToken } from "@/liz_refator/integration/usuariosRaw"
 
 interface SendTokenRequestBody {
   email?: string
   whatsapp?: string
 }
 
-
-
 export async function POST(request: Request) {
   try {
-
-    console.log("r1")
     const body = (await request.json()) as SendTokenRequestBody
     const email = body.email?.trim() ?? ''
     const whatsapp = body.whatsapp?.trim() ?? ''
@@ -32,50 +27,17 @@ export async function POST(request: Request) {
       )
     }
 
-    const query = new URLSearchParams()
-    if (email) {
-      query.set('email', email)
-    } else {
-      query.set('whatsapp', whatsapp)
-    }
-
-    const url = `${getAuthWebserviceBaseUrl()}/enviarToken?${query.toString()}`
-    const tokenResponse = await ensureAuthWebserviceToken({ backgroundRefresh: false })
-    const authHeader = toRawToken(tokenResponse.hashToken)
-
-    const response = await fetchWithRetry(
-      url,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: authHeader,
-        },
-      },
-      {
-        maxAttempts: 3,
-      }
-    )
-
-    const data = await readResponseData<unknown>(response)
-
-    if (!response.ok) {
+    const result = await clientesRawEnviarToken({ email: email || undefined, whatsapp: whatsapp || undefined })
+    return NextResponse.json({ success: true, ...result, request: redactRawRequestInfo(result.request) })
+  } catch (error) {
+    if (error instanceof RawHttpError) {
+      const status = error.status >= 400 ? error.status : 500
       return NextResponse.json(
-        {
-          success: false,
-          message: 'Falha ao enviar token de acesso.',
-          data,
-        },
-        {
-          status: response.status,
-        }
+        { success: false, message: error.message, request: redactRawRequestInfo(error.request), data: error.data },
+        { status }
       )
     }
 
-    return NextResponse.json({
-      success: true,
-      data,
-    })
-  } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected send-token error'
 
     return NextResponse.json(

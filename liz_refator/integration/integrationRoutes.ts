@@ -5,8 +5,19 @@ export const PRODUTOS_INTEGRATION_ROUTES = {
   getListProdutoLoja: '/webservice/integration/getListProdutoLoja',
 } as const
 
-export const USUARIOS_API_ROUTES = {
+export const CLIENTES_API_ROUTES = {
   enviarToken: '/webservice/api/enviarToken',
   verificarToken: '/webservice/api/verificarTokenSistema',
+  getClienteLoja: '/Servidor/webservice/integration/getClienteLoja',
+  getIntegradora: '/Servidor/webservice/integration/getIntegradora',
+  getProximoCustomerIdIntegrado: '/Servidor/webservice/integration/getProximoCustomerIdIntegrado',
+  insertClienteLoja: '/Servidor/webservice/integration/insertClienteLoja',
 } as const
 
+export const AUTH_API_ROUTES = {
+  postAutenticaAplicativo: '/postAutenticaAplicativo',
+  insertOperadorSistema: '/insertOperadorSistema',
+  getOperadorSistema: '/getOperadorSistema',
+  insertVinculoUsuarioSite: '/insertVinculoUsuarioSite',
+  getVinculoUsuarioSite: '/getVinculoUsuarioSite',
+} as const

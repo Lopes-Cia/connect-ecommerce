@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
 import { RawHttpError } from "@/liz_refator/integration/rawClient"
-import { usuariosRawVerificarToken } from "@/liz_refator/integration/usuariosRaw"
+import { redactRawRequestInfo } from "@/liz_refator/integration/redact"
+import { clientesRawVerificarToken } from "@/liz_refator/integration/usuariosRaw"
 
 export const dynamic = "force-dynamic"
 
@@ -12,8 +13,6 @@ export async function POST(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const token = searchParams.get("token")
-  const idIntegradoraParam = searchParams.get("idIntegradora")
-  const idIntegradora = idIntegradoraParam ? Number.parseInt(idIntegradoraParam, 10) : undefined
 
   if (!token) {
     return NextResponse.json(
@@ -23,16 +22,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await usuariosRawVerificarToken({
-      token,
-      idIntegradora: Number.isNaN(idIntegradora as number) ? undefined : idIntegradora,
-    })
-    return NextResponse.json({ success: true, ...result })
+    const result = await clientesRawVerificarToken({ token })
+    return NextResponse.json({ success: true, ...result, request: redactRawRequestInfo(result.request) })
   } catch (error) {
     if (error instanceof RawHttpError) {
       const status = error.status >= 400 ? error.status : 500
       return NextResponse.json(
-        { success: false, message: error.message, request: error.request, data: error.data },
+        { success: false, message: error.message, request: redactRawRequestInfo(error.request), data: error.data },
         { status }
       )
     }

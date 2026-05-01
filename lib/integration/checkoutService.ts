@@ -1,7 +1,9 @@
 import "server-only";
 
 import { getIntegrationEnvConfig } from "./config";
+import { ensureAuthWebserviceToken } from "./authWebserviceClient";
 import { fetchWithRetry, HttpError, readResponseData } from "./network";
+import { toRawToken } from "./token";
 
 type SuccessResponse<T> = {
   success: true;
@@ -22,7 +24,12 @@ function buildIntegrationUrl(
   query?: Record<string, string | number | boolean | null | undefined>
 ): string {
   const normalizedBase = baseUrl.replace(/\/+$/, "");
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  let normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (/\/Servidor$/i.test(normalizedBase) && /^\/Servidor\//i.test(normalizedPath)) {
+    normalizedPath = normalizedPath.slice("/Servidor".length);
+  }
+
   const url = new URL(`${normalizedBase}${normalizedPath}`);
   if (query) {
     for (const [key, value] of Object.entries(query)) {
@@ -30,6 +37,10 @@ function buildIntegrationUrl(
     }
   }
   return url.toString();
+}
+
+function isMockFonte(): boolean {
+  return String(process.env.NEXT_PUBLIC_FONTE ?? "").toLowerCase() === "mock";
 }
 
 async function integrationRequest<T>(
@@ -41,9 +52,18 @@ async function integrationRequest<T>(
   const { integrationUrlApi } = getIntegrationEnvConfig();
   const url = buildIntegrationUrl(integrationUrlApi, path, query);
 
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  };
+  if (!isMockFonte()) {
+    const token = await ensureAuthWebserviceToken({ backgroundRefresh: true });
+    headers.Authorization = toRawToken(token.hashToken);
+  }
+
   const init: RequestInit = {
     method,
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    headers,
   };
   if (method !== "GET") init.body = JSON.stringify(body ?? {});
 

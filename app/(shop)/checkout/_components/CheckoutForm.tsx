@@ -75,9 +75,8 @@ export default function CheckoutForm() {
     setUiMessage(null);
     setIsSendingGp(true);
     try {
-      const pedido = buildPedidoMockupFromCarrinho(items);
-      console.log(pedido);
-
+      const pedido = buildPedidoMockupFromCarrinho(items, { checkoutForm, loginData });
+     console.log('pediddo',pedido.payload);
       const url = "/api/dev/insert-dado-integration";
       const response = await fetch(url, {
         method: "POST",
@@ -90,6 +89,8 @@ export default function CheckoutForm() {
           integrado: pedido.integrado,
         }),
       });
+ 
+      
       const responsePayload = await response.json().catch(() => null);
       const result = { url, method: "POST", status: response.status, ok: response.ok, payload: responsePayload };
 

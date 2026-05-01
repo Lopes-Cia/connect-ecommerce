@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 
+import { getIntegrationEnvConfig } from '@/lib/integration/config'
 import { insertDadoIntegration } from '@/lib/integration/gpClient'
 import { HttpError } from '@/lib/integration/network'
 
 export const dynamic = 'force-dynamic'
 
 type InsertBody = {
-  idIntegradora: number | string
   tipo: string
   orderId: string
   payload: string
@@ -17,18 +17,11 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Partial<InsertBody>
 
-    const idIntegradora = body.idIntegradora
+    const idIntegradora = getIntegrationEnvConfig().idIntegradora
     const tipo = String(body.tipo ?? '').trim()
     const orderId = String(body.orderId ?? '').trim()
     const payload = String(body.payload ?? '').trim()
     const integrado = String(body.integrado ?? '').trim()
-
-    if (idIntegradora === undefined || idIntegradora === null) {
-      return NextResponse.json(
-        { success: false, message: 'Parâmetro obrigatório ausente: idIntegradora' },
-        { status: 400 }
-      )
-    }
 
     if (!tipo || !orderId) {
       return NextResponse.json(
@@ -58,4 +51,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message }, { status: 500 })
   }
 }
-

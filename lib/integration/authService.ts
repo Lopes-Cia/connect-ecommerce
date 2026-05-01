@@ -162,10 +162,15 @@ async function refreshToken(currentToken: TokenResponse): Promise<TokenResponse>
 async function requestIntegrationConfig(token: TokenResponse, keyBean: KeyBean): Promise<IntegrationConfig> {
   const env = getIntegrationEnvConfig()
   const normalizedUrlApi = keyBean.urlApi.replace(/\/+$/, '')
-  const url = `${normalizedUrlApi}/Servidor/webservice/integration/getIntegradora?id=${env.idIntegradora}`
+  let path = '/Servidor/webservice/integration/getIntegradora'
+  if (/\/Servidor$/i.test(normalizedUrlApi) && /^\/Servidor\//i.test(path)) {
+    path = path.slice('/Servidor'.length)
+  }
+  const url = new URL(`${normalizedUrlApi}${path}`)
+  url.searchParams.set('id', String(env.idIntegradora))
 
   const response = await fetchWithRetry(
-    url,
+    url.toString(),
     {
       method: 'GET',
       headers: {
@@ -178,7 +183,7 @@ async function requestIntegrationConfig(token: TokenResponse, keyBean: KeyBean):
   const data = await readResponseData<unknown>(response)
 
   if (response.status !== 200) {
-    throw new HttpError('Failed to fetch integration config', response.status, url, data)
+    throw new HttpError('Failed to fetch integration config', response.status, url.toString(), data)
   }
 
   return ensureObject<IntegrationConfig>(data, 'Invalid integration config response')

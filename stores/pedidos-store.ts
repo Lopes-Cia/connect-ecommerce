@@ -211,14 +211,78 @@ function sumPedidoItensTotal(itens: Array<{ subTotal?: unknown }>): number {
   return Number.isFinite(total) ? Number(total.toFixed(2)) : 0;
 }
 
-export function buildPedidoMockupFromCarrinho(items: CartItem[]) {
+type OrderLopesCliente = {
+  nome: string;
+  fantasia: string;
+  CPFCNPJ: string;
+  inscRg: string;
+  email: string;
+  bairro: string;
+  CEP: string;
+  cidade: string;
+  complemento: string | null;
+  endereco: string;
+  fone: string;
+  numero: string | null;
+  UF: string;
+};
+
+export function buildPedidoMockupFromCarrinho(
+  items: CartItem[],
+  options?: { checkoutForm?: CheckoutFormData; loginData?: unknown }
+) {
   const itens = buildPedidoItensFromCarrinho(items);
   const total = sumPedidoItensTotal(itens);
+  const cliente: OrderLopesCliente = { ...(pedido_mockup.payload.cliente as unknown as OrderLopesCliente) };
+
+  const loginObj =
+    options?.loginData && typeof options.loginData === "object" && !Array.isArray(options.loginData)
+      ? (options.loginData as Record<string, unknown>)
+      : null;
+  const meus =
+    loginObj?.meus_dados && typeof loginObj.meus_dados === "object" && !Array.isArray(loginObj.meus_dados)
+      ? (loginObj.meus_dados as Record<string, unknown>)
+      : null;
+  const cnpj = String(meus?.cnpjCliente ?? meus?.cgc ?? meus?.CPFCNPJ ?? loginObj?.cnpjCliente ?? "").trim();
+  if (cnpj) {
+    cliente.CPFCNPJ = cnpj;
+  }
+
+  const form = options?.checkoutForm;
+  if (form) {
+    const nome = String(form.nome ?? "").trim();
+    const email = String(form.email ?? "").trim();
+    const telefone = String(form.telefone ?? "").trim();
+    const endereco = form.endereco ?? {
+      cep: "",
+      rua: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      uf: "",
+    };
+
+    if (nome) {
+      cliente.nome = nome;
+      cliente.fantasia = nome;
+    }
+    if (email) cliente.email = email;
+    if (telefone) cliente.fone = telefone;
+    if (endereco.cep) cliente.CEP = String(endereco.cep).trim();
+    if (endereco.rua) cliente.endereco = String(endereco.rua).trim();
+    if (endereco.numero) cliente.numero = String(endereco.numero).trim();
+    if (endereco.complemento) cliente.complemento = String(endereco.complemento).trim();
+    if (endereco.bairro) cliente.bairro = String(endereco.bairro).trim();
+    if (endereco.cidade) cliente.cidade = String(endereco.cidade).trim();
+    if (endereco.uf) cliente.UF = String(endereco.uf).trim();
+  }
 
   return {
     ...pedido_mockup,
     payload: {
       ...pedido_mockup.payload,
+      cliente,
       itens,
       valor: total,
       valorDesconto: 0,
@@ -236,17 +300,17 @@ export function getPedidoMockupFromCarrinho() {
 }
 
 const INITIAL_FORM: CheckoutFormData = {
-  nome: pedido_mockup.payload.cliente.nome,
-  email: pedido_mockup.payload.cliente.email,
-  telefone: pedido_mockup.payload.cliente.fone,
+  nome: "",
+  email: "",
+  telefone: "",
   endereco: {
-    cep: pedido_mockup.payload.cliente.CEP,
-    rua: pedido_mockup.payload.cliente.endereco,
-    numero: pedido_mockup.payload.cliente.numero ?? "",
-    complemento: pedido_mockup.payload.cliente.complemento ?? "",
-    bairro: pedido_mockup.payload.cliente.bairro,
-    cidade: pedido_mockup.payload.cliente.cidade,
-    uf: pedido_mockup.payload.cliente.UF,
+    cep: "",
+    rua: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    cidade: "",
+    uf: "",
   },
   pagamento: {
     metodo: "pix",
