@@ -1,36 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server"
 
-import { setSession } from '@/lib/auth/session'
-import { getAuthWebserviceBaseUrl } from '@/lib/auth/externalApi'
-import { ensureAuthWebserviceToken } from '@/lib/integration/authWebserviceClient'
-import { fetchWithRetry, readResponseData } from '@/lib/integration/network'
-import { toRawToken } from '@/lib/integration/token'
+import { setSession } from "@/lib/auth/session"
+import { RawHttpError, integrationRawGetJsonAuth } from "@/liz_refator/integration/rawClient"
+import { redactRawRequestInfo } from "@/liz_refator/integration/redact"
+import { CLIENTES_API_ROUTES } from "@/liz_refator/integration/integrationRoutes"
+import { clientesRawVerificarToken } from "@/liz_refator/integration/usuariosRaw"
 
 interface VerifyTokenRequestBody {
   token: string
 }
-
-interface VerifyTokenResponse {
-  idUsuario: number
-  hashToken: string
-  canal: string
-  cnpjCliente?: string
-  dtCriacao?: string
-  dtExpira?: string
-  usado?: boolean
-  tentativas?: number
-  maxTentativas?: number
-}
-
-interface OperadorResponse {
-  id: number
-  nome?: string
-  email?: string
-  telefone?: string
-  [key: string]: unknown
-}
-
-
 
 export async function POST(request: Request) {
   try {
@@ -49,83 +27,64 @@ export async function POST(request: Request) {
       )
     }
 
-    const tokenResponse = await ensureAuthWebserviceToken({ backgroundRefresh: false })
-    const authHeader = toRawToken(tokenResponse.hashToken)
-    const baseUrl = getAuthWebserviceBaseUrl()
-
-    const verifyUrl = `${baseUrl}/verificarTokenSistema?token=${encodeURIComponent(token)}`
-    const verifyResponse = await fetchWithRetry(
-      verifyUrl,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: authHeader,
-        },
-      },
-      {
-        maxAttempts: 3,
-      }
-    )
-
-    const verifyData = await readResponseData<VerifyTokenResponse>(verifyResponse)
-
-    if (!verifyResponse.ok || !verifyData || typeof verifyData.idUsuario !== 'number') {
+    const verifyResult = await clientesRawVerificarToken({ token })
+    const verifyRecord =
+      verifyResult.data && typeof verifyResult.data === "object" && !Array.isArray(verifyResult.data)
+        ? (verifyResult.data as Record<string, unknown>)
+        : null
+    const cnpjCliente = String(verifyRecord?.cnpjCliente ?? "").trim()
+    if (!cnpjCliente) {
       return NextResponse.json(
-        {
-          success: false,
-          message: 'Falha ao validar token informado.',
-          data: verifyData,
-        },
-        {
-          status: verifyResponse.status || 401,
-        }
+        { success: false, message: "Token validado sem cnpjCliente.", request: redactRawRequestInfo(verifyResult.request), data: verifyResult.data },
+        { status: 502 }
       )
     }
 
-    const operadorUrl = `${baseUrl}/getOperadorSistemaForId?id=${verifyData.idUsuario}`
-    const operadorResponse = await fetchWithRetry(
-      operadorUrl,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: authHeader,
-        },
-      },
-      {
-        maxAttempts: 3,
-      }
-    )
-
-    const operadorData = await readResponseData<OperadorResponse>(operadorResponse)
-
-    if (!operadorResponse.ok || !operadorData || typeof operadorData.id !== 'number') {
+    const clienteLoja = await integrationRawGetJsonAuth<unknown>(CLIENTES_API_ROUTES.getClienteLoja, { cgc: cnpjCliente })
+    const clienteRecord =
+      clienteLoja.data && typeof clienteLoja.data === "object" && !Array.isArray(clienteLoja.data)
+        ? (clienteLoja.data as Record<string, unknown>)
+        : null
+    const customerId = Number(clienteRecord?.customerId)
+    if (!Number.isFinite(customerId) || customerId <= 0) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Falha ao carregar operador autenticado.',
-          data: operadorData,
+          message: "Cliente encontrado sem customerId válido.",
+          request: redactRawRequestInfo(clienteLoja.request),
+          data: clienteLoja.data,
         },
-        {
-          status: operadorResponse.status || 401,
-        }
+        { status: 502 }
       )
     }
+
+    const email = String(clienteRecord?.email ?? "").trim()
+    const nome = String(clienteRecord?.cliente ?? "").trim()
+    const tokenFinal = String(verifyRecord?.hashToken ?? token).trim() || token
 
     await setSession({
-      userId: String(operadorData.id),
-      email: operadorData.email ?? '',
-      token: verifyData.hashToken || token,
-      name: operadorData.nome,
+      userId: String(customerId),
+      email,
+      token: tokenFinal,
+      name: nome,
+      cliente: { cnpj: cnpjCliente, customerId, email: email || undefined, nome: nome || undefined },
     })
 
     return NextResponse.json({
       success: true,
-      data: {
-        verification: verifyData,
-        operador: operadorData,
-      },
+      request: redactRawRequestInfo(verifyResult.request),
+      data: verifyResult.data,
+      clienteLoja: { request: redactRawRequestInfo(clienteLoja.request), data: clienteLoja.data },
     })
   } catch (error) {
+    if (error instanceof RawHttpError) {
+      const status = error.status >= 400 ? error.status : 500
+      return NextResponse.json(
+        { success: false, message: error.message, request: redactRawRequestInfo(error.request), data: error.data },
+        { status }
+      )
+    }
+
     const message = error instanceof Error ? error.message : 'Unexpected verify-token error'
 
     return NextResponse.json(

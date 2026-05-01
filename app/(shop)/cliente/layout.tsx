@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-import { useClientesStore } from "@/stores/clientes-store";
+import { useAuth } from "@/contexts/AuthContext";
 import { frontModal } from "@/stores/front-modal-store";
 import ClienteSidebar from "@/components/layout/ClienteSidebar";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,7 @@ const LINKS = [
 export default function ClienteLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
-  const logout = useClientesStore((s) => s.logout);
+  const { isAuthenticated, isLoading, logoutUser } = useAuth();
   const openedLoginModalRef = useRef(false);
 
   async function handleLogout() {
@@ -35,12 +34,13 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
 
     if (!confirmed) return;
 
-    logout();
+    await logoutUser();
     router.push("/login");
   }
 
   useEffect(() => {
-    if (isLoggedIn) return;
+    if (isLoading) return;
+    if (isAuthenticated) return;
     if (openedLoginModalRef.current) return;
     openedLoginModalRef.current = true;
 
@@ -53,12 +53,12 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
       });
 
       if (!confirmed) return;
-      if (useClientesStore.getState().isLoggedIn) return;
       router.replace("/login");
     })();
-  }, [isLoggedIn, router]);
+  }, [isAuthenticated, isLoading, router]);
 
-  if (!isLoggedIn) return null;
+  if (isLoading) return null;
+  if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f7f7f8_0%,#ffffff_28%,#ffffff_100%)] p-3 sm:p-5 lg:p-8">

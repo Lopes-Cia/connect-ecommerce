@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -81,6 +81,7 @@ export default function LoginForm() {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
   const [destinationPreview, setDestinationPreview] = useState<string>("");
+  const verifyInputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     register: registerSend,
@@ -106,6 +107,7 @@ export default function LoginForm() {
       token: "",
     },
   });
+  const tokenRegister = registerVerify("token");
 
   const selectedChannel = watchSend("channel");
   const contactValue = watchSend("value");
@@ -167,15 +169,34 @@ export default function LoginForm() {
       setFeedbackSuccess(true);
       setFeedbackMessage("Login validado com sucesso. Redirecionando...");
       await refreshSession();
+
+      const clienteLoja =
+        response.clienteLoja?.data && typeof response.clienteLoja.data === "object" && !Array.isArray(response.clienteLoja.data)
+          ? (response.clienteLoja.data as Record<string, unknown>)
+          : null;
+
+      const customerId = clienteLoja ? Number(clienteLoja.customerId) : Number.NaN;
+      const cnpjCliente = clienteLoja ? String(clienteLoja.cgc ?? "").trim() : "";
+      const email = clienteLoja ? String(clienteLoja.email ?? "").trim() : "";
+      const nome = clienteLoja ? String(clienteLoja.cliente ?? "").trim() : "";
+      const telefone = clienteLoja ? String(clienteLoja.telefone ?? "").trim() : "";
+      const enderecos = clienteLoja?.enderecos;
+
       setLoggedIn({
         isLoggedIn: true,
         loginData: {
-          token: "mock-token",
+          token:
+            response.data && typeof response.data === "object" && !Array.isArray(response.data)
+              ? String((response.data as Record<string, unknown>).hashToken ?? "").trim() || data.token.trim()
+              : data.token.trim(),
           meus_dados: {
-            id: "1",
-            email: selectedChannel === "email" ? contactValue.trim() : "mock@exemplo.com",
-            nome: "Mock",
+            id: Number.isFinite(customerId) && customerId > 0 ? String(customerId) : "",
+            nome: nome || undefined,
+            email: email || (selectedChannel === "email" ? contactValue.trim() : undefined),
+            whatsapp: telefone || (selectedChannel === "whatsapp" ? onlyDigits(contactValue) : undefined),
+            cnpjCliente: cnpjCliente || undefined,
           },
+          ...(enderecos !== undefined ? { enderecos } : {}),
         },
       });
       router.push("/cliente/painel");
@@ -288,9 +309,11 @@ export default function LoginForm() {
           </form>
       ) : (
         <form onSubmit={handleSubmitVerify(onVerifyToken)} className="space-y-5">
-            <div className="rounded-md bg-white/10 px-3 py-2 text-xs text-white font-montserrat">
-              Token enviado para: <strong>{destinationPreview}</strong>
-            </div>
+            {destinationPreview ? (
+              <div className="rounded-md bg-white/10 px-3 py-2 text-xs text-white font-montserrat">
+                Token enviado para: <strong>{destinationPreview}</strong>
+              </div>
+            ) : null}
 
             <div>
               <label
@@ -306,7 +329,11 @@ export default function LoginForm() {
                 <input
                   id="token"
                   type="text"
-                  {...registerVerify("token")}
+                  {...tokenRegister}
+                  ref={(el) => {
+                    tokenRegister.ref(el);
+                    verifyInputRef.current = el;
+                  }}
                   className={`w-full pl-10 pr-4 py-3 border ${
                     verifyErrors.token
                       ? "border-red-500 focus:ring-red-500"
@@ -366,6 +393,24 @@ export default function LoginForm() {
           Registre-se
         </Link>
       </p>
+      {step === "send" ? (
+        <button
+          type="button"
+          disabled={isLoading}
+          onClick={() => {
+            setFeedbackMessage(null);
+            if (!destinationPreview) {
+              const next = String(contactValue ?? "").trim();
+              if (next) setDestinationPreview(next);
+            }
+            setStep("verify");
+            queueMicrotask(() => verifyInputRef.current?.scrollIntoView({ block: "center", behavior: "smooth" }));
+          }}
+          className="w-full py-2 text-white font-montserrat text-sm hover:underline disabled:opacity-50"
+        >
+          Já tem token?
+        </button>
+      ) : null}
     </div>
   );
 }

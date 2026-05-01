@@ -19,10 +19,8 @@ export async function registerUser(
 }
 
 export async function sendLoginToken(
-  
   payload: SendLoginTokenInput
 ): Promise<AuthResponse<boolean>> {
-  console.log("ghjjhg")
   return apiClient<AuthResponse<boolean>>('/auth/send-token', {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -31,14 +29,23 @@ export async function sendLoginToken(
 
 export async function verifyLoginToken(
   payload: VerifyLoginTokenInput
-): Promise<AuthResponse<{ verification: VerifyTokenPayload; operador: OperadorPayload }>> {
-  return apiClient<AuthResponse<{ verification: VerifyTokenPayload; operador: OperadorPayload }>>(
-    '/auth/verify-token',
-    {
-      method: 'POST',
-      body: JSON.stringify(payload),
+): Promise<
+  AuthResponse<VerifyTokenPayload> & {
+    request?: unknown
+    clienteLoja?: { request?: unknown; data?: unknown }
+    operador?: OperadorPayload
+  }
+> {
+  return apiClient<
+    AuthResponse<VerifyTokenPayload> & {
+      request?: unknown
+      clienteLoja?: { request?: unknown; data?: unknown }
+      operador?: OperadorPayload
     }
-  )
+  >('/auth/verify-token', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
 
 export async function logout(): Promise<AuthResponse<undefined>> {
@@ -51,4 +58,15 @@ export async function getCurrentSession(): Promise<AuthResponse<Session>> {
   return apiClient<AuthResponse<Session>>('/auth/me', {
     method: 'GET',
   })
+}
+
+export async function getClienteLojaFromSession(): Promise<
+  AuthResponse<unknown> & { clienteLoja?: { request?: unknown; data?: unknown } }
+> {
+  return apiClient<AuthResponse<unknown> & { clienteLoja?: { request?: unknown; data?: unknown } }>(
+    '/auth/cliente-loja',
+    {
+      method: 'GET',
+    }
+  )
 }
