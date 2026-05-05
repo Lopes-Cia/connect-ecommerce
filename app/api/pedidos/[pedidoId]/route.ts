@@ -119,7 +119,7 @@ function mapGpDadoIntegrationToPedidoDetalhe(value: unknown) {
 
   const pixConfig = getPixEnvConfig();
   const isPix = normalizePagamentoMetodo(pagamentoMetodo).includes("pix");
-  const pix =
+  const pix: { copiaECola: string; expiresAt: string | null; qrCodeBase64: string | null } | null =
     pixConfig && isPix
       ? {
           copiaECola: buildPixCopiaECola({
