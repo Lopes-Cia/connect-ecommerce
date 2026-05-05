@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Copy, FileDown, Package, Truck, QrCode, Wallet } from "lucide-react";
+import { ArrowLeft, Copy, Package, Truck, QrCode, Wallet } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -108,79 +107,6 @@ function parseJsonObject(value: unknown): Record<string, unknown> | null {
   }
 }
 
-function stringifyJson(value: unknown): string | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value === "string" && value.trim()) {
-    const asObj = parseJsonObject(value);
-    if (asObj) return JSON.stringify(asObj, null, 2);
-    return value;
-  }
-  if (typeof value !== "object") return String(value);
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return null;
-  }
-}
-
-function getPedidoPayload(pedido: PedidoDetalheUI): Record<string, unknown> | null {
-  const raw = asRecord(pedido.raw);
-  const rawPayload = raw?.payload;
-  return parseJsonObject(rawPayload) ?? asRecord(rawPayload) ?? null;
-}
-
-function pickFirstNonEmptyString(values: unknown[]): string {
-  for (const v of values) {
-    const s = safeString(v).trim();
-    if (s) return s;
-  }
-  return "";
-}
-
-function buildFiscalInfo(pedido: PedidoDetalheUI): Array<{ label: string; value: string }> {
-  const payload = getPedidoPayload(pedido);
-  const cliente = asRecord(payload?.cliente) ?? {};
-  const raw = asRecord(pedido.raw) ?? {};
-
-  const doc = pickFirstNonEmptyString([
-    cliente.CPFCNPJ,
-    cliente.cgc,
-    payload?.cgc,
-    raw.cgc,
-    raw.CPFCNPJ,
-  ]);
-  const inscricao = pickFirstNonEmptyString([cliente.inscRg, cliente.inscricao, cliente.inscricaoEstadual]);
-  const razao = pickFirstNonEmptyString([cliente.nome, cliente.razaoSocial, cliente.razao_social]);
-  const fantasia = pickFirstNonEmptyString([cliente.fantasia, cliente.nomeFantasia, cliente.nome_fantasia]);
-  const email = pickFirstNonEmptyString([cliente.email]);
-
-  const lines: Array<{ label: string; value: string }> = [];
-  if (doc) lines.push({ label: "CPF/CNPJ", value: doc });
-  if (inscricao) lines.push({ label: "Inscrição", value: inscricao });
-  if (razao) lines.push({ label: "Razão social", value: razao });
-  if (fantasia && fantasia !== razao) lines.push({ label: "Fantasia", value: fantasia });
-  if (email) lines.push({ label: "E-mail", value: email });
-  return lines;
-}
-
-function buildTimeline(pedido: PedidoDetalheUI): Array<{ label: string; value: string }> {
-  const payload = getPedidoPayload(pedido);
-  const pagamento = asRecord(payload?.pagamento) ?? {};
-  const dataPagamento = pickFirstNonEmptyString([pagamento.dataPagamento, pagamento.data, pagamento.data_pagamento]);
-  const dateOrder = pickFirstNonEmptyString([payload?.dateOrder, payload?.dataOrder, payload?.dataPedido]);
-
-  const lines: Array<{ label: string; value: string }> = [];
-  const created = pedido.createdAt ? formatDateTime(pedido.createdAt) : dateOrder ? dateOrder : "";
-  if (created) lines.push({ label: "Pedido criado", value: created });
-
-  if (dataPagamento) lines.push({ label: "Pagamento", value: dataPagamento });
-
-  const statusAtual = normalizeStatusLabel(pedido.status);
-  if (statusAtual) lines.push({ label: "Status atual", value: statusAtual });
-
-  return lines;
-}
-
 function buildResumo(pedido: PedidoDetalheUI): Array<{ label: string; value: string }> {
   const raw = asRecord(pedido.raw);
   const rawPayload = raw?.payload;
@@ -204,8 +130,6 @@ export default function PedidoDetalhePage() {
   const router = useRouter();
   const params = useParams<{ pedidoId: string }>();
   const openedLoginModalRef = useRef(false);
-  const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
-  const [jsonModalValue, setJsonModalValue] = useState("");
 
   const useClientesStore = useControlStore((s) => s.CLIENTESSTORE);
   const usePedidosStore = useControlStore((s) => s.PEDIDOSSTORE);
@@ -243,16 +167,6 @@ export default function PedidoDetalhePage() {
     void loadPedidoById(pedidoId);
   }, [isLoggedIn, loadPedidoById, pedidoId]);
 
-  function downloadText(filename: string, text: string) {
-    const blob = new Blob([text], { type: "application/json;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   async function copyText(label: string, text: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -281,7 +195,7 @@ export default function PedidoDetalhePage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <section className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-5">
         <div className="space-y-4">
           <div className="space-y-2">
@@ -326,7 +240,7 @@ export default function PedidoDetalhePage() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Button variant="outline" className="gap-2" onClick={() => router.push("/cliente/meus-pedidos")}>
               <ArrowLeft className="h-4 w-4" />
               Voltar
@@ -338,44 +252,6 @@ export default function PedidoDetalhePage() {
               onClick={() => void loadPedidoById(pedidoId)}
             >
               Atualizar
-            </Button>
-            <Button
-              variant="outline"
-              className="gap-2"
-              disabled={!selectedPedido}
-              onClick={() => void copyText("Pedido", String(pedidoId))}
-            >
-              <Copy className="h-4 w-4" />
-              Copiar pedido
-            </Button>
-            <Button
-              variant="outline"
-              className="gap-2"
-              disabled={!selectedPedido}
-              onClick={() => {
-                if (!selectedPedido) return;
-                const json = stringifyJson(getPedidoPayload(selectedPedido) ?? selectedPedido.raw) ?? "";
-                if (!json.trim()) return;
-                setJsonModalValue(json);
-                setIsJsonModalOpen(true);
-              }}
-            >
-              <Copy className="h-4 w-4" />
-              Copiar JSON
-            </Button>
-            <Button
-              variant="outline"
-              className="gap-2"
-              disabled={!selectedPedido}
-              onClick={() => {
-                if (!selectedPedido) return;
-                const json = stringifyJson(getPedidoPayload(selectedPedido) ?? selectedPedido.raw) ?? "";
-                if (!json.trim()) return;
-                downloadText(`pedido-${pedidoId}.json`, json);
-              }}
-            >
-              <FileDown className="h-4 w-4" />
-              Baixar JSON
             </Button>
           </div>
         </div>
@@ -389,41 +265,8 @@ export default function PedidoDetalhePage() {
       )}
 
       {selectedStatus === "loading" && (
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
-          <div className="space-y-3 sm:space-y-4 lg:col-span-2">
-            <Card className="border-custom-light-300 shadow-sm">
-              <CardHeader className="p-4 sm:p-5">
-                <CardTitle className="text-sm font-montserrat">Status do pedido</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 px-4 pb-5 sm:px-5">
-                <Skeleton className="h-4 w-44" />
-                <Skeleton className="h-4 w-64" />
-              </CardContent>
-            </Card>
-
-            <Card className="border-custom-light-300 shadow-sm">
-              <CardHeader className="p-4 sm:p-5">
-                <CardTitle className="text-sm font-montserrat">Dados fiscais</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 px-4 pb-5 sm:px-5">
-                <Skeleton className="h-4 w-72" />
-                <Skeleton className="h-4 w-56" />
-              </CardContent>
-            </Card>
-
-            <Card className="border-custom-light-300 shadow-sm">
-              <CardHeader className="p-4 sm:p-5">
-                <CardTitle className="text-sm font-montserrat">Itens do pedido</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 px-4 pb-5 sm:px-5">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="space-y-4 lg:order-2">
             <Card className="border-custom-light-300 shadow-sm">
               <CardHeader className="p-4 sm:p-5">
                 <CardTitle className="text-sm font-montserrat">Resumo</CardTitle>
@@ -435,151 +278,25 @@ export default function PedidoDetalhePage() {
               </CardContent>
             </Card>
           </div>
+
+          <div className="space-y-4 lg:col-span-2 lg:order-1">
+            <Card className="border-custom-light-300 shadow-sm">
+              <CardHeader className="p-4 sm:p-5">
+                <CardTitle className="text-sm font-montserrat">Itens do pedido</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 px-4 pb-5 sm:px-5">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
 
       {selectedStatus === "success" && selectedPedido && (
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
-          <div className="space-y-3 sm:space-y-4 lg:col-span-2">
-            <Card className="border-custom-light-300 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between gap-2 p-4 sm:p-5">
-                <CardTitle className="text-sm font-montserrat">Status do pedido</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 px-4 pb-5 sm:px-5">
-                <div className="space-y-2">
-                  {buildTimeline(selectedPedido).map((line) => (
-                    <div key={line.label} className="flex flex-wrap items-center justify-between gap-2 text-xs font-montserrat">
-                      <span className="text-custom-light-600">{line.label}</span>
-                      <span className="font-semibold text-custom-dark-1000">{line.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-custom-light-300 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between gap-2 p-4 sm:p-5">
-                <CardTitle className="text-sm font-montserrat">Dados fiscais</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 px-4 pb-5 sm:px-5">
-                {(() => {
-                  const lines = buildFiscalInfo(selectedPedido);
-                  if (lines.length === 0) {
-                    return <div className="text-xs font-montserrat text-custom-light-600">Não informado</div>;
-                  }
-                  return (
-                    <div className="space-y-2">
-                      {lines.map((line) => (
-                        <div key={line.label} className="flex flex-wrap items-center justify-between gap-2 text-xs font-montserrat">
-                          <span className="text-custom-light-600">{line.label}</span>
-                          <span className="font-semibold text-custom-dark-1000">{line.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </CardContent>
-            </Card>
-
-            <Card className="border-custom-light-300 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between gap-2 p-4 sm:p-5">
-                <CardTitle className="text-sm font-montserrat">Itens do pedido</CardTitle>
-                <Package className="h-4 w-4 text-custom-light-600" />
-              </CardHeader>
-              <CardContent className="pb-5">
-                <div className="sm:hidden px-4 sm:px-5">
-                  <div className="divide-y divide-custom-light-200 rounded-md border border-custom-light-300">
-                    {selectedPedido.itens.map((item) => (
-                      <div key={`${item.itemId ?? item.produtoId ?? item.nome}-${item.subtotal}`} className="p-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <div className="h-10 w-10 shrink-0 overflow-hidden rounded border border-custom-light-300 bg-custom-light-100">
-                              <img
-                                src={item.imagemUrl || "/logo.png"}
-                                alt={item.nome}
-                                className="h-full w-full object-contain"
-                                loading="lazy"
-                              />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="truncate text-sm font-montserrat font-semibold text-custom-dark-1000">
-                                {item.nome || "Produto"}
-                              </div>
-                              <div className="mt-0.5 text-[11px] font-montserrat text-custom-light-600">
-                                {item.quantidade} x {formatCurrency(item.precoUnitario)}
-                              </div>
-                              {item.sku && (
-                                <div className="truncate text-[11px] font-montserrat text-custom-light-600">
-                                  {item.sku}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="shrink-0 text-right text-sm font-montserrat font-semibold text-custom-dark-1000">
-                            {formatCurrency(item.subtotal)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="hidden sm:block px-0">
-                  <div className="overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-custom-light-100/60">
-                          <TableHead>Produto</TableHead>
-                          <TableHead className="text-right">Qtd</TableHead>
-                          <TableHead className="text-right">Unit.</TableHead>
-                          <TableHead className="text-right">Subtotal</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedPedido.itens.map((item) => (
-                          <TableRow key={`${item.itemId ?? item.produtoId ?? item.nome}-${item.subtotal}`}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 shrink-0 overflow-hidden rounded border border-custom-light-300 bg-custom-light-100">
-                                  <img
-                                    src={item.imagemUrl || "/logo.png"}
-                                    alt={item.nome}
-                                    className="h-full w-full object-contain"
-                                    loading="lazy"
-                                  />
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="truncate text-sm font-montserrat font-semibold text-custom-dark-1000">
-                                    {item.nome || "Produto"}
-                                  </div>
-                                  {item.sku && (
-                                    <div className="truncate text-[11px] font-montserrat text-custom-light-600">
-                                      {item.sku}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right text-sm font-montserrat text-custom-dark-1000">
-                              {item.quantidade}
-                            </TableCell>
-                            <TableCell className="text-right text-sm font-montserrat text-custom-dark-1000">
-                              {formatCurrency(item.precoUnitario)}
-                            </TableCell>
-                            <TableCell className="text-right text-sm font-montserrat font-semibold text-custom-dark-1000">
-                              {formatCurrency(item.subtotal)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="space-y-4 lg:order-2">
             <Card className="border-custom-light-300 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between gap-2 p-4 sm:p-5">
                 <CardTitle className="text-sm font-montserrat">Resumo</CardTitle>
@@ -645,24 +362,14 @@ export default function PedidoDetalhePage() {
                         </div>
                         <Button
                           variant="outline"
-                          className="h-9 w-full gap-2 text-xs font-montserrat sm:w-auto"
+                          className="h-9 gap-2 text-xs font-montserrat"
                           onClick={() => void copyText("Copia e cola", selectedPedido.pix!.copiaECola)}
                         >
                           <Copy className="h-3.5 w-3.5" />
                           Copiar
                         </Button>
                       </div>
-                      {selectedPedido.pix.qrCodeBase64 && (
-                        <div className="flex justify-center rounded-md border border-custom-light-300 bg-white p-3">
-                          <img
-                            src={`data:image/png;base64,${selectedPedido.pix.qrCodeBase64}`}
-                            alt="QR Code Pix"
-                            className="h-48 w-48"
-                            loading="lazy"
-                          />
-                        </div>
-                      )}
-                      <div className="rounded-md border border-custom-light-300 bg-custom-light-100 p-3 text-xs font-mono text-custom-dark-1000 break-words whitespace-pre-wrap">
+                      <div className="rounded-md border border-custom-light-300 bg-custom-light-100 p-3 text-xs font-mono text-custom-dark-1000 break-words">
                         {selectedPedido.pix.copiaECola}
                       </div>
                       <div className="text-[11px] font-montserrat text-custom-light-600">
@@ -711,41 +418,68 @@ export default function PedidoDetalhePage() {
               </CardContent>
             </Card>
           </div>
+
+          <div className="space-y-4 lg:col-span-2 lg:order-1">
+            <Card className="border-custom-light-300 shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between gap-2 p-4 sm:p-5">
+                <CardTitle className="text-sm font-montserrat">Itens do pedido</CardTitle>
+                <Package className="h-4 w-4 text-custom-light-600" />
+              </CardHeader>
+              <CardContent className="px-0 pb-5">
+                <div className="overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-custom-light-100/60">
+                        <TableHead>Produto</TableHead>
+                        <TableHead className="text-right">Qtd</TableHead>
+                        <TableHead className="hidden sm:table-cell text-right">Unit.</TableHead>
+                        <TableHead className="text-right">Subtotal</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedPedido.itens.map((item) => (
+                        <TableRow key={`${item.itemId ?? item.produtoId ?? item.nome}-${item.subtotal}`}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 shrink-0 overflow-hidden rounded border border-custom-light-300 bg-custom-light-100">
+                                <img
+                                  src={item.imagemUrl || "/logo.png"}
+                                  alt={item.nome}
+                                  className="h-full w-full object-contain"
+                                  loading="lazy"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="truncate text-sm font-montserrat font-semibold text-custom-dark-1000">
+                                  {item.nome || "Produto"}
+                                </div>
+                                {item.sku && (
+                                  <div className="truncate text-[11px] font-montserrat text-custom-light-600">
+                                    {item.sku}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right text-sm font-montserrat text-custom-dark-1000">
+                            {item.quantidade}
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell text-right text-sm font-montserrat text-custom-dark-1000">
+                            {formatCurrency(item.precoUnitario)}
+                          </TableCell>
+                          <TableCell className="text-right text-sm font-montserrat font-semibold text-custom-dark-1000">
+                            {formatCurrency(item.subtotal)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
-
-      <Dialog
-        open={isJsonModalOpen}
-        onOpenChange={(open) => {
-          setIsJsonModalOpen(open);
-          if (!open) setJsonModalValue("");
-        }}
-      >
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>JSON do pedido</DialogTitle>
-          </DialogHeader>
-
-          <div className="rounded-md border border-custom-light-300 bg-custom-light-100 p-3 text-xs font-mono text-custom-dark-1000">
-            <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap break-words">{jsonModalValue || "—"}</pre>
-          </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button
-              variant="outline"
-              className="gap-2"
-              disabled={!jsonModalValue.trim()}
-              onClick={() => void copyText("JSON", jsonModalValue)}
-            >
-              <Copy className="h-4 w-4" />
-              Copiar
-            </Button>
-            <DialogClose asChild>
-              <Button variant="outline">Fechar</Button>
-            </DialogClose>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

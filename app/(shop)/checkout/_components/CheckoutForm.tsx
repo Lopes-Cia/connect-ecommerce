@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { formatCurrency } from "@/lib/formatting";
 import { slugify } from "@/lib/utils";
@@ -37,6 +38,7 @@ function toEnderecoLabel(value: unknown): string {
 }
 
 export default function CheckoutForm() {
+  const router = useRouter();
   const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
   const items = useCarrinhoStore((s) => s.items);
   const totalAmount = useCarrinhoStore((s) => s.totalAmount);
@@ -53,10 +55,39 @@ export default function CheckoutForm() {
 
   const [uiMessage, setUiMessage] = useState<string | null>(null);
   const [isSendingGp, setIsSendingGp] = useState(false);
+  const [pixConfig, setPixConfig] = useState<{ key: string; merchantName: string; merchantCity: string } | null>(null);
 
   useEffect(() => {
     hydrateCheckoutFromLoginData(loginData);
   }, [hydrateCheckoutFromLoginData, loginData]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const response = await fetch("/api/pix/chave", { method: "GET" }).catch(() => null);
+      if (!response?.ok) return;
+      const payload = (await response.json().catch(() => null)) as { data?: unknown } | null;
+      const data = payload?.data as { key?: unknown; merchantName?: unknown; merchantCity?: unknown } | null;
+      const key = typeof data?.key === "string" ? data.key.trim() : "";
+      const merchantName = typeof data?.merchantName === "string" ? data.merchantName.trim() : "";
+      const merchantCity = typeof data?.merchantCity === "string" ? data.merchantCity.trim() : "";
+      if (!key || cancelled) return;
+      setPixConfig({ key, merchantName, merchantCity });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function copyPixKey() {
+    if (!pixConfig?.key) return;
+    try {
+      await navigator.clipboard.writeText(pixConfig.key);
+      void frontModal.success({ title: "Chave PIX copiada", description: pixConfig.key });
+    } catch {
+      void frontModal.error({ title: "Falha ao copiar", description: "Não foi possível copiar a chave PIX." });
+    }
+  }
 
   const summary = useMemo(() => {
     return {
@@ -76,39 +107,38 @@ export default function CheckoutForm() {
     setIsSendingGp(true);
     try {
       const pedido = buildPedidoMockupFromCarrinho(items, { checkoutForm, loginData });
-      console.log("pediddo", pedido.payload);
       const url = "/api/dev/insert-dado-integration";
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          idIntegradora: pedido.idIntegradora,
           tipo: pedido.tipo,
           orderId: pedido.orderId,
-          cgc: pedido.cgc,
           payload: JSON.stringify(pedido.payload),
           integrado: pedido.integrado,
+          cgc: pedido.cgc,
         }),
       });
- 
-      
+
       const responsePayload = await response.json().catch(() => null);
       const result = { url, method: "POST", status: response.status, ok: response.ok, payload: responsePayload };
 
-      if (response.ok) {
-        await useCarrinhoStore.getState().clearCart();
-        void frontModal.success({
-          title: "insertDadoIntegration (GP)",
-          description: JSON.stringify(result, null, 2),
-        });
-        setUiMessage("Enviado para insertDadoIntegration (GP).");
-      } else {
+      if (!response.ok) {
         void frontModal.error({
-          title: "insertDadoIntegration (GP)",
+          title: "Erro ao finalizar checkout",
           description: JSON.stringify(result, null, 2),
         });
-        setUiMessage("Falha ao enviar para insertDadoIntegration (GP).");
+        setUiMessage("Erro ao finalizar checkout.");
+        return;
       }
+
+      await useCarrinhoStore.getState().clearCart();
+      setUiMessage("Pedido foi finalizado com sucesso.");
+      void frontModal.success({
+        title: "Pedido finalizado",
+        description: `Pedido foi finalizado com sucesso. Nº ${pedido.orderId}`,
+      });
+      router.push(`/cliente/meus-pedidos/${encodeURIComponent(String(pedido.orderId))}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Erro inesperado ao finalizar checkout.";
       setUiMessage(message);
@@ -270,6 +300,25 @@ export default function CheckoutForm() {
           <div className="mt-4 rounded border border-custom-light-400 px-3 py-2 text-sm text-custom-dark-1000">
             Pix
           </div>
+
+          {pixConfig?.key && (
+            <div className="mt-3 rounded border border-custom-light-300 bg-custom-light-100 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-sm font-medium text-custom-dark-1000">Chave PIX</div>
+                <button
+                  type="button"
+                  className="rounded border border-custom-light-400 bg-white px-3 py-2 text-xs font-semibold text-custom-dark-1000 hover:bg-custom-light-100"
+                  onClick={() => void copyPixKey()}
+                >
+                  Copiar
+                </button>
+              </div>
+              <div className="mt-2 break-words text-xs font-mono text-custom-dark-1000">{pixConfig.key}</div>
+              <div className="mt-2 text-xs text-custom-dark-700">
+                Após finalizar o pedido, o Pix (copia e cola) fica disponível em Meus pedidos.
+              </div>
+            </div>
+          )}
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-custom-dark-1000">Observações</label>

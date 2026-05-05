@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { MapPinHouse } from "lucide-react";
 
 import { useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
@@ -111,24 +112,27 @@ export default function MeusEnderecosPage() {
   }, [enderecos, selectedIndex]);
 
   return (
-    <section className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <section className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-5">
+      <div className="space-y-2">
         <div>
-          <h2 className="text-lg font-league-spartan font-bold text-custom-dark-1000 sm:text-xl">
-            Meus endereços
-          </h2>
-          <p className="mt-1 text-xs font-montserrat text-custom-light-600 sm:text-sm">
+          <p className="text-[10px] font-montserrat font-semibold uppercase tracking-[0.18em] text-custom-light-600">
+            Área do cliente
+          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <MapPinHouse className="h-4 w-4 text-custom-dark-1000" />
+            <h1 className="text-xl font-league-spartan font-bold text-custom-dark-1000 sm:text-2xl">
+              Meus endereços
+            </h1>
+          </div>
+          <p className="mt-2 max-w-2xl text-xs font-montserrat text-custom-dark-700 sm:text-sm">
             Gerencie os endereços usados no checkout e entregas.
           </p>
         </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setSelectedIndex("new")}
-        >
-          Novo endereço
-        </Button>
+        <div className="flex justify-end">
+          <Button type="button" variant="outline" onClick={() => setSelectedIndex("new")}>
+            Novo endereço
+          </Button>
+        </div>
       </div>
 
       <form

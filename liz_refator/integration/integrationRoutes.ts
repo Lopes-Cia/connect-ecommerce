@@ -16,6 +16,8 @@ export const CLIENTES_API_ROUTES = {
 
 export const PEDIDOS_INTEGRATION_ROUTES = {
   insertDadoIntegration: '/Servidor/webservice/integration/insertDadoIntegration',
+  getListDadoIntegration: '/Servidor/webservice/integration/getListDadoIntegration',
+  getDadoIntegration: '/Servidor/webservice/integration/getDadoIntegration',
 } as const
 
 export const AUTH_API_ROUTES = {

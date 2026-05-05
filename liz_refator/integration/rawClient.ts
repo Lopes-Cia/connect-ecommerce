@@ -94,6 +94,41 @@ export async function integrationRawGetJson<T>(
   return { request: requestInfo, data }
 }
 
+export async function integrationRawGetJsonServerToken<T>(
+  path: string,
+  query?: IntegrationQueryParams
+): Promise<RawIntegrationResponse<T>> {
+  const { integrationUrlApi } = getIntegrationEnvConfig()
+  const finalQuery = withEnvIdIntegradora(query)
+  const url = buildIntegrationUrl(integrationUrlApi, path, finalQuery)
+
+  const token = readRequiredEnv('GP_CLIENTE_INTEGRADO_TOKEN')
+  const fetchHeaders: Record<string, string> = { Accept: 'application/json', token }
+
+  const requestInfo: RawRequestInfo = {
+    url,
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    query: finalQuery,
+  }
+
+  let response: Response
+  try {
+    response = await fetchWithRetry(url, { method: 'GET', headers: fetchHeaders }, { maxAttempts: 3 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Integration network request failed'
+    throw new RawHttpError('Integration request failed', 500, url, { message }, requestInfo)
+  }
+
+  const data = await readResponseData<T>(response)
+
+  if (!response.ok) {
+    throw new RawHttpError('Integration request failed', response.status, url, data, requestInfo)
+  }
+
+  return { request: requestInfo, data }
+}
+
 export async function integrationRawPostJsonServerToken<T>(
   path: string,
   body: unknown,

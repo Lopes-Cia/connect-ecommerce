@@ -147,10 +147,9 @@ export default function MeusPedidosPage() {
   if (!isLoggedIn) return null;
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f6f7f9_0%,#ffffff_34%,#ffffff_100%)] p-3 sm:p-5 lg:p-8">
-      <div className="mx-auto max-w-7xl space-y-5">
-        <section className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-5">
+      <section className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-5">
+        <div className="space-y-2">
             <div>
               <p className="text-[10px] font-montserrat font-semibold uppercase tracking-[0.18em] text-custom-light-600">
                 Área do cliente
@@ -164,33 +163,6 @@ export default function MeusPedidosPage() {
               <p className="mt-2 max-w-2xl text-xs font-montserrat text-custom-dark-700 sm:text-sm">
                 Consulte seus pedidos, acompanhe status e visualize detalhes de entrega e pagamento.
               </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 sm:min-w-[360px] sm:gap-3">
-              <Card className="border-custom-light-300 bg-custom-light-200/40 shadow-none">
-                <CardHeader className="p-3">
-                  <CardTitle className="text-[10px] font-montserrat uppercase tracking-wider text-custom-light-600">
-                    Pedidos (página)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
-                  <div className="text-base font-league-spartan font-bold text-custom-dark-1000">
-                    {filtered.length}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-custom-light-300 bg-custom-light-200/40 shadow-none">
-                <CardHeader className="p-3">
-                  <CardTitle className="text-[10px] font-montserrat uppercase tracking-wider text-custom-light-600">
-                    Total (página)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
-                  <div className="text-base font-league-spartan font-bold text-custom-dark-1000">
-                    {formatCurrency(totalGastoPagina)}
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </section>
@@ -257,7 +229,7 @@ export default function MeusPedidosPage() {
 
         {filtered.length > 0 && (
           <div className="space-y-4">
-            <OrdersTable pedidos={filtered} onViewDetails={viewDetails} onCopyPedidoId={copyPedidoId} />
+            <OrdersTable pedidos={filtered} onViewDetails={viewDetails} />
 
             <div className="flex flex-col gap-3 rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
               <div className="text-xs font-montserrat text-custom-light-600">
@@ -275,7 +247,11 @@ export default function MeusPedidosPage() {
                     disabled={pedidosStatus === "loading" || pedidosPage <= 1}
                     onClick={() => {
                       if (!clienteId) return;
-                      void loadPedidosByCliente({ clienteId, page: Math.max(1, pedidosPage - 1), pageSize: pedidosPageSize });
+                      void loadPedidosByCliente({
+                        clienteId,
+                        page: Math.max(1, pedidosPage - 1),
+                        pageSize: pedidosPageSize,
+                      });
                     }}
                   >
                     Anterior
@@ -300,7 +276,6 @@ export default function MeusPedidosPage() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { User } from "lucide-react";
 import { pickMeusDados, useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
 import { Button } from "@/components/ui/button";
@@ -41,19 +42,26 @@ export default function MeusDadosPage() {
   }, [cliente, loginData?.email]);
 
   return (
-    <section className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+    <section className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-5">
+      <div className="space-y-2">
         <div>
-          <h2 className="text-lg font-league-spartan font-bold text-custom-dark-1000 sm:text-xl">
-            Meus dados
-          </h2>
-          <p className="mt-1 text-xs font-montserrat text-custom-light-600 sm:text-sm">
+          <p className="text-[10px] font-montserrat font-semibold uppercase tracking-[0.18em] text-custom-light-600">
+            Área do cliente
+          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <User className="h-4 w-4 text-custom-dark-1000" />
+            <h1 className="text-xl font-league-spartan font-bold text-custom-dark-1000 sm:text-2xl">
+              Meus dados
+            </h1>
+          </div>
+          <p className="mt-2 max-w-2xl text-xs font-montserrat text-custom-dark-700 sm:text-sm">
             Atualize seus dados de cadastro. A senha não é alterada por aqui.
           </p>
         </div>
         <div className="text-[11px] font-montserrat text-custom-light-600">
-          <div>ID: {safeString(cliente?.id) || "-"}</div>
-          <div>Criado em: {safeString(cliente?.createdAt) || "-"}</div>
+          <span>ID: {safeString(cliente?.id) || "-"}</span>
+          <span> • </span>
+          <span>Criado em: {safeString(cliente?.createdAt) || "-"}</span>
         </div>
       </div>
 
