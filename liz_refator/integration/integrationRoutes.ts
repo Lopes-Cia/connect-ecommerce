@@ -14,6 +14,12 @@ export const CLIENTES_API_ROUTES = {
   insertClienteLoja: '/Servidor/webservice/integration/insertClienteLoja',
 } as const
 
+export const PEDIDOS_INTEGRATION_ROUTES = {
+  insertDadoIntegration: '/Servidor/webservice/integration/insertDadoIntegration',
+  getListDadoIntegration: '/Servidor/webservice/integration/getListDadoIntegration',
+  getDadoIntegration: '/Servidor/webservice/integration/getDadoIntegration',
+} as const
+
 export const AUTH_API_ROUTES = {
   postAutenticaAplicativo: '/postAutenticaAplicativo',
   insertOperadorSistema: '/insertOperadorSistema',

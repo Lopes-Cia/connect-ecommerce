@@ -51,36 +51,3 @@ export async function getClienteIntegrado(params: {
 
   return data
 }
-
-export async function insertDadoIntegration(payload: {
-  idIntegradora: number | string
-  tipo: string
-  orderId: string
-  payload: string
-  integrado: string
-}) {
-  const baseUrl = readBaseUrl()
-  const token = readRequiredEnv('GP_CLIENTE_INTEGRADO_TOKEN')
-
-  const url = `${baseUrl}/Servidor/webservice/integration/insertDadoIntegration`
-  const response = await fetchWithRetry(
-    url,
-    {
-      method: 'POST',
-      headers: {
-        token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    },
-    { maxAttempts: 3 }
-  )
-
-  const data = await readResponseData<unknown>(response)
-
-  if (!response.ok) {
-    throw new HttpError('Failed to insert dado integration', response.status, url, data)
-  }
-
-  return data
-}

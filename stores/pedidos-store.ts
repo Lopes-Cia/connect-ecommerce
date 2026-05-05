@@ -174,6 +174,7 @@ export const pedido_mockup_exemplo = {
     },
   },
   integrado: "N",
+  cgc: "25231575000146", //CPFCNPJ
 } as const;
 
 export function buildPedidoItensFromCarrinho(items: CartItem[]) {
@@ -322,6 +323,7 @@ export function buildPedidoMockupFromCarrinho(
     idIntegradora: 0,
     tipo: "OrderLopes",
     orderId,
+    cgc: cliente.CPFCNPJ,
     payload: {
       orderId,
       orderMarketplace: null,
@@ -785,7 +787,28 @@ export const usePedidosStore = create<PedidosState>((set, get) => ({
     try {
       const payload = await apiClient<unknown>(`pedidos/${encodeURIComponent(String(safePedidoId))}`, { method: "GET" });
       const obj = asRecord(payload) ?? {};
-      const detalhe = mapPedidoDetalheUI(obj.data ?? obj);
+      const data = obj.data ?? obj;
+      const dataObj = asRecord(data);
+      const itensRaw = dataObj?.itens;
+      const itens = Array.isArray(itensRaw) ? (itensRaw as unknown[]) : null;
+      const looksLikeUiShape =
+        !!dataObj &&
+        Number.isFinite(Number(dataObj.pedidoId)) &&
+        typeof dataObj.status === "string" &&
+        Number.isFinite(Number(dataObj.total)) &&
+        typeof dataObj.moeda === "string" &&
+        Array.isArray(itens);
+
+      if (looksLikeUiShape) {
+        set({
+          selectedPedidoStatus: "success",
+          selectedPedidoError: null,
+          selectedPedido: data as unknown as PedidoDetalheUI,
+        });
+        return;
+      }
+
+      const detalhe = mapPedidoDetalheUI(data);
       set({ selectedPedidoStatus: "success", selectedPedidoError: null, selectedPedido: detalhe });
     } catch (error) {
       const message = getApiErrorMessage(error);

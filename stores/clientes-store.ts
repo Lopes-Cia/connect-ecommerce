@@ -76,12 +76,14 @@ export type ClientesState = {
   reset: () => void;
 };
 
-const INITIAL: Pick<ClientesState, "loginStatus" | "loginError" | "loginData" | "isLoggedIn"> = {
-  loginStatus: "idle",
-  loginError: null,
-  loginData: null,
-  isLoggedIn: readClientesLoggedInCookie(),
-};
+function getInitialState(): Pick<ClientesState, "loginStatus" | "loginError" | "loginData" | "isLoggedIn"> {
+  return {
+    loginStatus: "idle",
+    loginError: null,
+    loginData: null,
+    isLoggedIn: readClientesLoggedInCookie(),
+  };
+}
 
 function getClienteIdFromLoginData(loginData: ClienteLoginData | null): number | null {
   const meus = asRecord(loginData?.meus_dados);
@@ -104,7 +106,7 @@ function mergeLoginData(
 }
 
 export const useClientesStore = create<ClientesState>((set, get) => ({
-  ...INITIAL,
+  ...getInitialState(),
 
   setLoggedIn: ({ isLoggedIn, loginData }) => {
     setClientesLoggedInCookie(isLoggedIn);
@@ -255,11 +257,11 @@ export const useClientesStore = create<ClientesState>((set, get) => ({
 
   logout: () => {
     setClientesLoggedInCookie(false);
-    set({ ...INITIAL });
+    set({ loginStatus: "idle", loginError: null, loginData: null, isLoggedIn: false });
   },
   reset: () => {
     setClientesLoggedInCookie(false);
-    set({ ...INITIAL });
+    set({ loginStatus: "idle", loginError: null, loginData: null, isLoggedIn: false });
   },
 }));
 

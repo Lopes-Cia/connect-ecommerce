@@ -66,42 +66,17 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         <div className="flex gap-6">
           <ClienteSidebar />
           <main className="flex-1 min-w-0 space-y-6">
-            <header className="rounded-2xl border border-custom-light-300 bg-white p-4 shadow-sm sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-[11px] font-montserrat font-semibold uppercase tracking-widest text-custom-light-600">
-                    Área do cliente
-                  </p>
-                  <h1 className="mt-1 text-2xl font-league-spartan font-bold text-custom-dark-1000 sm:text-3xl">
-                    Minha conta
-                  </h1>
-                  <p className="mt-2 text-sm font-montserrat text-custom-dark-700">
-                    Gerencie seus dados, endereços e privacidade.
-                  </p>
-                </div>
-
-                <div className="md:hidden">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => void handleLogout()}
-                  >
-                    Sair
-                  </Button>
-                </div>
-
-                <div className="hidden md:block">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => void handleLogout()}
-                  >
-                    Sair
-                  </Button>
-                </div>
+            <div className="md:hidden space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-montserrat font-semibold uppercase tracking-widest text-custom-light-600">
+                  Área do cliente
+                </p>
+                <Button type="button" variant="outline" onClick={() => void handleLogout()}>
+                  Sair
+                </Button>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-2 md:hidden">
+              <div className="flex flex-wrap items-center gap-2">
                 {LINKS.map((item) => {
                   const active = pathname === item.href;
                   return (
@@ -119,7 +94,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                   );
                 })}
               </div>
-            </header>
+            </div>
 
             {children}
           </main>
