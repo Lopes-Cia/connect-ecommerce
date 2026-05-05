@@ -174,6 +174,7 @@ export const pedido_mockup_exemplo = {
     },
   },
   integrado: "N",
+  cgc: "25231575000146", //CPFCNPJ
 } as const;
 
 export function buildPedidoItensFromCarrinho(items: CartItem[]) {
@@ -322,6 +323,7 @@ export function buildPedidoMockupFromCarrinho(
     idIntegradora: 0,
     tipo: "OrderLopes",
     orderId,
+    cgc: cliente.CPFCNPJ,
     payload: {
       orderId,
       orderMarketplace: null,

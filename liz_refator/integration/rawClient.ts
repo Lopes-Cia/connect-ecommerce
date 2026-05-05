@@ -59,6 +59,14 @@ function stripIdIntegradora(query?: IntegrationQueryParams): IntegrationQueryPar
   return rest
 }
 
+function readRequiredEnv(key: string): string {
+  const value = process.env[key]?.trim()
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}`)
+  }
+  return value
+}
+
 export async function integrationRawGetJson<T>(
   path: string,
   query?: IntegrationQueryParams
@@ -72,6 +80,50 @@ export async function integrationRawGetJson<T>(
   let response: Response
   try {
     response = await fetchWithRetry(url, { method: 'GET', headers }, { maxAttempts: 3 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Integration network request failed'
+    throw new RawHttpError('Integration request failed', 500, url, { message }, requestInfo)
+  }
+
+  const data = await readResponseData<T>(response)
+
+  if (!response.ok) {
+    throw new RawHttpError('Integration request failed', response.status, url, data, requestInfo)
+  }
+
+  return { request: requestInfo, data }
+}
+
+export async function integrationRawPostJsonServerToken<T>(
+  path: string,
+  body: unknown,
+  query?: IntegrationQueryParams
+): Promise<RawIntegrationResponse<T>> {
+  const { integrationUrlApi } = getIntegrationEnvConfig()
+  const finalQuery = stripIdIntegradora(query)
+  const url = buildIntegrationUrl(integrationUrlApi, path, finalQuery)
+
+  const token = readRequiredEnv('GP_CLIENTE_INTEGRADO_TOKEN')
+  const fetchHeaders: Record<string, string> = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    token,
+  }
+
+  const requestInfo: RawRequestInfo = {
+    url,
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    query: finalQuery,
+  }
+
+  let response: Response
+  try {
+    response = await fetchWithRetry(
+      url,
+      { method: 'POST', headers: fetchHeaders, body: JSON.stringify(body ?? {}) },
+      { maxAttempts: 3 }
+    )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Integration network request failed'
     throw new RawHttpError('Integration request failed', 500, url, { message }, requestInfo)

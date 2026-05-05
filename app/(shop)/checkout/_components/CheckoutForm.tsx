@@ -76,7 +76,7 @@ export default function CheckoutForm() {
     setIsSendingGp(true);
     try {
       const pedido = buildPedidoMockupFromCarrinho(items, { checkoutForm, loginData });
-     console.log('pediddo',pedido.payload);
+      console.log("pediddo", pedido.payload);
       const url = "/api/dev/insert-dado-integration";
       const response = await fetch(url, {
         method: "POST",
@@ -85,6 +85,7 @@ export default function CheckoutForm() {
           idIntegradora: pedido.idIntegradora,
           tipo: pedido.tipo,
           orderId: pedido.orderId,
+          cgc: pedido.cgc,
           payload: JSON.stringify(pedido.payload),
           integrado: pedido.integrado,
         }),
