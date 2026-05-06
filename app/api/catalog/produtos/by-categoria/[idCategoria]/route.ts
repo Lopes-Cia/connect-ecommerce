@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import type { ProdutosByCategoriaResponse } from '@/lib/api/produtos'
-import type { Categoria } from '@/lib/types/produtos'
+import type { Categoria, Produto } from '@/lib/types/produtos'
 import { listCatalogCategories, searchCatalogProducts } from '@/lib/integration/catalogService'
 
 export const dynamic = 'force-dynamic'
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ idC
     const filterQuery = buildCategoryFilterQuery(categoryIds)
     const query = filterQuery
 
-    const result = await searchCatalogProducts({
+    const result = await searchCatalogProducts<Produto>({
       query,
       page,
       pageSize,
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ idC
 
     const payload: ProdutosByCategoriaResponse = {
       success: true,
-      data: result.items as any,
+      data: result.items,
       page,
       pageSize,
       total: result.total,

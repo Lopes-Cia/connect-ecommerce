@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import type { ApiSuccess, Brand, BrandByIdPayload } from '@/lib/types/produtos'
+import type { ApiSuccess, Brand, BrandByIdPayload, Produto } from '@/lib/types/produtos'
 import { listCatalogBrands, searchCatalogProducts } from '@/lib/integration/catalogService'
 
 export const dynamic = 'force-dynamic'
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ idB
     }
 
     const query = `@brandId:[${parsedId} ${parsedId}]`
-    const productsResult = await searchCatalogProducts({
+    const productsResult = await searchCatalogProducts<Produto>({
       query,
       page,
       pageSize,
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ idB
       data: {
         brand,
         products: {
-          data: productsResult.items as any,
+          data: productsResult.items,
           page,
           pageSize,
           total: productsResult.total,

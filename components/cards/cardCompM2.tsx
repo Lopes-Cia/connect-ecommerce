@@ -1,8 +1,7 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -156,14 +155,7 @@ export function CardCompM2({
 
   const [color, setColor] = useState(initialColor)
   const [size, setSize] = useState(initialSize)
-  const [imageSrc, setImageSrc] = useState(resolvedImageUrl || "/placeholder.svg")
-
-  useEffect(() => {
-    setImageSrc(resolvedImageUrl || "/placeholder.svg")
-  }, [resolvedImageUrl])
-
-  const shouldUseImgTag =
-    (imageSrc ?? "").startsWith("http://") || (imageSrc ?? "").startsWith("https://")
+  const imageSrc = resolvedImageUrl || "/placeholder.svg"
 
   const effectiveColor = showOptionsAsText ? colorValueText ?? "" : color
   const effectiveSize = showOptionsAsText ? sizeValueText ?? "" : size
@@ -174,48 +166,30 @@ export function CardCompM2({
         {resolvedHref ? (
           <Link href={resolvedHref} className="block">
             <div className={cn("relative w-full overflow-hidden rounded-md", imageContainerClassName)}>
-              {shouldUseImgTag ? (
-                <img
-                  src={imageSrc}
-                  alt={resolvedImageAlt}
-                  width={560}
-                  height={540}
-                  className={cn("h-[270px] w-full object-cover", imageClassName)}
-                  onError={() => setImageSrc("/placeholder.svg")}
-                />
-              ) : (
-                <Image
-                  src={imageSrc}
-                  alt={resolvedImageAlt}
-                  width={560}
-                  height={540}
-                  className={cn("h-[270px] w-full object-cover", imageClassName)}
-                  unoptimized
-                />
-              )}
-            </div>
-          </Link>
-        ) : (
-          <div className={cn("relative w-full overflow-hidden rounded-md", imageContainerClassName)}>
-            {shouldUseImgTag ? (
               <img
                 src={imageSrc}
                 alt={resolvedImageAlt}
                 width={560}
                 height={540}
                 className={cn("h-[270px] w-full object-cover", imageClassName)}
-                onError={() => setImageSrc("/placeholder.svg")}
+                onError={(event) => {
+                  event.currentTarget.src = "/placeholder.svg"
+                }}
               />
-            ) : (
-              <Image
-                src={imageSrc}
-                alt={resolvedImageAlt}
-                width={560}
-                height={540}
-                className={cn("h-[270px] w-full object-cover", imageClassName)}
-                unoptimized
-              />
-            )}
+            </div>
+          </Link>
+        ) : (
+          <div className={cn("relative w-full overflow-hidden rounded-md", imageContainerClassName)}>
+            <img
+              src={imageSrc}
+              alt={resolvedImageAlt}
+              width={560}
+              height={540}
+              className={cn("h-[270px] w-full object-cover", imageClassName)}
+              onError={(event) => {
+                event.currentTarget.src = "/placeholder.svg"
+              }}
+            />
           </div>
         )}
         {showFavorite && (

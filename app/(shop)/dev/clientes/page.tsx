@@ -293,8 +293,8 @@ export default function DevClientesPage() {
           <div className="grid grid-cols-1 gap-2">
             <div className="grid grid-cols-1 gap-1 text-[11px] font-montserrat text-custom-dark-700">
               <div>
-                Defaults: <span className="font-mono">status=\"PEN\"</span>, <span className="font-mono">idTabPreco=1</span>,{" "}
-                <span className="font-mono">codigoIbge=0</span>, <span className="font-mono">principal=\"Sim\"</span>
+                Defaults: <span className="font-mono">status=&quot;PEN&quot;</span>, <span className="font-mono">idTabPreco=1</span>,{" "}
+                <span className="font-mono">codigoIbge=0</span>, <span className="font-mono">principal=&quot;Sim&quot;</span>
               </div>
               <div>
                 Dinâmicos: <span className="font-mono">customerId</span> (getProximoCustomerIdIntegrado),{" "}

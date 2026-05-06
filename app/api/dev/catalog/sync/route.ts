@@ -5,6 +5,12 @@ import { syncCatalogToRedis } from '@/lib/integration/catalogAdminService'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
+type SyncKind = 'categorias' | 'produtos' | 'brands'
+
+function isSyncKind(value: string): value is SyncKind {
+  return value === 'categorias' || value === 'produtos' || value === 'brands'
+}
+
 function parseIntOrNull(value: string | null): number | null {
   if (!value) return null
   const parsed = Number.parseInt(value, 10)
@@ -28,13 +34,13 @@ export async function POST(request: NextRequest) {
       ? onlyRaw
           .split(',')
           .map((s) => s.trim())
-          .filter(Boolean)
+          .filter((value): value is SyncKind => Boolean(value) && isSyncKind(value))
       : undefined
 
     const pruneParsed = parseBoolOrNull(usp.get('prune'))
 
     const result = await syncCatalogToRedis({
-      only: only as any,
+      only,
       batchSize: parseIntOrNull(usp.get('batch')) ?? undefined,
       scanCount: parseIntOrNull(usp.get('scanCount')) ?? undefined,
       prune: pruneParsed ?? undefined,
