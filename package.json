@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/sync-env-local.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/sync-env-local.mjs",
     "build": "next build",
+    "prestart": "node scripts/sync-env-local.mjs",
     "start": "next start",
     "lint": "eslint"
   },
