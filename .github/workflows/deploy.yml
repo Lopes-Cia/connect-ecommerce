@@ -36,11 +36,9 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            cat setup.env > .env
             cat >> .env <<'EOF'
             GP_CLIENTE_INTEGRADO_TOKEN=${{ secrets.GP_CLIENTE_INTEGRADO_TOKEN }}
             REDIS_URL=${{ secrets.REDIS_URL }}
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
             EOF
             chmod 600 .env
 
