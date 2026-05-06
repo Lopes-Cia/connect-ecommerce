@@ -1,18 +1,18 @@
-# MDK-ELIS — AGENTS (EntryPoint do Trae Solo)
+# connect-ecommerce — AGENTS (EntryPoint do Trae Solo)
 
 Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteador”: curto, direto e com links para as definições canônicas.
 
 ## Onde está o conteúdo canônico
 
-- Índice geral: [IA/readme.md](file:///c:/LOPES/www/MDK-ELIS/IA/readme.md)
-- Regras globais: [INTERACAO.md](file:///c:/LOPES/www/MDK-ELIS/IA/RULES/INTERACAO.md)
-- Contrato comum (fonte única de regras compartilhadas): [_CONTRATO.md](file:///c:/LOPES/www/MDK-ELIS/IA/AGENTS/_CONTRATO.md)
+- Índice geral: [IA/readme.md](file:///c:/LOPES/www/connect-ecommerce/IA/readme.md)
+- Regras globais: [INTERACAO.md](file:///c:/LOPES/www/connect-ecommerce/IA/RULES/INTERACAO.md)
+- Contrato comum (fonte única de regras compartilhadas): [_CONTRATO.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/_CONTRATO.md)
 - Especialistas:
-  - [SEARCHER.md](file:///c:/LOPES/www/MDK-ELIS/IA/AGENTS/SEARCHER.md)
-  - [CODER.md](file:///c:/LOPES/www/MDK-ELIS/IA/AGENTS/CODER.md)
-  - [DESIGNER.md](file:///c:/LOPES/www/MDK-ELIS/IA/AGENTS/DESIGNER.md)
-  - [TESTER.md](file:///c:/LOPES/www/MDK-ELIS/IA/AGENTS/TESTER.md)
-  - [QUALITY.md](file:///c:/LOPES/www/MDK-ELIS/IA/AGENTS/QUALITY.md)
+  - [SEARCHER.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/SEARCHER.md)
+  - [CODER.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/CODER.md)
+  - [DESIGNER.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/DESIGNER.md)
+  - [TESTER.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/TESTER.md)
+  - [QUALITY.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/QUALITY.md)
 
 ## Roteamento (como “linkar” a execução no Trae Solo)
 
@@ -27,7 +27,7 @@ Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteado
 - Specs e checklists gerados durante o trabalho ficam em: `.trae/specs/<slug>/`
   - `spec.md`, `tasks.md`, `checklist.md`
 - Templates base (para copiar/derivar) ficam em: `.trae/templates/`
-- Guia de estrutura: [.trae/README.md](file:///c:/LOPES/www/MDK-ELIS/.trae/README.md)
+- Guia de estrutura: [.trae/README.md](file:///c:/LOPES/www/connect-ecommerce/.trae/README.md)
 
 ## Regra operacional (curta)
 
