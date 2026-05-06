@@ -36,13 +36,11 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            if [ -z "${{ secrets.ENV_PROD }}" ]; then
-              echo "ENV_PROD secret não configurado"
-              exit 1
-            fi
-
-            cat > .env <<'EOF'
-            ${{ secrets.ENV_PROD }}
+            cat env/production.defaults.env > .env
+            cat >> .env <<'EOF'
+            GP_CLIENTE_INTEGRADO_TOKEN=${{ secrets.GP_CLIENTE_INTEGRADO_TOKEN }}
+            REDIS_URL=${{ secrets.REDIS_URL }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
             EOF
             chmod 600 .env
 
