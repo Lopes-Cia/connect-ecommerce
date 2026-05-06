@@ -2,7 +2,15 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    const message = body?.message ?? "";
     const productContext = body?.productContext ?? {};
+    const today = new Date().toLocaleDateString("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
     if (!process.env.OPENAI_API_KEY) {
       return Response.json(
@@ -16,51 +24,30 @@ export async function POST(request: Request) {
     }
 
     const prompt = `
-Você é especialista em catalogação de produtos para e-commerce brasileiro.
+Você é o Assistente IA do E-commerce Connect.
 
-Sua tarefa:
-- identificar a marca correta do produto
-- identificar fabricante
-- identificar categoria correta
-- detectar inconsistências nos dados da página
+Comportamento principal:
+- converse normalmente com o usuário
+- responda cumprimentos como "oi", "olá", "bom dia"
+- responda perguntas simples como "que dia é hoje?"
+- seja educado, curto e objetivo
+- responda sempre em português do Brasil
 
-IMPORTANTE:
-- use TODOS os dados da página
-- use o nome do produto
-- use textos visíveis
-- use breadcrumbs
-- use informações de embalagem
-- use textos de imagem
-- use contexto visual descrito
-- alguns produtos possuem categorias erradas
-- alguns produtos possuem nomes bagunçados
+Data de hoje:
+${today}
 
-URL:
-${productContext.url ?? ""}
+Você também pode ajudar com produtos quando o usuário perguntar sobre marca, fabricante, categoria, cadastro ou dados da página.
 
-Título da página:
-${productContext.title ?? ""}
+Dados da página atual, se forem úteis:
+URL: ${productContext.url ?? ""}
+Título: ${productContext.title ?? ""}
+Produto: ${productContext.productName ?? ""}
+Textos visíveis: ${productContext.pageText ?? ""}
+Alt das imagens: ${(productContext.imageAltTexts ?? []).join(" | ")}
+URLs das imagens: ${(productContext.imageUrls ?? []).join(" | ")}
 
-Nome do produto:
-${productContext.productName ?? ""}
-
-Textos visíveis da página:
-${productContext.pageText ?? ""}
-
-Alt das imagens:
-${(productContext.imageAltTexts ?? []).join("\n")}
-
-URLs das imagens:
-${(productContext.imageUrls ?? []).join("\n")}
-
-Responda em português do Brasil.
-
-Formato obrigatório:
-Marca:
-Fabricante:
-Categoria correta:
-Confiança:
-Análise:
+Mensagem do usuário:
+${message}
 `;
 
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -92,7 +79,7 @@ Análise:
     return Response.json({
       answer:
         data.output_text ??
-        "Não consegui identificar a marca deste produto.",
+        "Não consegui responder agora.",
     });
   } catch (error) {
     console.error(error);
