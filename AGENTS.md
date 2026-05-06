@@ -6,6 +6,7 @@ Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteado
 
 - Índice geral: [IA/readme.md](file:///c:/LOPES/www/connect-ecommerce/IA/readme.md)
 - Regras globais: [INTERACAO.md](file:///c:/LOPES/www/connect-ecommerce/IA/RULES/INTERACAO.md)
+- Regras de versionamento e deploy (obrigatório ler antes de atuar): [VERSIONAMENTO.md](file:///c:/LOPES/www/connect-ecommerce/IA/RULES/VERSIONAMENTO.md)
 - Contrato comum (fonte única de regras compartilhadas): [_CONTRATO.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/_CONTRATO.md)
 - Especialistas:
   - [SEARCHER.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/SEARCHER.md)
