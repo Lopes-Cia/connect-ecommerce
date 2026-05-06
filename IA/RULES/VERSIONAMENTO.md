@@ -1,126 +1,67 @@
 # REGRAS (VERSIONAMENTO E DEPLOY)
 
 ## Objetivo
-Evitar deploy “fora de sincronia” (branch errada no servidor), reduzir risco operacional e tornar previsível o que está em produção vs desenvolvimento.
+Garantir previsibilidade e segurança:
+- Saber exatamente o que está em produção.
+- Evitar deploy na branch errada.
+- Evitar alterações locais no VPS e “surpresas” em produção.
 
-## Escopo
-Estas regras cobrem:
-- Estratégia de branches
-- Política de merges/PR
-- Versionamento (tags)
-- Regras mínimas para deploy (GitHub Actions → VPS)
+## Definições
+- `main`: produção. Qualquer push/merge aqui é produção.
+- `develop`: desenvolvimento/validação.
+- Deploy: roda automaticamente quando há push/merge em `main`.
+- `.env`: fonte única de variáveis (local e VPS). Não é versionado.
 
-## Regras
-### 0) Lei (não negociável)
-- Não alteramos direto na `main`. Toda alteração/commit acontece em `develop` (ou em `feature/<nome>` e depois PR para `develop`).
+## Lei (não negociável)
+- Não alteramos direto na `main`. Toda mudança entra primeiro em `develop` (ou `feature/<nome>` → PR → `develop`).
 - Existem 2 ações básicas:
-  - Commit em `develop` (normal, acontece sempre).
-  - Merge em `main` (produção): só quando solicitado explicitamente.
-- Como o deploy é disparado por merge/push na `main`, qualquer merge na `main` deve ser tratado como produção e só pode acontecer com solicitação explícita.
-- Se for solicitado merge em `main`, a primeira ação é atualizar o `.env` no VPS via SSH (push do arquivo); só depois seguir o ritual de PR/merge.
-- Não fazer commit toda hora por qualquer bobagem. Commits devem representar um ponto útil.
-  - Pode commitar sem eu pedir quando a tarefa for complicada e precisar de um ponto de restauração.
-  - Caso contrário, agrupar mudanças relacionadas e commitar só quando fizer sentido (resultado claro).
+  - Commit em `develop` (normal).
+  - Merge em `main` (produção): somente quando solicitado explicitamente.
+- Se você pedir merge em `main`, a primeira ação é atualizar o `.env` no VPS via SSH (push do arquivo). Só depois seguimos para PR/merge.
+- Não fazer commit por qualquer bobagem:
+  - Pode commitar sem pedir quando precisar de um ponto de restauração (tarefa complicada).
+  - Caso contrário, agrupar mudanças relacionadas e commitar só quando o resultado estiver claro.
 
-### 1) Branches (contrato)
-- `main`: produção. Só entra via PR revisado.
-- `develop`: integração/validação. Tudo novo entra primeiro aqui.
-- `feature/<nome>`: desenvolvimento de features; sempre merge para `develop`.
-- `hotfix/<nome>`: correção urgente iniciada a partir de `main`; merge de volta para `main` e “espelho” para `develop`.
-
-### 1.1) Processo padrão (passo a passo)
-- Criar branch de trabalho a partir de `develop` (`feature/<nome>`).
-- Implementar e commitar apenas na `feature/<nome>`.
+## Fluxo 1 — Trabalho normal (dia a dia)
+- Criar branch a partir de `develop`: `feature/<nome>`.
+- Implementar e commitar na `feature/<nome>`.
 - Abrir PR `feature/<nome>` → `develop`.
-- Após validar em `develop`, abrir PR `develop` → `main` para publicar em produção somente quando solicitado explicitamente.
-- Após publicar em `main`, sincronizar `develop` com `main` para que ambas apontem para o mesmo commit (fast-forward/`--ff-only`).
+- Validar em `develop`.
 
-### 2) Merges (controle de risco)
-- Proibido “deploy direto” por commit manual no servidor.
-- Proibido push direto na `main`.
-- Toda mudança que impacte deploy precisa de PR e histórico claro (título + descrição curta).
-- Nem todo commit em `develop` precisa virar produção: só abrir/mergear PR `develop` → `main` quando solicitado explicitamente.
-- Preferir merge commit ou squash (decidir um padrão e manter consistente).
-
-### 3) Tags (versão publicável)
-- Tag representa um estado publicável e rastreável.
-- Padrão recomendado (já usado no repo): `vYYYY.MM.DD-N` (ex.: `v2026.05.06-1`).
-- Criar tag apenas após o merge em `main` (ou em branch de release, se existir).
-
-## Ritual (publicação e deploy)
-### 1) Desenvolvimento (sempre)
-- Trabalhar sempre a partir de `develop` em `feature/<nome>` (ou `hotfix/<nome>` quando necessário).
-- Abrir PR para `develop`.
-- Validar em `develop` (testes e smoke manual).
-
-### 2) Preparar produção (somente quando solicitado explicitamente)
-### 2.1) Atualizar `.env` no VPS (primeira ação, obrigatório)
-- Se for solicitado merge em `main`, antes de qualquer PR/merge, atualizar o `.env` no VPS via SSH:
+## Fluxo 2 — Produção (somente quando solicitado explicitamente)
+### Passo 1) Atualizar `.env` no VPS (obrigatório)
+- Rodar:
   - `npm run vps:env:push`
-  - `npm run vps:env:push:restart` (se quiser reiniciar o PM2 na sequência)
+  - `npm run vps:env:push:restart` (opcional)
 
-### 2.2) Abrir PR `develop` → `main`
-- Abrir PR `develop` → `main` com descrição curta:
+### Passo 2) Abrir PR `develop` → `main`
+- Abrir PR com descrição curta:
   - O que mudou
-  - Risco (baixo/médio/alto) e pontos de atenção
+  - Risco (baixo/médio/alto)
   - Como validar
 
-### 3) Publicar (merge em main)
+### Passo 3) Merge em `main`
 - Fazer merge do PR `develop` → `main` somente quando solicitado explicitamente.
+- Observação: merge/push na `main` dispara produção automaticamente.
 
-### 4) Validar na main (fluxo CI-like, local)
-- Antes de rodar `start`, garantir que não existe `dev` rodando (porta 3000):
-  - parar `npm run dev` no terminal (Ctrl+C) ou fechar o processo
-- Estar na `main` atualizada, sem comandos destrutivos:
-  - `git switch main`
-  - `git pull --ff-only origin main`
-- Rodar a sequência:
-  - `npm ci`
-  - `npm run lint`
-  - `npm run build`
-  - `npm run start`
-- Validar no browser se a marcação/alteração esperada aparece.
-
-### 5) Deploy (automático)
-- Ao fazer merge/push na branch `main`, o deploy roda automaticamente (production).
-- Opcionalmente, também pode ser disparado manualmente (`workflow_dispatch`) sempre a partir da `main`.
-
-### 6) Versionar (tag)
-- Após merge em `main`, criar tag `vYYYY.MM.DD-N` apontando para o commit de `main`.
-
-### 3.1) Pós-publicação (obrigatório)
-- Atualizar `develop` para ficar exatamente no mesmo commit de `main` (fast-forward/`--ff-only`) e fazer push da `develop`.
+### Passo 4) Pós-produção: manter `develop` igual à `main` (obrigatório)
+- Garantir fast-forward (sem divergência):
   - `git switch develop`
   - `git pull --ff-only origin develop`
   - `git merge --ff-only origin/main`
   - `git push origin develop`
 
-### 4) Deploy (ramo certo no servidor)
-- Produção deve sempre refletir `main`.
-- Workflow de deploy pode usar `reset --hard` desde que a ref/branch venha do evento que disparou o deploy e seja validada (produção = `main`).
-- Se o deploy for manual (`workflow_dispatch`), ele deve bloquear quando a ref não for `main`.
+## Ambiente (.env)
+- Fonte única: usar apenas 1 arquivo `.env` (local e VPS).
+- `.env` não deve ser versionado no git.
+- Atualização do `.env` no VPS é via SSH/SCP, nunca via GitHub secrets.
+- Manual (se necessário):
+  - `scp -P 23377 c:\LOPES\www\connect-ecommerce\.env deploy@189.45.246.228:/var/www/connect-ecommerce/.env`
+  - `ssh -p 23377 deploy@189.45.246.228 "chmod 600 /var/www/connect-ecommerce/.env"`
 
-### 5) Ambiente e .env (previsibilidade)
-- Fonte única de variáveis: usar apenas **1 arquivo `.env`** (local e servidor). Não usar `.env.secret` / `.env.local` gerados.
-- O `.env` **não deve ser versionado** no git (segredos não podem entrar no repositório).
-- `.env` no servidor deve ser gerenciado de forma idempotente (substituir o arquivo, não anexar conteúdo repetidamente).
-- Segredos nunca podem ser logados.
-- Mudanças em variáveis de ambiente são tratadas como mudança de produção: via PR + rastreio.
-
-### 5.1) Atualização do `.env` no VPS (SSH)
-- O workflow de deploy **não é responsável** por escrever `.env` a partir de secrets. O `.env` é gerenciado manualmente via SSH/SCP.
-- Antes de rodar o deploy (ou quando houver alteração de env), copiar o `.env` local para o VPS e ajustar permissões:
-  - Script do projeto (recomendado):
-    - `npm run vps:env:push`
-    - `npm run vps:env:push:restart` (se quiser reiniciar o PM2 na sequência)
-  - Manual (quando necessário):
-    - `scp -P 23377 c:\LOPES\www\connect-ecommerce\.env deploy@189.45.246.228:/var/www/connect-ecommerce/.env`
-    - `ssh -p 23377 deploy@189.45.246.228 "chmod 600 /var/www/connect-ecommerce/.env"`
-
-## Checklist rápido (antes de publicar)
-- Estou publicando o branch correto para o ambiente correto?
-- O servidor está puxando exatamente a ref do deploy (sem “branch hardcoded”)?
-- Existe tag (ou referência) para rastrear o que está em produção?
-- O `.env` no servidor não vai duplicar conteúdo na próxima execução?
-- O `.env` do VPS está atualizado (push via SSH) antes do restart do serviço?
+## Checklist de produção (antes do merge em main)
+- Você pediu explicitamente o merge em `main`?
+- O `.env` do VPS foi atualizado via SSH?
+- O PR `develop` → `main` descreve o que mudou, o risco e como validar?
+- Após o merge, o `develop` foi fast-forward para o mesmo commit da `main`?
 
