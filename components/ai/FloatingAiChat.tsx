@@ -1,0 +1,205 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+type ProductContext = {
+  url: string;
+  title: string;
+  productName: string;
+};
+
+function getProductContext(): ProductContext {
+  if (typeof window === "undefined") {
+    return {
+      url: "",
+      title: "",
+      productName: "",
+    };
+  }
+
+  return {
+    url: window.location.href,
+    title: document.title,
+    productName: document.querySelector("h1")?.textContent?.trim() ?? "",
+  };
+}
+
+export default function FloatingAiChat() {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [productContext, setProductContext] = useState<ProductContext>({
+    url: "",
+    title: "",
+    productName: "",
+  });
+
+  useEffect(() => {
+    setProductContext(getProductContext());
+  }, []);
+
+  async function sendMessage(customMessage?: string) {
+    const text = (customMessage ?? message).trim();
+
+    if (!text || loading) return;
+
+    const nextMessages: ChatMessage[] = [
+      ...messages,
+      {
+        role: "user",
+        content: text,
+      },
+    ];
+
+    setMessages(nextMessages);
+    setMessage("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/ai/brand-assistant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: text,
+          productContext: getProductContext(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Erro ao consultar assistente IA.");
+      }
+
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: data.answer ?? "Sem resposta da IA.",
+        },
+      ]);
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content:
+            error instanceof Error
+              ? error.message
+              : "Erro ao consultar assistente IA.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed bottom-5 right-5 z-[999999]">
+      {open ? (
+        <div className="mb-3 flex h-[460px] w-[340px] max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white text-zinc-900 shadow-2xl">
+          <div className="flex items-center justify-between bg-zinc-950 px-4 py-3 text-white">
+            <div>
+              <p className="text-sm font-semibold">Assistente IA</p>
+              <p className="text-xs text-zinc-300">Identificador de marca</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-full px-2 py-1 text-sm hover:bg-white/10"
+              aria-label="Fechar assistente IA"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+            {messages.length === 0 ? (
+              <div className="space-y-3 text-zinc-600">
+                <p>
+                  Clique abaixo para eu tentar identificar a marca do produto
+                  atual.
+                </p>
+
+                <div className="rounded-xl bg-zinc-100 p-3 text-xs text-zinc-600">
+                  Produto detectado: {productContext.productName || "não encontrado"}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => sendMessage("Identifique a marca deste produto.")}
+                  className="w-full rounded-xl bg-zinc-950 px-3 py-2 text-left text-sm font-medium text-white hover:bg-zinc-800"
+                >
+                  Identificar marca deste produto
+                </button>
+              </div>
+            ) : null}
+
+            {messages.map((item, index) => (
+              <div
+                key={`${item.role}-${index}`}
+                className={
+                  item.role === "user"
+                    ? "ml-auto max-w-[85%] rounded-2xl bg-zinc-950 px-3 py-2 text-white"
+                    : "mr-auto max-w-[85%] whitespace-pre-wrap rounded-2xl bg-zinc-100 px-3 py-2 text-zinc-800"
+                }
+              >
+                {item.content}
+              </div>
+            ))}
+
+            {loading ? (
+              <div className="mr-auto rounded-2xl bg-zinc-100 px-3 py-2 text-zinc-500">
+                Analisando...
+              </div>
+            ) : null}
+          </div>
+
+          <div className="border-t border-zinc-200 p-3">
+            <div className="flex gap-2">
+              <input
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                placeholder="Digite sua pergunta"
+                className="min-w-0 flex-1 rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-900"
+              />
+
+              <button
+                type="button"
+                onClick={() => sendMessage()}
+                disabled={loading || !message.trim()}
+                className="rounded-xl bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
+              >
+                Enviar
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className="rounded-full bg-red-600 px-5 py-4 text-sm font-bold text-white shadow-2xl ring-4 ring-white hover:bg-red-700"
+        aria-label="Abrir assistente IA"
+      >
+        IA
+      </button>
+    </div>
+  );
+}
