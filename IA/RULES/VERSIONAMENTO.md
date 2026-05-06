@@ -11,6 +11,14 @@ Estas regras cobrem:
 - Regras mínimas para deploy (GitHub Actions → VPS)
 
 ## Regras
+### 0) Lei (não negociável)
+- Não alteramos direto na `main`. Toda alteração/commit acontece em `develop` (ou em `feature/<nome>` e depois PR para `develop`).
+- Existem 2 ações básicas:
+  - Commit em `develop` (normal, acontece sempre).
+  - Merge em `main` (produção): só quando solicitado explicitamente.
+- Como o deploy é disparado por merge/push na `main`, qualquer merge na `main` deve ser tratado como produção e só pode acontecer com solicitação explícita.
+- Se for solicitado merge em `main`, a primeira ação é atualizar o `.env` no VPS via SSH (push do arquivo); só depois seguir o ritual de PR/merge.
+
 ### 1) Branches (contrato)
 - `main`: produção. Só entra via PR revisado.
 - `develop`: integração/validação. Tudo novo entra primeiro aqui.
@@ -42,16 +50,17 @@ Estas regras cobrem:
 - Abrir PR para `develop`.
 - Validar em `develop` (testes e smoke manual).
 
-### 2) Preparar produção
-- Somente quando solicitado explicitamente, abrir PR `develop` → `main` com descrição curta:
+### 2) Preparar produção (somente quando solicitado explicitamente)
+### 2.1) Atualizar `.env` no VPS (primeira ação, obrigatório)
+- Se for solicitado merge em `main`, antes de qualquer PR/merge, atualizar o `.env` no VPS via SSH:
+  - `npm run vps:env:push`
+  - `npm run vps:env:push:restart` (se quiser reiniciar o PM2 na sequência)
+
+### 2.2) Abrir PR `develop` → `main`
+- Abrir PR `develop` → `main` com descrição curta:
   - O que mudou
   - Risco (baixo/médio/alto) e pontos de atenção
   - Como validar
-
-### 2.1) Atualizar `.env` no VPS (obrigatório antes de produção)
-- Antes de fazer merge em `main`, atualizar o `.env` no VPS via SSH (o merge em `main` dispara deploy/produção):
-  - `npm run vps:env:push`
-  - `npm run vps:env:push:restart` (se quiser reiniciar o PM2 na sequência)
 
 ### 3) Publicar (merge em main)
 - Fazer merge do PR `develop` → `main` somente quando solicitado explicitamente.
