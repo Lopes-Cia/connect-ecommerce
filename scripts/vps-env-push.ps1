@@ -73,5 +73,8 @@ chmod 600 .env
 {3}
 '@ -f $User, $NodeVersion, $AppDir, $RestartCmd
 
-ssh -p $Port "$User@$SshHost" $RemoteCmd
+$RemoteCmd = $RemoteCmd -replace "`r", ""
+$RemoteB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($RemoteCmd))
+$ExecCmd = "echo '$RemoteB64' | base64 -d | bash"
+ssh -p $Port "$User@$SshHost" $ExecCmd
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
