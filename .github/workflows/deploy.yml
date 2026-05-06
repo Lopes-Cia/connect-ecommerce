@@ -46,9 +46,12 @@ jobs:
               echo "Diretório não é um repositório git: $PWD"
               exit 1
             fi
-            if [ -n "$(git status --porcelain)" ]; then
-              echo "Working tree com alterações locais. Abortando para evitar overwrite inesperado."
+            if [ -n "$(git status --porcelain | grep -v '^ M \\.env$' | grep -v '^\\?\\? \\.env$' || true)" ]; then
+              echo "Working tree com alterações locais (fora .env). Abortando para evitar overwrite inesperado."
               exit 1
+            fi
+            if [ -n "$(git status --porcelain | grep '^ M \\.env$' || true)" ]; then
+              git checkout -- .env
             fi
 
             PREV="$(git rev-parse HEAD)"
