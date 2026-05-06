@@ -47,20 +47,39 @@ Estas regras cobrem:
   - Risco (baixo/médio/alto) e pontos de atenção
   - Como validar
 
-### 3) Publicar
+### 3) Publicar (merge em main)
+- Fazer merge do PR `develop` → `main`.
+
+### 4) Validar na main (fluxo CI-like, local)
+- Antes de rodar `start`, garantir que não existe `dev` rodando (porta 3000):
+  - parar `npm run dev` no terminal (Ctrl+C) ou fechar o processo
+- Estar na `main` atualizada, sem comandos destrutivos:
+  - `git switch main`
+  - `git pull --ff-only origin main`
+- Rodar a sequência:
+  - `npm ci`
+  - `npm run lint`
+  - `npm run build`
+  - `npm run start`
+- Validar no browser se a marcação/alteração esperada aparece.
+
+### 5) Deploy (manual)
+- Rodar o deploy manual (production) a partir da branch `main`.
+
+### 6) Versionar (tag)
 - Após merge em `main`, criar tag `vYYYY.MM.DD-N` apontando para o commit de `main`.
-- Rodar o deploy manualmente informando o ambiente:
-  - `staging` para publicar `develop`
-  - `production` para publicar `main`
 
 ### 3.1) Pós-publicação (obrigatório)
 - Atualizar `develop` para ficar exatamente no mesmo commit de `main` (fast-forward/`--ff-only`) e fazer push da `develop`.
+  - `git switch develop`
+  - `git pull --ff-only origin develop`
+  - `git merge --ff-only origin/main`
+  - `git push origin develop`
 
 ### 4) Deploy (ramo certo no servidor)
 - Produção deve sempre refletir `main`.
-- Se existir “staging”, ele deve refletir `develop`.
 - Workflow de deploy nunca deve “forçar” branch fixa no servidor (ex.: `git reset --hard origin/main`) sem validar qual ref disparou o deploy.
-- Se o deploy for manual (`workflow_dispatch`), ele deve exigir seleção explícita do ambiente e bloquear produção quando a ref não for `main`.
+- Se o deploy for manual (`workflow_dispatch`), ele deve bloquear quando a ref não for `main`.
 
 ### 5) Ambiente e .env (previsibilidade)
 - `.env` no servidor deve ser gerenciado de forma idempotente (não anexar conteúdo repetidamente).

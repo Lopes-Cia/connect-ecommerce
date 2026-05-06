@@ -2,15 +2,6 @@ name: Deploy Next.js to VPS
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: "Destino do deploy"
-        required: true
-        type: choice
-        options:
-          - staging
-          - production
-        default: staging
 
 jobs:
   test:
@@ -19,23 +10,22 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
       - run: npm run lint
       - run: npm run build
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: production
     steps:
       - uses: actions/checkout@v4
       - name: Guardrails (env x branch)
         run: |
           echo "ref_name=${{ github.ref_name }}"
-          echo "environment=${{ inputs.environment }}"
-          if [ "${{ inputs.environment }}" = "production" ] && [ "${{ github.ref_name }}" != "main" ]; then
+          if [ "${{ github.ref_name }}" != "main" ]; then
             echo "Deploy production só pode rodar a partir da branch main."
             exit 1
           fi
@@ -47,20 +37,36 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 23377
           script: |
+            set -eu
             export NVM_DIR="/home/deploy/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             cd ${{ secrets.APP_DIR }}
+
+            if [ ! -d .git ]; then
+              echo "Diretório não é um repositório git: $PWD"
+              exit 1
+            fi
+            if ! git diff --quiet || ! git diff --cached --quiet; then
+              echo "Working tree com alterações locais. Abortando para evitar overwrite inesperado."
+              exit 1
+            fi
+
+            PREV="$(git rev-parse HEAD)"
             BRANCH="${{ github.ref_name }}"
             git fetch origin "$BRANCH"
-            git reset --hard "origin/$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            git pull --ff-only origin "$BRANCH"
 
             cat > .env <<'EOF'
             ${{ secrets.ENV_PROD }}
             EOF
             chmod 600 .env
 
-            rm -rf node_modules .next
-            npm install
+            if [ ! -d node_modules ] || git diff --name-only "$PREV..HEAD" -- package-lock.json package.json | grep -q .; then
+              npm ci
+            fi
+
+            rm -rf .next
             npm run build
-            pm2 restart connect-ecommerce || pm2 start npm --name "connect-ecommerce" -- start -- -p 3000
+            pm2 restart connect-ecommerce --update-env || pm2 start npm --name "connect-ecommerce" -- start -- -p 3000
             pm2 save
