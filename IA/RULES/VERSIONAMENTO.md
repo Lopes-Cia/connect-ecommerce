@@ -22,7 +22,7 @@ Estas regras cobrem:
 - Implementar e commitar apenas na `feature/<nome>`.
 - Abrir PR `feature/<nome>` → `develop`.
 - Após validar em `develop`, abrir PR `develop` → `main` para publicar em produção.
-- Após publicar em `main`, sincronizar `develop` com `main` (via PR `main` → `develop` ou merge equivalente) quando existir qualquer mudança feita por hotfix.
+- Após publicar em `main`, sincronizar `develop` com `main` para que ambas apontem para o mesmo commit (fast-forward/`--ff-only`).
 
 ### 2) Merges (controle de risco)
 - Proibido “deploy direto” por commit manual no servidor.
@@ -52,6 +52,9 @@ Estas regras cobrem:
 - Rodar o deploy manualmente informando o ambiente:
   - `staging` para publicar `develop`
   - `production` para publicar `main`
+
+### 3.1) Pós-publicação (obrigatório)
+- Atualizar `develop` para ficar exatamente no mesmo commit de `main` (fast-forward/`--ff-only`) e fazer push da `develop`.
 
 ### 4) Deploy (ramo certo no servidor)
 - Produção deve sempre refletir `main`.
