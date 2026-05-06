@@ -1,3 +1,18 @@
+import fs from "fs/promises";
+import path from "path";
+
+async function loadAssistantContext() {
+  try {
+    return await fs.readFile(
+      path.join(process.cwd(), "IA", "ASSISTANT_CONTEXT.md"),
+      "utf-8"
+    );
+  } catch (error) {
+    console.error("[AI API] Failed to load assistant context", error);
+    return "";
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -6,6 +21,7 @@ export async function POST(request: Request) {
 
     const message = body?.message ?? "";
     const productContext = body?.productContext ?? {};
+    const assistantContext = await loadAssistantContext();
     const today = new Date().toLocaleDateString("pt-BR", {
       timeZone: "America/Sao_Paulo",
       weekday: "long",
@@ -17,6 +33,7 @@ export async function POST(request: Request) {
     console.log("[AI API] Environment", {
       hasApiKey: Boolean(process.env.OPENAI_API_KEY),
       model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      assistantContextSize: assistantContext.length,
     });
 
     if (!process.env.OPENAI_API_KEY) {
@@ -35,22 +52,27 @@ export async function POST(request: Request) {
     const prompt = `
 Você é o Assistente IA do E-commerce Connect.
 
+Use obrigatoriamente o contexto do repositório abaixo quando a pergunta envolver código, arquivos, rotas, páginas, componentes, produto, catálogo ou arquitetura.
+
+CONTEXTO DO REPOSITÓRIO:
+${assistantContext}
+
 Comportamento principal:
 - converse normalmente com o usuário
 - responda cumprimentos como "oi", "olá", "bom dia"
 - responda perguntas simples como "que dia é hoje?"
 - seja educado, curto e objetivo
 - responda sempre em português do Brasil
+- quando souber o arquivo exato pelo contexto do repositório, não chute caminhos genéricos como pages/produtos/[slug].js
 
 Data de hoje:
 ${today}
-
-Você também pode ajudar com produtos quando o usuário perguntar sobre marca, fabricante, categoria, cadastro ou dados da página.
 
 Dados da página atual, se forem úteis:
 URL: ${productContext.url ?? ""}
 Título: ${productContext.title ?? ""}
 Produto: ${productContext.productName ?? ""}
+Slug do produto: ${productContext.productSlug ?? ""}
 Textos visíveis: ${productContext.pageText ?? ""}
 Alt das imagens: ${(productContext.imageAltTexts ?? []).join(" | ")}
 URLs das imagens: ${(productContext.imageUrls ?? []).join(" | ")}
