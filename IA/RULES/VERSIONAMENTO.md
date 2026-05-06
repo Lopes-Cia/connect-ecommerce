@@ -82,13 +82,26 @@ Estas regras cobrem:
 - Se o deploy for manual (`workflow_dispatch`), ele deve bloquear quando a ref não for `main`.
 
 ### 5) Ambiente e .env (previsibilidade)
-- `.env` no servidor deve ser gerenciado de forma idempotente (não anexar conteúdo repetidamente).
+- Fonte única de variáveis: usar apenas **1 arquivo `.env`** (local e servidor). Não usar `.env.secret` / `.env.local` gerados.
+- O `.env` **não deve ser versionado** no git (segredos não podem entrar no repositório).
+- `.env` no servidor deve ser gerenciado de forma idempotente (substituir o arquivo, não anexar conteúdo repetidamente).
 - Segredos nunca podem ser logados.
 - Mudanças em variáveis de ambiente são tratadas como mudança de produção: via PR + rastreio.
+
+### 5.1) Atualização do `.env` no VPS (SSH)
+- O workflow de deploy **não é responsável** por escrever `.env` a partir de secrets. O `.env` é gerenciado manualmente via SSH/SCP.
+- Antes de rodar o deploy (ou quando houver alteração de env), copiar o `.env` local para o VPS e ajustar permissões:
+  - Script do projeto (recomendado):
+    - `npm run vps:env:push`
+    - `npm run vps:env:push:restart` (se quiser reiniciar o PM2 na sequência)
+  - Manual (quando necessário):
+    - `scp -P 23377 c:\LOPES\www\connect-ecommerce\.env deploy@189.45.246.228:/var/www/connect-ecommerce/.env`
+    - `ssh -p 23377 deploy@189.45.246.228 "chmod 600 /var/www/connect-ecommerce/.env"`
 
 ## Checklist rápido (antes de publicar)
 - Estou publicando o branch correto para o ambiente correto?
 - O servidor está puxando exatamente a ref do deploy (sem “branch hardcoded”)?
 - Existe tag (ou referência) para rastrear o que está em produção?
 - O `.env` no servidor não vai duplicar conteúdo na próxima execução?
+- O `.env` do VPS está atualizado (push via SSH) antes do restart do serviço?
 

@@ -3,13 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/sync-env-local.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/sync-env-local.mjs",
     "build": "next build",
-    "prestart": "node scripts/sync-env-local.mjs",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "vps:env:push": "pwsh scripts/vps-env-push.ps1 push",
+    "vps:env:push:restart": "pwsh scripts/vps-env-push.ps1 push -Restart"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

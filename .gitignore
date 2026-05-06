@@ -35,9 +35,8 @@ yarn-error.log*
 openspec
 .vscode
 
-# env files (can opt-in for committing if needed)
+# env files (fonte única: .env local/servidor; não versionar)
 .env*
-!/.env
 !/.env.example
 
 # vercel
