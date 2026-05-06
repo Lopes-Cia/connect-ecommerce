@@ -168,11 +168,11 @@ export default function FloatingAiChat() {
   return (
     <div className="fixed bottom-5 right-5 z-[999999]">
       {open ? (
-        <div className="mb-3 flex h-[460px] w-[340px] max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white text-zinc-900 shadow-2xl">
+        <div className="mb-3 flex h-[520px] w-[360px] max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white text-zinc-900 shadow-2xl">
           <div className="flex items-center justify-between bg-zinc-950 px-4 py-3 text-white">
             <div>
               <p className="text-sm font-semibold">Assistente IA</p>
-              <p className="text-xs text-zinc-300">Identificador de marca</p>
+              <p className="text-xs text-zinc-300">Copiloto do Ecommerce</p>
             </div>
 
             <button
@@ -189,8 +189,8 @@ export default function FloatingAiChat() {
             {messages.length === 0 ? (
               <div className="space-y-3 text-zinc-600">
                 <p>
-                  Posso conversar com você e também consultar os dados reais do
-                  produto quando estiver em uma página de produto.
+                  Posso conversar com você e também analisar o código e os
+                  dados internos do ecommerce.
                 </p>
 
                 <div className="rounded-xl bg-zinc-100 p-3 text-xs text-zinc-600">
@@ -199,13 +199,31 @@ export default function FloatingAiChat() {
                   Slug: {productContext.productSlug || "não encontrado"}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => sendMessage("Consulte os dados internos deste produto e me diga o que encontrou.")}
-                  className="w-full rounded-xl bg-zinc-950 px-3 py-2 text-left text-sm font-medium text-white hover:bg-zinc-800"
-                >
-                  Consultar dados internos do produto
-                </button>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      sendMessage(
+                        "Qual arquivo do repositório renderiza esta página?"
+                      )
+                    }
+                    className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-left text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                  >
+                    Descobrir arquivo desta página
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      sendMessage(
+                        "Consulte os dados internos deste produto e me diga o que encontrou."
+                      )
+                    }
+                    className="w-full rounded-xl bg-zinc-950 px-3 py-2 text-left text-sm font-medium text-white hover:bg-zinc-800"
+                  >
+                    Consultar dados internos do produto
+                  </button>
+                </div>
               </div>
             ) : null}
 
