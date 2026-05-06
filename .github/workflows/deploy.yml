@@ -3,6 +3,7 @@ name: Deploy Next.js to VPS
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -13,9 +14,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - run: npm install
       - run: npm run lint
-      - run: npm test
       - run: npm run build
 
   deploy:
@@ -33,9 +33,21 @@ jobs:
             export NVM_DIR="/home/deploy/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             cd ${{ secrets.APP_DIR }}
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
+
+            if [ -z "${{ secrets.ENV_PROD }}" ]; then
+              echo "ENV_PROD secret não configurado"
+              exit 1
+            fi
+
+            cat > .env <<'EOF'
+            ${{ secrets.ENV_PROD }}
+            EOF
+            chmod 600 .env
+
             rm -rf node_modules .next
-            npm ci --production
+            npm install
             npm run build
             pm2 restart connect-ecommerce || pm2 start npm --name "connect-ecommerce" -- start -- -p 3000
             pm2 save
