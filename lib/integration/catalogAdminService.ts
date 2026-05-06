@@ -72,6 +72,234 @@ async function upsertJsonDocs(input: {
   return written
 }
 
+async function readExistingJsonDocsById(input: {
+  type: 'category' | 'product' | 'brand'
+  ids: Array<number | string>
+  batchSize: number
+}): Promise<Map<string, Record<string, unknown>>> {
+  const client = await getCatalogRedisClient()
+  const prefix = getCatalogKeyPrefix()
+
+  const map = new Map<string, Record<string, unknown>>()
+  const keyBase = `${prefix}:${input.type}:`
+  const ids = input.ids.map((id) => String(id)).filter(Boolean)
+
+  for (const chunk of chunkArray(ids, input.batchSize)) {
+    const multi = client.multi()
+    const keys = chunk.map((id) => `${keyBase}${id}`)
+    for (const key of keys) multi.sendCommand(['JSON.GET', key])
+    const results = await multi.exec()
+    for (let i = 0; i < chunk.length; i += 1) {
+      const raw = results?.[i]
+      if (typeof raw !== 'string') continue
+      try {
+        const parsed = JSON.parse(raw) as unknown
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) continue
+        map.set(chunk[i], parsed as Record<string, unknown>)
+      } catch {}
+    }
+  }
+
+  return map
+}
+
+function pickFirstNumber(values: unknown[]): number | null {
+  for (const v of values) {
+    const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN
+    if (Number.isFinite(n)) return n
+  }
+  return null
+}
+
+function pickFirstString(values: unknown[]): string | null {
+  for (const v of values) {
+    if (typeof v === 'string' && v.trim()) return v.trim()
+  }
+  return null
+}
+
+function asObject(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  return value as Record<string, unknown>
+}
+
+function slugify(value: string): string {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+function normalizeBrandDoc(value: Record<string, unknown> | null): Record<string, unknown> | null {
+  if (!value) return null
+  const id = pickBrandId(value) ?? 0
+  const nome = pickBrandName(value) ?? ''
+  const slug = pickFirstString([value.slug]) ?? `/marca/${slugify(nome) || 'no-brand'}`
+  const image =
+    typeof value.image === 'string' && value.image.trim() ? value.image : 'https://lopesecia.com.br/img/semImagem.png'
+  return { id, nome, slug, image }
+}
+
+function pickBrandId(value: Record<string, unknown> | null): number | null {
+  if (!value) return null
+  return pickFirstNumber([value.id, value.brandId, value.codigo])
+}
+
+function pickBrandName(value: Record<string, unknown> | null): string | null {
+  if (!value) return null
+  return pickFirstString([value.name, value.nome, value.marca, value.brand])
+}
+
+function mergeBrandFromExisting(input: { next: Record<string, unknown>; existing: Record<string, unknown> | undefined }) {
+  if (!input.existing) return input.next
+
+  const nextBrand = asObject(input.next.brand)
+  const existingBrand = asObject(input.existing.brand)
+
+  const nextBrandId = pickBrandId(nextBrand)
+  const existingBrandId = pickBrandId(existingBrand)
+
+  const legacyExistingBrandId = pickFirstNumber([input.existing.brandId, input.existing.idMarca, input.existing.brand_id])
+  const legacyExistingBrandName = pickFirstString([
+    input.existing.marca,
+    input.existing.brand,
+    input.existing.brandName,
+    input.existing.fabricante,
+  ])
+
+  if ((existingBrandId === null || existingBrandId === 0) && legacyExistingBrandId && legacyExistingBrandId > 0) {
+    const name = legacyExistingBrandName || `Marca ${legacyExistingBrandId}`
+    const legacyBrandObj = {
+      id: legacyExistingBrandId,
+      nome: name,
+      slug: `/marca/${slugify(name) || 'no-brand'}`,
+      image: 'https://lopesecia.com.br/img/semImagem.png',
+    }
+    if ((nextBrandId === null || nextBrandId === 0)) {
+      return { ...input.next, brand: legacyBrandObj }
+    }
+  }
+
+  if ((nextBrandId === null || nextBrandId === 0) && existingBrandId && existingBrandId > 0 && existingBrand) {
+    return { ...input.next, brand: normalizeBrandDoc(existingBrand) ?? existingBrand }
+  }
+
+  const nextBrandName = pickBrandName(nextBrand)
+  const existingBrandName = pickBrandName(existingBrand)
+  if (nextBrand && !nextBrandName && existingBrandName) {
+    return { ...input.next, brand: normalizeBrandDoc({ ...nextBrand, nome: existingBrandName }) ?? nextBrand }
+  }
+
+  if (nextBrand) {
+    const normalized = normalizeBrandDoc(nextBrand)
+    if (normalized) return { ...input.next, brand: normalized }
+  }
+
+  return input.next
+}
+
+function pickCategoryId(value: Record<string, unknown> | null): number | null {
+  if (!value) return null
+  return pickFirstNumber([value.id, value.categoryId, value.codigo])
+}
+
+function mergeCategoryFromExisting(input: { next: Record<string, unknown>; existing: Record<string, unknown> | undefined }) {
+  if (!input.existing) return input.next
+  const nextCategory = asObject(input.next.category)
+  const existingCategory = asObject(input.existing.category)
+
+  const nextCategoryId = pickCategoryId(nextCategory)
+  const existingCategoryId = pickCategoryId(existingCategory)
+
+  const legacyExistingCategoryId = pickFirstNumber([
+    input.existing.categoryId,
+    input.existing.categoriaPrincipal,
+    input.existing.categoriaPrinciapal,
+    input.existing.categoria,
+  ])
+
+  if ((existingCategoryId === null || existingCategoryId === 0) && legacyExistingCategoryId && legacyExistingCategoryId > 0) {
+    const name = `Categoria ${legacyExistingCategoryId}`
+    const legacyCategoryObj = {
+      id: legacyExistingCategoryId,
+      name,
+      slug: `/categoria/${slugify(name) || 'sem-categoria'}`,
+      familia: [{ id: legacyExistingCategoryId, name, slug: `/categoria/${slugify(name) || 'sem-categoria'}` }],
+    }
+    if ((nextCategoryId === null || nextCategoryId === 0)) {
+      return { ...input.next, category: legacyCategoryObj }
+    }
+  }
+
+  if ((nextCategoryId === null || nextCategoryId === 0) && existingCategoryId && existingCategoryId > 0 && existingCategory) {
+    return { ...input.next, category: existingCategory }
+  }
+
+  return input.next
+}
+
+function isEmptyValue(value: unknown): boolean {
+  if (value === null || value === undefined) return true
+  if (typeof value === 'string') return value.trim().length === 0
+  return false
+}
+
+function mergePreservingExisting(input: { next: unknown; existing: unknown }): unknown {
+  const nextObj = asObject(input.next)
+  const existingObj = asObject(input.existing)
+  if (nextObj && existingObj) {
+    const out: Record<string, unknown> = {}
+    const keys = new Set([...Object.keys(existingObj), ...Object.keys(nextObj)])
+    for (const key of keys) {
+      const nextVal = nextObj[key]
+      const existingVal = existingObj[key]
+      if (isEmptyValue(nextVal)) {
+        out[key] = existingVal
+        continue
+      }
+      if (asObject(nextVal) && asObject(existingVal)) {
+        out[key] = mergePreservingExisting({ next: nextVal, existing: existingVal })
+        continue
+      }
+      out[key] = nextVal !== undefined ? nextVal : existingVal
+    }
+    return out
+  }
+
+  if (input.next === undefined) return input.existing
+  if (isEmptyValue(input.next)) return input.existing
+  return input.next
+}
+
+function normalizeProductDoc(doc: Record<string, unknown>) {
+  const brandObj = asObject(doc.brand)
+  const brandId = pickBrandId(brandObj)
+  if (brandId && brandId > 0) {
+    delete doc.brandId
+    delete doc.marca
+    delete doc.brandName
+  }
+  return doc
+}
+
+function mergeProductFromExisting(input: { next: Record<string, unknown>; existing: Record<string, unknown> | undefined }) {
+  if (!input.existing) return normalizeProductDoc(input.next)
+  const merged = mergePreservingExisting({ next: input.next, existing: input.existing })
+  const asRec = asObject(merged) ?? input.next
+  const withBrand = mergeBrandFromExisting({ next: asRec, existing: input.existing })
+  const withCategory = mergeCategoryFromExisting({ next: withBrand, existing: input.existing })
+  return normalizeProductDoc(withCategory)
+}
+
+function mergeCategoryDocFromExisting(input: { next: Record<string, unknown>; existing: Record<string, unknown> | undefined }) {
+  if (!input.existing) return input.next
+  const merged = mergePreservingExisting({ next: input.next, existing: input.existing })
+  return asObject(merged) ?? input.next
+}
+
 function idsFromDocs(docs: unknown[]): Set<number> {
   const ids = new Set<number>()
   for (const d of docs) {
@@ -156,15 +384,32 @@ export async function syncCatalogToRedis(input: CatalogSyncInput) {
     result.fetched.categorias = Array.isArray(rawCats) ? rawCats.length : categorias.length - 1
 
     if (onlyKinds.includes('categorias')) {
+      const existingCategories = await readExistingJsonDocsById({
+        type: 'category',
+        ids: categorias
+          .map((c) => (c as { id?: unknown } | null)?.id)
+          .filter((v): v is number | string => v !== null && v !== undefined),
+        batchSize,
+      })
+      const categoriasMerged = categorias.map((c) => {
+        if (!c || typeof c !== 'object' || Array.isArray(c)) return c
+        const id = (c as { id?: unknown } | null)?.id
+        const key = id === undefined || id === null ? '' : String(id)
+        return mergeCategoryDocFromExisting({
+          next: c as Record<string, unknown>,
+          existing: key ? existingCategories.get(key) : undefined,
+        })
+      })
+
       result.written.categorias = await upsertJsonDocs({
         type: 'category',
-        docs: categorias,
+        docs: categoriasMerged,
         batchSize,
       })
       if (prune) {
         result.pruned.categorias = await pruneByPrefix({
           scanPrefix: `${prefix}:category:`,
-          keepIds: idsFromDocs(categorias),
+          keepIds: idsFromDocs(categoriasMerged),
           batchSize,
           scanCount,
         })
@@ -187,16 +432,41 @@ export async function syncCatalogToRedis(input: CatalogSyncInput) {
       return { ...p, rank }
     })
 
+    const existingProducts = await readExistingJsonDocsById({
+      type: 'product',
+      ids: produtos.map((p) => (p as { id?: unknown } | null)?.id).filter((v): v is number | string => v !== null && v !== undefined),
+      batchSize,
+    })
+    const produtosMerged = produtos.map((p) => {
+      if (!p || typeof p !== 'object' || Array.isArray(p)) return p
+      const id = (p as { id?: unknown } | null)?.id
+      const key = id === undefined || id === null ? '' : String(id)
+      const merged = mergeProductFromExisting({
+        next: p as Record<string, unknown>,
+        existing: key ? existingProducts.get(key) : undefined,
+      })
+      const mergedObj = merged && typeof merged === 'object' && !Array.isArray(merged) ? (merged as Record<string, unknown>) : null
+      if (!mergedObj) return merged
+      const brandObj = asObject(mergedObj.brand)
+      if (!brandObj) return merged
+      const normalized = normalizeBrandDoc(brandObj)
+      if (!normalized) return merged
+      const out = { ...mergedObj, brand: normalized }
+      delete (out as Record<string, unknown>).brandId
+      delete (out as Record<string, unknown>).marca
+      return out
+    })
+
     result.fetched.produtos = Array.isArray(rawProdutos) ? rawProdutos.length : produtos.length
     result.written.produtos = await upsertJsonDocs({
       type: 'product',
-      docs: produtos,
+      docs: produtosMerged,
       batchSize,
     })
     if (prune) {
       result.pruned.produtos = await pruneByPrefix({
         scanPrefix: `${prefix}:product:`,
-        keepIds: idsFromDocs(produtos),
+        keepIds: idsFromDocs(produtosMerged),
         batchSize,
         scanCount,
       })
@@ -209,7 +479,7 @@ export async function syncCatalogToRedis(input: CatalogSyncInput) {
     result.fetched.brands = 0
     result.written.brands = await upsertJsonDocs({
       type: 'brand',
-      docs: brands,
+      docs: brands.map((b) => ({ id: b.id, nome: b.name, slug: b.slug, image: b.image })),
       batchSize,
     })
     if (prune) {

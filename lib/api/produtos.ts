@@ -21,9 +21,24 @@ export type ProdutosByCategoriaResponse = ApiSuccess<Produto[]> & {
 
 export type BrandByIdResponse = ApiSuccess<BrandByIdPayload>
 
+function readHtmlDataset(key: 'fonte' | 'catalog-fonte'): string {
+  if (typeof document === 'undefined') return ''
+  return String(document.documentElement.getAttribute(`data-${key}`) ?? '').trim()
+}
+
 function produtosBasePath(): '/produtos' | '/lopes/produtos' | '/catalog/produtos' {
-  const fonte = String(process.env.NEXT_PUBLIC_FONTE ?? '').trim().toLowerCase()
-  const catalogFonte = String(process.env.NEXT_PUBLIC_CATALOGO_FONTE ?? '').trim().toLowerCase()
+  const fonte = String(
+    typeof window === 'undefined' ? process.env.NEXT_PUBLIC_FONTE ?? '' : readHtmlDataset('fonte')
+  )
+    .trim()
+    .toLowerCase()
+  const catalogFonte = String(
+    typeof window === 'undefined'
+      ? process.env.NEXT_PUBLIC_CATALOGO_FONTE ?? ''
+      : readHtmlDataset('catalog-fonte')
+  )
+    .trim()
+    .toLowerCase()
 
   if (catalogFonte === 'redis' || fonte === 'redis') return '/catalog/produtos'
   return fonte === 'lopes' ? '/lopes/produtos' : '/produtos'

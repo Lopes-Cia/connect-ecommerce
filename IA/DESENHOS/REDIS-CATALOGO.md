@@ -234,3 +234,5 @@ Oportunidade: padronizar erros e adicionar telemetria leve (sem vazar segredos).
 4) Revisar o “switch” de fonte (`NEXT_PUBLIC_CATALOGO_FONTE`) para ficar explícito e simples de operar.
 5) Ajustar conexão TLS para reduzir erro de configuração em dev sem afetar prod (override por env).
 
+
+

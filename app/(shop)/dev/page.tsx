@@ -242,6 +242,22 @@ export default function DevPage() {
         {
           group: "catalog",
           uses: [],
+          label: "CATALOG (redis): categorias (import local categorias.json)",
+          url: "/api/dev/catalog/categories/import-local",
+          init: { method: "POST" as const },
+          variant: "primary",
+        },
+        {
+          group: "catalog",
+          uses: [],
+          label: "CATALOG (redis): recategorizar produtos (local categorias.json)",
+          url: "/api/dev/catalog/products/recategorize-local",
+          init: { method: "POST" as const },
+          variant: "danger",
+        },
+        {
+          group: "catalog",
+          uses: [],
           label: "CATALOG (redis): import home (colections.json)",
           url: "/api/dev/catalog/home/import",
           init: { method: "POST" as const },

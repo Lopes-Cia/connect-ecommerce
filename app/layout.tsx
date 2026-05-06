@@ -26,8 +26,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const fonte = String(process.env.NEXT_PUBLIC_FONTE ?? "").trim();
+  const catalogFonte = String(process.env.NEXT_PUBLIC_CATALOGO_FONTE ?? "").trim();
+
   return (
-    <html lang="pt-br">
+    <html lang="pt-br" data-fonte={fonte} data-catalog-fonte={catalogFonte}>
       <body
         className={`${montserrat.variable} ${leagueSpartan.variable} antialiased flex flex-col min-h-screen`}
       >
