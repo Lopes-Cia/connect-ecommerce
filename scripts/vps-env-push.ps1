@@ -57,7 +57,8 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $RestartCmd = ""
 if ($Restart) {
   $RestartCmd = @"
-pm2 restart $ProcessName --update-env || pm2 start npm --name "$ProcessName" -- start -- -p 3000
+pm2 delete $ProcessName || true
+pm2 start bash --name "$ProcessName" -- -lc "cd `"$AppDir`"; set -a; . ./.env; set +a; npm start -- -p 3000"
 pm2 save
 "@
 }
@@ -69,6 +70,7 @@ export NVM_DIR="/home/{0}/.nvm"
 nvm use {1} >/dev/null 2>&1 || true
 cd "{2}"
 mv /tmp/connect-ecommerce.env .env
+sed -i 's/\r$//' .env
 chmod 600 .env
 {3}
 '@ -f $User, $NodeVersion, $AppDir, $RestartCmd

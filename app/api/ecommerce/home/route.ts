@@ -30,8 +30,8 @@ function rewriteMockLocalhostAssetUrls(value: unknown): unknown {
 
 export async function GET() {
   try {
-    const fonte = String(process.env.NEXT_PUBLIC_FONTE ?? '').toLowerCase()
-    const catalogFonte = String(process.env.NEXT_PUBLIC_CATALOGO_FONTE ?? '').toLowerCase()
+    const fonte = String(process.env.FONTE ?? process.env.NEXT_PUBLIC_FONTE ?? '').trim().toLowerCase()
+    const catalogFonte = String(process.env.CATALOGO_FONTE ?? process.env.NEXT_PUBLIC_CATALOGO_FONTE ?? '').trim().toLowerCase()
     const useRedisCatalog = catalogFonte === 'redis' || fonte === 'redis'
     if (useRedisCatalog) {
       const home = await getHomeFromRedisOrNull()
