@@ -11,7 +11,14 @@ type ProductContext = {
   url: string;
   title: string;
   productName: string;
+  pageText: string;
+  imageAltTexts: string[];
+  imageUrls: string[];
 };
+
+function normalizeText(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
 
 function getProductContext(): ProductContext {
   if (typeof window === "undefined") {
@@ -19,13 +26,34 @@ function getProductContext(): ProductContext {
       url: "",
       title: "",
       productName: "",
+      pageText: "",
+      imageAltTexts: [],
+      imageUrls: [],
     };
   }
+
+  const pageRoot = document.querySelector("main") ?? document.body;
+  const pageText = normalizeText(pageRoot.innerText ?? "").slice(0, 4000);
+
+  const images = Array.from(pageRoot.querySelectorAll("img"));
+  const imageAltTexts = images
+    .map((image) => image.getAttribute("alt") ?? "")
+    .map(normalizeText)
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const imageUrls = images
+    .map((image) => image.currentSrc || image.src || "")
+    .filter(Boolean)
+    .slice(0, 4);
 
   return {
     url: window.location.href,
     title: document.title,
     productName: document.querySelector("h1")?.textContent?.trim() ?? "",
+    pageText,
+    imageAltTexts,
+    imageUrls,
   };
 }
 
@@ -38,6 +66,9 @@ export default function FloatingAiChat() {
     url: "",
     title: "",
     productName: "",
+    pageText: "",
+    imageAltTexts: [],
+    imageUrls: [],
   });
 
   useEffect(() => {
@@ -48,6 +79,9 @@ export default function FloatingAiChat() {
     const text = (customMessage ?? message).trim();
 
     if (!text || loading) return;
+
+    const currentProductContext = getProductContext();
+    setProductContext(currentProductContext);
 
     const nextMessages: ChatMessage[] = [
       ...messages,
@@ -69,7 +103,7 @@ export default function FloatingAiChat() {
         },
         body: JSON.stringify({
           message: text,
-          productContext: getProductContext(),
+          productContext: currentProductContext,
         }),
       });
 
@@ -126,8 +160,8 @@ export default function FloatingAiChat() {
             {messages.length === 0 ? (
               <div className="space-y-3 text-zinc-600">
                 <p>
-                  Clique abaixo para eu tentar identificar a marca do produto
-                  atual.
+                  Clique abaixo para eu tentar identificar a marca usando os
+                  dados visíveis desta página.
                 </p>
 
                 <div className="rounded-xl bg-zinc-100 p-3 text-xs text-zinc-600">
@@ -136,7 +170,7 @@ export default function FloatingAiChat() {
 
                 <button
                   type="button"
-                  onClick={() => sendMessage("Identifique a marca deste produto.")}
+                  onClick={() => sendMessage("Identifique a marca deste produto usando os dados da página.")}
                   className="w-full rounded-xl bg-zinc-950 px-3 py-2 text-left text-sm font-medium text-white hover:bg-zinc-800"
                 >
                   Identificar marca deste produto
