@@ -11,6 +11,7 @@ type ProductContext = {
   url: string;
   title: string;
   productName: string;
+  productSlug: string;
   pageText: string;
   imageAltTexts: string[];
   imageUrls: string[];
@@ -20,12 +21,22 @@ function normalizeText(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function getProductSlugFromUrl() {
+  if (typeof window === "undefined") return "";
+
+  const pathname = window.location.pathname;
+  const match = pathname.match(/\/produtos\/([^/?#]+)/);
+
+  return match?.[1] ? decodeURIComponent(match[1]) : "";
+}
+
 function getProductContext(): ProductContext {
   if (typeof window === "undefined") {
     return {
       url: "",
       title: "",
       productName: "",
+      productSlug: "",
       pageText: "",
       imageAltTexts: [],
       imageUrls: [],
@@ -51,6 +62,7 @@ function getProductContext(): ProductContext {
     url: window.location.href,
     title: document.title,
     productName: document.querySelector("h1")?.textContent?.trim() ?? "",
+    productSlug: getProductSlugFromUrl(),
     pageText,
     imageAltTexts,
     imageUrls,
@@ -66,6 +78,7 @@ export default function FloatingAiChat() {
     url: "",
     title: "",
     productName: "",
+    productSlug: "",
     pageText: "",
     imageAltTexts: [],
     imageUrls: [],
@@ -176,20 +189,22 @@ export default function FloatingAiChat() {
             {messages.length === 0 ? (
               <div className="space-y-3 text-zinc-600">
                 <p>
-                  Clique abaixo para eu tentar identificar a marca usando os
-                  dados visíveis desta página.
+                  Posso conversar com você e também consultar os dados reais do
+                  produto quando estiver em uma página de produto.
                 </p>
 
                 <div className="rounded-xl bg-zinc-100 p-3 text-xs text-zinc-600">
                   Produto detectado: {productContext.productName || "não encontrado"}
+                  <br />
+                  Slug: {productContext.productSlug || "não encontrado"}
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => sendMessage("Identifique a marca deste produto usando os dados da página.")}
+                  onClick={() => sendMessage("Consulte os dados internos deste produto e me diga o que encontrou.")}
                   className="w-full rounded-xl bg-zinc-950 px-3 py-2 text-left text-sm font-medium text-white hover:bg-zinc-800"
                 >
-                  Identificar marca deste produto
+                  Consultar dados internos do produto
                 </button>
               </div>
             ) : null}
