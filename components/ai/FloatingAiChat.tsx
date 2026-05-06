@@ -74,22 +74,9 @@ export default function FloatingAiChat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [productContext, setProductContext] = useState<ProductContext>({
-    url: "",
-    title: "",
-    productName: "",
-    productSlug: "",
-    pageText: "",
-    imageAltTexts: [],
-    imageUrls: [],
-  });
 
   useEffect(() => {
-    const context = getProductContext();
-
-    console.log("[AI CHAT] Product context loaded", context);
-
-    setProductContext(context);
+    console.log("[AI CHAT] Product context loaded", getProductContext());
   }, []);
 
   async function sendMessage(customMessage?: string) {
@@ -103,8 +90,6 @@ export default function FloatingAiChat() {
       message: text,
       productContext: currentProductContext,
     });
-
-    setProductContext(currentProductContext);
 
     const nextMessages: ChatMessage[] = [
       ...messages,
@@ -129,8 +114,6 @@ export default function FloatingAiChat() {
           productContext: currentProductContext,
         }),
       });
-
-      console.log("[AI CHAT] HTTP status", response.status);
 
       const data = await response.json();
 
@@ -187,43 +170,18 @@ export default function FloatingAiChat() {
 
           <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
             {messages.length === 0 ? (
-              <div className="space-y-3 text-zinc-600">
-                <p>
-                  Posso conversar com você e também analisar o código e os
-                  dados internos do ecommerce.
-                </p>
-
-                <div className="rounded-xl bg-zinc-100 p-3 text-xs text-zinc-600">
-                  Produto detectado: {productContext.productName || "não encontrado"}
-                  <br />
-                  Slug: {productContext.productSlug || "não encontrado"}
-                </div>
-
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      sendMessage(
-                        "Qual arquivo do repositório renderiza esta página?"
-                      )
-                    }
-                    className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-left text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                  >
-                    Descobrir arquivo desta página
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      sendMessage(
-                        "Consulte os dados internos deste produto e me diga o que encontrou."
-                      )
-                    }
-                    className="w-full rounded-xl bg-zinc-950 px-3 py-2 text-left text-sm font-medium text-white hover:bg-zinc-800"
-                  >
-                    Consultar dados internos do produto
-                  </button>
-                </div>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    sendMessage(
+                      "Qual arquivo do repositório renderiza esta página?"
+                    )
+                  }
+                  className="w-full rounded-xl bg-zinc-950 px-4 py-3 text-left text-sm font-medium text-white hover:bg-zinc-800"
+                >
+                  Qual arquivo do repositório renderiza esta página?
+                </button>
               </div>
             ) : null}
 
