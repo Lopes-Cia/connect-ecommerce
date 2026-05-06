@@ -46,13 +46,14 @@ jobs:
               echo "Diretório não é um repositório git: $PWD"
               exit 1
             fi
-            if ! git diff --quiet || ! git diff --cached --quiet; then
+            if [ -n "$(git status --porcelain)" ]; then
               echo "Working tree com alterações locais. Abortando para evitar overwrite inesperado."
               exit 1
             fi
 
             PREV="$(git rev-parse HEAD)"
             BRANCH="${{ github.ref_name }}"
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/connect_deploy_key -o IdentitiesOnly=yes"
             git fetch origin "$BRANCH"
             git checkout -B "$BRANCH" "origin/$BRANCH"
             git pull --ff-only origin "$BRANCH"
