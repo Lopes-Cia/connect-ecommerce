@@ -7,7 +7,7 @@ export default function CepHeader() {
         <div className="flex items-center">
           <MapPinCheck className="text-tints-french-blue" size={18} />
           <button className="ml-2 text-tints-french-blue font-montserrat font-normal text-sm hover:underline cursor-pointer">
-            Confira o estoque da sua região{" "}
+            OK Confira o estoque da sua região OK{" "}
             <ChevronRight className="inline-block ml-1" size={16} />
           </button>
         </div>
