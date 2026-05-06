@@ -42,6 +42,11 @@ const nextConfig: NextConfig = {
         hostname: "www.catalogoambev.com.br",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "app-connect.lopesecia.com.br",
+        pathname: "/**",
+      },
     ],
   },
 };

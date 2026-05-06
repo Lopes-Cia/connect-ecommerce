@@ -28,7 +28,7 @@
         "name": "Cervejas Especiais",
         "slug": "/categoria/bebidas/cervejas-especiais",
         "parentId": 1,
-        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "image": "/assets/cervejas-especiais.png",
         "order": 1
       },
       {
@@ -36,7 +36,7 @@
         "name": "Cervejas",
         "slug": "/categoria/bebidas/cervejas",
         "parentId": 1,
-        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "image": "/assets/cervejas.png",  
         "order": 1
       },
       {
@@ -44,7 +44,7 @@
         "name": "Água",
         "slug": "/categoria/bebidas/agua",
         "parentId": 1,
-        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "image": "/assets/agua.png",
         "order": 1
       },
       {
@@ -52,7 +52,7 @@
         "name": "Bebidas",
         "slug": "/categoria/bebidas",
         "parentId": 0,
-        "image": "https://lopesecia.com.br/img/semImagem.png",
+        "image": "/assets/bebidas.png",
         "order": 1
       }
     ],
