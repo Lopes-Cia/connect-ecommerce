@@ -63,8 +63,9 @@ Estas regras cobrem:
   - `npm run start`
 - Validar no browser se a marcação/alteração esperada aparece.
 
-### 5) Deploy (manual)
-- Rodar o deploy manual (production) a partir da branch `main`.
+### 5) Deploy (automático)
+- Ao fazer merge/push na branch `main`, o deploy roda automaticamente (production).
+- Opcionalmente, também pode ser disparado manualmente (`workflow_dispatch`) sempre a partir da `main`.
 
 ### 6) Versionar (tag)
 - Após merge em `main`, criar tag `vYYYY.MM.DD-N` apontando para o commit de `main`.
@@ -78,7 +79,7 @@ Estas regras cobrem:
 
 ### 4) Deploy (ramo certo no servidor)
 - Produção deve sempre refletir `main`.
-- Workflow de deploy nunca deve “forçar” branch fixa no servidor (ex.: `git reset --hard origin/main`) sem validar qual ref disparou o deploy.
+- Workflow de deploy pode usar `reset --hard` desde que a ref/branch venha do evento que disparou o deploy e seja validada (produção = `main`).
 - Se o deploy for manual (`workflow_dispatch`), ele deve bloquear quando a ref não for `main`.
 
 ### 5) Ambiente e .env (previsibilidade)
