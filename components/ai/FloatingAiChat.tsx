@@ -72,7 +72,11 @@ export default function FloatingAiChat() {
   });
 
   useEffect(() => {
-    setProductContext(getProductContext());
+    const context = getProductContext();
+
+    console.log("[AI CHAT] Product context loaded", context);
+
+    setProductContext(context);
   }, []);
 
   async function sendMessage(customMessage?: string) {
@@ -81,6 +85,12 @@ export default function FloatingAiChat() {
     if (!text || loading) return;
 
     const currentProductContext = getProductContext();
+
+    console.log("[AI CHAT] Sending message", {
+      message: text,
+      productContext: currentProductContext,
+    });
+
     setProductContext(currentProductContext);
 
     const nextMessages: ChatMessage[] = [
@@ -107,7 +117,11 @@ export default function FloatingAiChat() {
         }),
       });
 
+      console.log("[AI CHAT] HTTP status", response.status);
+
       const data = await response.json();
+
+      console.log("[AI CHAT] API response", data);
 
       if (!response.ok) {
         throw new Error(data?.error ?? "Erro ao consultar assistente IA.");
@@ -121,6 +135,8 @@ export default function FloatingAiChat() {
         },
       ]);
     } catch (error) {
+      console.error("[AI CHAT] Frontend error", error);
+
       setMessages((current) => [
         ...current,
         {
