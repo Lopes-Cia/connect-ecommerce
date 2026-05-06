@@ -2,7 +2,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const productName = body?.productContext?.productName ?? "";
+    const productContext = body?.productContext ?? {};
 
     if (!process.env.OPENAI_API_KEY) {
       return Response.json(
@@ -16,18 +16,51 @@ export async function POST(request: Request) {
     }
 
     const prompt = `
-Você é especialista em catalogação de produtos para e-commerce.
+Você é especialista em catalogação de produtos para e-commerce brasileiro.
 
-Analise o produto abaixo e identifique:
-- marca
-- fabricante
-- categoria
-- confiança
+Sua tarefa:
+- identificar a marca correta do produto
+- identificar fabricante
+- identificar categoria correta
+- detectar inconsistências nos dados da página
 
-Produto:
-${productName}
+IMPORTANTE:
+- use TODOS os dados da página
+- use o nome do produto
+- use textos visíveis
+- use breadcrumbs
+- use informações de embalagem
+- use textos de imagem
+- use contexto visual descrito
+- alguns produtos possuem categorias erradas
+- alguns produtos possuem nomes bagunçados
+
+URL:
+${productContext.url ?? ""}
+
+Título da página:
+${productContext.title ?? ""}
+
+Nome do produto:
+${productContext.productName ?? ""}
+
+Textos visíveis da página:
+${productContext.pageText ?? ""}
+
+Alt das imagens:
+${(productContext.imageAltTexts ?? []).join("\n")}
+
+URLs das imagens:
+${(productContext.imageUrls ?? []).join("\n")}
 
 Responda em português do Brasil.
+
+Formato obrigatório:
+Marca:
+Fabricante:
+Categoria correta:
+Confiança:
+Análise:
 `;
 
     const response = await fetch("https://api.openai.com/v1/responses", {
