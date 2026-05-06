@@ -35,7 +35,7 @@ yarn-error.log*
 openspec
 .vscode
 
-# env files (fonte única: .env local/servidor; não versionar)
+# env files (não versionar)
 .env*
 !/.env.example
 

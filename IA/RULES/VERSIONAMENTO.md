@@ -18,6 +18,9 @@ Estas regras cobrem:
   - Merge em `main` (produção): só quando solicitado explicitamente.
 - Como o deploy é disparado por merge/push na `main`, qualquer merge na `main` deve ser tratado como produção e só pode acontecer com solicitação explícita.
 - Se for solicitado merge em `main`, a primeira ação é atualizar o `.env` no VPS via SSH (push do arquivo); só depois seguir o ritual de PR/merge.
+- Não fazer commit toda hora por qualquer bobagem. Commits devem representar um ponto útil.
+  - Pode commitar sem eu pedir quando a tarefa for complicada e precisar de um ponto de restauração.
+  - Caso contrário, agrupar mudanças relacionadas e commitar só quando fizer sentido (resultado claro).
 
 ### 1) Branches (contrato)
 - `main`: produção. Só entra via PR revisado.
