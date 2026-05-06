@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import SearchBar from "./SearchBar";
 import CartSidebarMenu from "./CartSidebarMenu";
 import SidebarMenu from "./SidebarMenu";
@@ -13,6 +13,28 @@ import { LayoutDashboard, LogOut, ShieldUser } from "lucide-react";
 import { useClientesStore } from "@/stores/clientes-store";
 import { frontModal } from "@/stores/front-modal-store";
 import { useAuth } from "@/contexts/AuthContext";
+
+let _clientMounted = false;
+const _mountedListeners = new Set<() => void>();
+
+function subscribeMounted(listener: () => void) {
+  _mountedListeners.add(listener);
+  return () => _mountedListeners.delete(listener);
+}
+
+function getMountedSnapshot() {
+  return _clientMounted;
+}
+
+function getMountedServerSnapshot() {
+  return false;
+}
+
+function markMounted() {
+  if (_clientMounted) return;
+  _clientMounted = true;
+  for (const listener of Array.from(_mountedListeners)) listener();
+}
 
 export default function Header() {
   return <ShopHeader />;
@@ -25,8 +47,11 @@ function ShopHeader() {
   const { isAuthenticated, logoutUser } = useAuth();
   const isLoggedIn = isAuthenticated || clientesIsLoggedIn;
   const myAccountHref = "/cliente/painel";
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(subscribeMounted, getMountedSnapshot, getMountedServerSnapshot);
+
+  useEffect(() => {
+    markMounted();
+  }, []);
   const isLoggedInHydrated = mounted ? isLoggedIn : false;
   const myAccountHrefHydrated = mounted ? myAccountHref : "/login";
 

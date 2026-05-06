@@ -14,6 +14,46 @@ interface ProductInfoTabsProps {
 
 type TabKey = "descricao" | "info";
 
+function TabTrigger({
+  value,
+  label,
+  controls,
+  id,
+  active,
+  onSelect,
+}: {
+  value: TabKey;
+  label: string;
+  controls: string;
+  id: string;
+  active: boolean;
+  onSelect: (next: TabKey) => void;
+}) {
+  return (
+    <div
+      role="tab"
+      id={id}
+      aria-selected={active}
+      aria-controls={controls}
+      tabIndex={active ? 0 : -1}
+      onClick={() => onSelect(value)}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        onSelect(value);
+      }}
+      className={[
+        "cursor-pointer select-none font-montserrat text-sm transition-colors pb-3 -mb-px outline-none",
+        active
+          ? "text-custom-dark-1000 border-b-2 border-tints-french-blue font-semibold"
+          : "text-custom-dark-700 border-b-2 border-transparent hover:text-custom-dark-1000",
+      ].join(" ")}
+    >
+      {label}
+    </div>
+  );
+}
+
 export default function ProductInfoTabs({
   fullDescription,
   technicalSpecs,
@@ -27,43 +67,6 @@ export default function ProductInfoTabs({
 
   const safeFullDescription = String(fullDescription ?? "").trim() || "Descrição não disponível no momento.";
   const safeTechnicalSpecs = Array.isArray(technicalSpecs) ? technicalSpecs : [];
-
-  const TabTrigger = ({
-    value,
-    label,
-    controls,
-    id,
-  }: {
-    value: TabKey;
-    label: string;
-    controls: string;
-    id: string;
-  }) => {
-    const active = tab === value;
-    return (
-      <div
-        role="tab"
-        id={id}
-        aria-selected={active}
-        aria-controls={controls}
-        tabIndex={active ? 0 : -1}
-        onClick={() => setTab(value)}
-        onKeyDown={(event) => {
-          if (event.key !== "Enter" && event.key !== " ") return;
-          event.preventDefault();
-          setTab(value);
-        }}
-        className={[
-          "cursor-pointer select-none font-montserrat text-sm transition-colors pb-3 -mb-px outline-none",
-          active
-            ? "text-custom-dark-1000 border-b-2 border-tints-french-blue font-semibold"
-            : "text-custom-dark-700 border-b-2 border-transparent hover:text-custom-dark-1000",
-        ].join(" ")}
-      >
-        {label}
-      </div>
-    );
-  };
 
   return (
     <div className="w-full">
@@ -95,8 +98,22 @@ export default function ProductInfoTabs({
           });
         }}
       >
-        <TabTrigger value="descricao" label="Descrição" controls={descricaoId} id={descricaoTabId} />
-        <TabTrigger value="info" label="Informações adicionais" controls={infoId} id={infoTabId} />
+        <TabTrigger
+          value="descricao"
+          label="Descrição"
+          controls={descricaoId}
+          id={descricaoTabId}
+          active={tab === "descricao"}
+          onSelect={setTab}
+        />
+        <TabTrigger
+          value="info"
+          label="Informações adicionais"
+          controls={infoId}
+          id={infoTabId}
+          active={tab === "info"}
+          onSelect={setTab}
+        />
       </div>
 
       <div className="mt-6">

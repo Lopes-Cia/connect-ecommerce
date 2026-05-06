@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -19,6 +19,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+let _clientMounted = false;
+const _mountedListeners = new Set<() => void>();
+
+function subscribeMounted(listener: () => void) {
+  _mountedListeners.add(listener);
+  return () => _mountedListeners.delete(listener);
+}
+
+function getMountedSnapshot() {
+  return _clientMounted;
+}
+
+function getMountedServerSnapshot() {
+  return false;
+}
+
+function markMounted() {
+  if (_clientMounted) return;
+  _clientMounted = true;
+  for (const listener of Array.from(_mountedListeners)) listener();
+}
+
 export default function CategoryHeader() {
   const isMobile = useCheckIsMobile();
   const router = useRouter();
@@ -28,8 +50,11 @@ export default function CategoryHeader() {
   const loadCategoriasTree = useProdutosStore((s) => s.loadCategoriasTree);
   const [open, setOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(subscribeMounted, getMountedSnapshot, getMountedServerSnapshot);
+
+  useEffect(() => {
+    markMounted();
+  }, []);
 
   useEffect(() => {
     void loadCategoriasTree().catch((error) => {
@@ -162,9 +187,11 @@ export default function CategoryHeader() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link href="/dev" className="hover:underline">
-            TEST API
-          </Link>
+          {process.env.NODE_ENV !== "production" ? (
+            <Link href="/dev" className="hover:underline">
+              TEST API
+            </Link>
+          ) : null}
         </div>
         <a href="#" className="hover:underline">
           Promoções

@@ -7,6 +7,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import type { ProductCardViewModel } from "@/lib/products/viewModels";
+import type { CSSProperties } from "react";
 
 interface ProductCarouselProps {
   products: ProductCardViewModel[];
@@ -29,6 +30,13 @@ export default function ProductCarousel({
 
   const safeMobile = Number.isFinite(itemsPerViewMobile) ? Math.max(1, Math.trunc(itemsPerViewMobile)) : 2;
   const safeDesktop = Number.isFinite(itemsPerViewDesktop) ? Math.max(1, Math.trunc(itemsPerViewDesktop)) : 4;
+  const styleVars: CSSProperties & {
+    "--pc-items-mobile"?: number;
+    "--pc-items-desktop"?: number;
+  } = {
+    "--pc-items-mobile": safeMobile,
+    "--pc-items-desktop": safeDesktop,
+  };
 
   return (
     <Carousel
@@ -41,12 +49,7 @@ export default function ProductCarousel({
     >
       <CarouselContent
         className="-ml-6 md:-ml-6 [--pc-items:var(--pc-items-mobile)] lg:[--pc-items:var(--pc-items-desktop)]"
-        style={
-          {
-            ["--pc-items-mobile" as any]: safeMobile,
-            ["--pc-items-desktop" as any]: safeDesktop,
-          } as any
-        }
+        style={styleVars}
       >
         {products.map((product) => (
           <CarouselItem key={product.id} className="basis-[calc(100%/var(--pc-items))]">
