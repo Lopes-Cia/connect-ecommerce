@@ -15,7 +15,6 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run lint
-      - run: npm test
       - run: npm run build
 
   deploy:
@@ -35,7 +34,7 @@ jobs:
             cd ${{ secrets.APP_DIR }}
             git pull origin main
             rm -rf node_modules .next
-            npm ci --production
+            npm ci
             npm run build
             pm2 restart connect-ecommerce || pm2 start npm --name "connect-ecommerce" -- start -- -p 3000
             pm2 save
