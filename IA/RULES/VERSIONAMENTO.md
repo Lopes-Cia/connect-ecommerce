@@ -21,13 +21,14 @@ Estas regras cobrem:
 - Criar branch de trabalho a partir de `develop` (`feature/<nome>`).
 - Implementar e commitar apenas na `feature/<nome>`.
 - Abrir PR `feature/<nome>` → `develop`.
-- Após validar em `develop`, abrir PR `develop` → `main` para publicar em produção.
+- Após validar em `develop`, abrir PR `develop` → `main` para publicar em produção somente quando solicitado explicitamente.
 - Após publicar em `main`, sincronizar `develop` com `main` para que ambas apontem para o mesmo commit (fast-forward/`--ff-only`).
 
 ### 2) Merges (controle de risco)
 - Proibido “deploy direto” por commit manual no servidor.
 - Proibido push direto na `main`.
 - Toda mudança que impacte deploy precisa de PR e histórico claro (título + descrição curta).
+- Nem todo commit em `develop` precisa virar produção: só abrir/mergear PR `develop` → `main` quando solicitado explicitamente.
 - Preferir merge commit ou squash (decidir um padrão e manter consistente).
 
 ### 3) Tags (versão publicável)
@@ -42,13 +43,18 @@ Estas regras cobrem:
 - Validar em `develop` (testes e smoke manual).
 
 ### 2) Preparar produção
-- Abrir PR `develop` → `main` com descrição curta:
+- Somente quando solicitado explicitamente, abrir PR `develop` → `main` com descrição curta:
   - O que mudou
   - Risco (baixo/médio/alto) e pontos de atenção
   - Como validar
 
+### 2.1) Atualizar `.env` no VPS (obrigatório antes de produção)
+- Antes de fazer merge em `main`, atualizar o `.env` no VPS via SSH (o merge em `main` dispara deploy/produção):
+  - `npm run vps:env:push`
+  - `npm run vps:env:push:restart` (se quiser reiniciar o PM2 na sequência)
+
 ### 3) Publicar (merge em main)
-- Fazer merge do PR `develop` → `main`.
+- Fazer merge do PR `develop` → `main` somente quando solicitado explicitamente.
 
 ### 4) Validar na main (fluxo CI-like, local)
 - Antes de rodar `start`, garantir que não existe `dev` rodando (porta 3000):
