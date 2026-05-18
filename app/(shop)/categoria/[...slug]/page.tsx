@@ -197,11 +197,11 @@ function canonicalizeCatalogQuery(input: URLSearchParams): {
   state: CatalogQueryState;
   error: string | null;
 } {
-  const keys = new Set(["page", "sort", "inStock", "priceMin", "priceMax"]);
+  const knownKeys = new Set(["page", "sort", "inStock", "priceMin", "priceMax"]);
   const canonical = new URLSearchParams();
 
   for (const [k, v] of input.entries()) {
-    if (!keys.has(k)) canonical.append(k, v);
+    if (!knownKeys.has(k)) canonical.append(k, v);
   }
 
   const pageRaw = input.get("page");
@@ -348,6 +348,10 @@ export default function CategoriaPage({ params }: { params: Promise<{ slug: stri
           throw new Error("categoria_nao_encontrada");
         }
 
+        const items: ProductCardViewModel[] = [];
+        let totalSafe = 0;
+        let totalPagesSafe = 0;
+
         const usp = new URLSearchParams();
         usp.set("categoryId", String(found.id));
         usp.set("page", String(catalogQuery.state.page));
@@ -383,10 +387,10 @@ export default function CategoriaPage({ params }: { params: Promise<{ slug: stri
         };
 
         const itemsRaw = Array.isArray(result.items) ? result.items : [];
-        const items = itemsRaw.map(toProductItem).filter(Boolean) as ProductCardViewModel[];
-        const totalSafe = asNumber(result.total, items.length);
+        items.push(...(itemsRaw.map(toProductItem).filter(Boolean) as ProductCardViewModel[]));
+        totalSafe = asNumber(result.total, items.length);
         const pageSizeSafe = asNumber(result.pageSize, PAGE_SIZE) || PAGE_SIZE;
-        const totalPagesSafe = pageSizeSafe > 0 ? Math.ceil(totalSafe / pageSizeSafe) : 0;
+        totalPagesSafe = pageSizeSafe > 0 ? Math.ceil(totalSafe / pageSizeSafe) : 0;
 
         if (!active) return;
 
@@ -685,7 +689,9 @@ export default function CategoriaPage({ params }: { params: Promise<{ slug: stri
 
               <DropdownMenu open={filtersMenuOpen} onOpenChange={setFiltersMenuOpen}>
                 <DropdownMenuTrigger
-                  onClick={() => setFiltersMenuOpen((value) => !value)}
+                  onClick={() => {
+                    setFiltersMenuOpen((value) => !value);
+                  }}
                   aria-label="Filtros"
                   className="relative h-11 px-4 bg-transparent text-custom-dark-1000 inline-flex items-center gap-2 outline-none transition-colors hover:bg-white/70 focus-visible:ring-2 focus-visible:ring-tints-french-blue focus-visible:ring-opacity-20 rounded-full"
                 >
@@ -755,7 +761,9 @@ export default function CategoriaPage({ params }: { params: Promise<{ slug: stri
 
             <DropdownMenu open={sortMenuOpen} onOpenChange={setSortMenuOpen}>
               <DropdownMenuTrigger
-                onClick={() => setSortMenuOpen((value) => !value)}
+                onClick={() => {
+                  setSortMenuOpen((value) => !value);
+                }}
                 aria-label="Ordenar"
                   className="relative h-11 px-4 bg-transparent text-custom-dark-1000 inline-flex items-center gap-2 outline-none transition-colors hover:bg-white/70 focus-visible:ring-2 focus-visible:ring-tints-french-blue focus-visible:ring-opacity-20 rounded-full"
               >

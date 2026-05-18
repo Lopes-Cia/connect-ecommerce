@@ -2,6 +2,25 @@ import { createRedisClient } from "../lib/redis-client.mjs";
 import { printJson, fail } from "../lib/cli-output.mjs";
 import { parseIntStrict } from "../lib/parse.mjs";
 
+const TYPE_MAP = {
+  brands: { type: "brand" },
+  categorias: { type: "category" },
+  produtos: { type: "product" },
+};
+
+function pickOnlyTypes(raw) {
+  const all = Object.keys(TYPE_MAP);
+  const v = String(raw || "").trim();
+  if (!v) return all;
+  const parts = v
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const invalid = parts.filter((p) => !all.includes(p));
+  if (invalid.length) throw new Error(`--only inválido: ${invalid.join(", ")}`);
+  return parts;
+}
+
 async function deleteByPrefix({ client, prefix, batchSize, scanCount }) {
   let cursor = "0";
   let deleted = 0;
@@ -30,6 +49,7 @@ async function deleteByPrefix({ client, prefix, batchSize, scanCount }) {
 export async function runClean(options) {
   let client;
   try {
+    const onlyKinds = pickOnlyTypes(options.only);
     const batchSize = parseIntStrict(options.batch, "--batch") ?? 500;
     const scanCount = parseIntStrict(options.scanCount, "--scanCount") ?? 2000;
     if (batchSize < 1 || batchSize > 5000) throw new Error("--batch fora do intervalo (1..5000)");
@@ -38,10 +58,20 @@ export async function runClean(options) {
     const conn = await createRedisClient();
     client = conn.client;
 
-    const prefix = conn.cfg.catalogKeyPrefix || "catalog" || "sample_*";
-    const result = await deleteByPrefix({ client, prefix, batchSize, scanCount });
+    const keyPrefix = conn.cfg.catalogKeyPrefix || "catalog";
 
-    printJson({ ok: true, prefix, ...result });
+    const deletedByKind = {};
+    for (const kind of onlyKinds) {
+      const spec = TYPE_MAP[kind];
+      deletedByKind[kind] = await deleteByPrefix({
+        client,
+        prefix: `${keyPrefix}:${spec.type}`,
+        batchSize,
+        scanCount,
+      });
+    }
+
+    printJson({ ok: true, prefix: keyPrefix, deleted: deletedByKind });
   } catch (err) {
     fail("Falha ao limpar namespace do catálogo", { message: err?.message || String(err) });
   } finally {

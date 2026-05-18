@@ -44,6 +44,7 @@ program
 program
   .command("clean")
   .description("Remove somente chaves do namespace do catálogo (prefixo) sem usar FLUSHALL/FLUSHDB")
+  .option("--only <types>", "Tipos separados por vírgula: brands,categorias,produtos", "")
   .option("--batch <n>", "Tamanho do batch de UNLINK", "500")
   .option("--scanCount <n>", "COUNT do SCAN (controle de throughput)", "2000")
   .action(runClean);

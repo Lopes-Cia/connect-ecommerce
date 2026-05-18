@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { ensureCatalogSynced } from '@/lib/integration/catalogAutoSync'
 import { queryCatalogProducts, type CatalogProductSortDir, type CatalogProductSortField } from '@/lib/integration/catalogService'
 
 export const dynamic = 'force-dynamic'
@@ -45,6 +46,7 @@ function normalizeSort(value: string | null): { field: CatalogProductSortField; 
 
 export async function GET(request: NextRequest) {
   try {
+    await ensureCatalogSynced()
     const usp = request.nextUrl.searchParams
 
     const page = parseIntOrNull(usp.get('page')) ?? 1
