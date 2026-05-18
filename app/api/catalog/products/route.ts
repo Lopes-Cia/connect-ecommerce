@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { ensureCatalogSynced } from '@/lib/integration/catalogAutoSync'
+import { buildCatalogHeaders } from '@/lib/integration/catalogHeaders'
 import { queryCatalogProducts, type CatalogProductSortDir, type CatalogProductSortField } from '@/lib/integration/catalogService'
 
 export const dynamic = 'force-dynamic'
@@ -45,15 +47,17 @@ function normalizeSort(value: string | null): { field: CatalogProductSortField; 
 
 export async function GET(request: NextRequest) {
   try {
+    await ensureCatalogSynced()
     const usp = request.nextUrl.searchParams
+    const headers = buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' })
 
     const page = parseIntOrNull(usp.get('page')) ?? 1
     const pageSize = parseIntOrNull(usp.get('pageSize')) ?? 20
     if (page < 1) {
-      return NextResponse.json({ message: 'page deve ser >= 1' }, { status: 400 })
+      return NextResponse.json({ message: 'page deve ser >= 1' }, { status: 400, headers })
     }
     if (pageSize < 1 || pageSize > 200) {
-      return NextResponse.json({ message: 'pageSize fora do intervalo (1..200)' }, { status: 400 })
+      return NextResponse.json({ message: 'pageSize fora do intervalo (1..200)' }, { status: 400, headers })
     }
 
     const brandId = parseIntOrNull(usp.get('brandId')) ?? undefined
@@ -61,17 +65,17 @@ export async function GET(request: NextRequest) {
 
     const inStockParsed = parseBoolOrNull(usp.get('inStock'))
     if (usp.has('inStock') && inStockParsed === null) {
-      return NextResponse.json({ message: 'inStock deve ser true ou false' }, { status: 400 })
+      return NextResponse.json({ message: 'inStock deve ser true ou false' }, { status: 400, headers })
     }
 
     const priceMinParsed = parseNumberOrNull(usp.get('priceMin'))
     if (usp.has('priceMin') && priceMinParsed === null) {
-      return NextResponse.json({ message: 'priceMin deve ser número' }, { status: 400 })
+      return NextResponse.json({ message: 'priceMin deve ser número' }, { status: 400, headers })
     }
 
     const priceMaxParsed = parseNumberOrNull(usp.get('priceMax'))
     if (usp.has('priceMax') && priceMaxParsed === null) {
-      return NextResponse.json({ message: 'priceMax deve ser número' }, { status: 400 })
+      return NextResponse.json({ message: 'priceMax deve ser número' }, { status: 400, headers })
     }
 
     const sortParam = usp.get('sort')
@@ -81,7 +85,7 @@ export async function GET(request: NextRequest) {
         sort = normalizeSort(sortParam)
       } catch (error) {
         const message = error instanceof Error ? error.message : 'sort inválido'
-        return NextResponse.json({ message }, { status: 400 })
+        return NextResponse.json({ message }, { status: 400, headers })
       }
     } else {
       sort = { field: 'rank', dir: 'desc' }
@@ -101,9 +105,12 @@ export async function GET(request: NextRequest) {
       pageSize,
     })
 
-    return NextResponse.json(result)
+    return NextResponse.json(result, { headers })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected Redis error'
-    return NextResponse.json({ message }, { status: 500 })
+    return NextResponse.json(
+      { message },
+      { status: 500, headers: buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' }) }
+    )
   }
 }

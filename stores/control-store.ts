@@ -12,15 +12,21 @@ export type ControlState = {
   PEDIDOSSTORE: typeof usePedidosStore;
   CARRINHOSTORE: typeof useCarrinhoStore;
   ECOMMERCESTORE: typeof useEcommerceStore;
+  copilotoEnabled: boolean;
+  setCopilotoEnabled: (value: boolean) => void;
+  toggleCopiloto: () => void;
   live: () => string;
 };
 
-export const useControlStore = create<ControlState>(() => ({
+export const useControlStore = create<ControlState>((set) => ({
   PRODUTOSSTORE: useProdutosStore,
   CLIENTESSTORE: useClientesStore,
   PEDIDOSSTORE: usePedidosStore,
   CARRINHOSTORE: useCarrinhoStore,
   ECOMMERCESTORE: useEcommerceStore,
+  copilotoEnabled: false,
+  setCopilotoEnabled: (value) => set({ copilotoEnabled: Boolean(value) }),
+  toggleCopiloto: () => set((state) => ({ copilotoEnabled: !state.copilotoEnabled })),
   live: () => {
     fetch("/api/produtos/categorias", { cache: "no-store" })
       .then(async (res) => {

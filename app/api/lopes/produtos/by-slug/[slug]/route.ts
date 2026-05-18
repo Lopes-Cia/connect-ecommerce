@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { getBackProdutoLoja } from "@/lib/integration/lopesBackClient"
+import { buildCatalogHeaders } from "@/lib/integration/catalogHeaders"
 import { HttpError } from "@/lib/integration/network"
 import type { Brand, Categoria } from "@/lib/types/produtos"
 import { buildBrandsById, translateLopesProdutoToProduto } from "@/liz_refator/contracts/lopes/translate"
@@ -46,13 +47,14 @@ function parseProdutoIdFromSlug(slug: string): number | null {
 
 export async function GET(_request: Request, context: { params: Promise<{ slug: string }> }) {
   try {
+    const headers = buildCatalogHeaders({ origin: "lopes", readModel: "none" })
     const { slug } = await context.params
     const idProduto = parseProdutoIdFromSlug(slug)
 
     if (!idProduto) {
       return NextResponse.json(
         { success: false, message: "slug must end with -<idProduto>" },
-        { status: 400 }
+        { status: 400, headers }
       )
     }
 
@@ -66,22 +68,22 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     })
 
     if (!produto) {
-      return NextResponse.json({ success: false, message: "Produto not found" }, { status: 404 })
+      return NextResponse.json({ success: false, message: "Produto not found" }, { status: 404, headers })
     }
 
-    return NextResponse.json(
-      { success: true, data: produto },
-      { headers: { "x-data-source": "lopes-back + categorias.json + brands.json" } }
-    )
+    return NextResponse.json({ success: true, data: produto }, { headers })
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json(
         error.data ?? { success: false, message: "Erro na integração (lopes back)" },
-        { status: error.status }
+        { status: error.status, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
       )
     }
 
     const message = error instanceof Error ? error.message : "Unexpected integration error"
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
+    )
   }
 }

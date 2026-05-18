@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import useCheckIsMobile from "@/hooks/useCheckIsMobile";
-import type { CategoriaNode } from "@/lib/types/produtos";
 import { useProdutosStore } from "@/stores/produtos-store";
 import {
   DropdownMenu,
@@ -12,9 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 
 let _clientMounted = false;
 const _mountedListeners = new Set<() => void>();
@@ -47,7 +43,6 @@ export default function CategoryHeader() {
   const [open, setOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mounted = useSyncExternalStore(subscribeMounted, getMountedSnapshot, getMountedServerSnapshot);
-  const [query, setQuery] = useState("");
   const [activeRootId, setActiveRootId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,27 +57,26 @@ export default function CategoryHeader() {
 
   const rootCategorias = useMemo(() => categoriasTree ?? [], [categoriasTree]);
 
-  const filteredRootCategorias = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return rootCategorias;
-    return rootCategorias.filter((c) => c.name.toLowerCase().includes(q));
-  }, [query, rootCategorias]);
-
   const resolvedActiveRootId = useMemo(() => {
-    if (filteredRootCategorias.length === 0) return null;
-    if (activeRootId && filteredRootCategorias.some((c) => String(c.id) === String(activeRootId))) {
+    if (rootCategorias.length === 0) return null;
+    if (activeRootId && rootCategorias.some((c) => String(c.id) === String(activeRootId))) {
       return activeRootId;
     }
-    return String(filteredRootCategorias[0].id);
-  }, [activeRootId, filteredRootCategorias]);
+    return String(rootCategorias[0].id);
+  }, [activeRootId, rootCategorias]);
 
   const activeRoot = useMemo(() => {
-    if (filteredRootCategorias.length === 0) return null;
+    if (rootCategorias.length === 0) return null;
     const found = resolvedActiveRootId
-      ? filteredRootCategorias.find((c) => String(c.id) === String(resolvedActiveRootId))
+      ? rootCategorias.find((c) => String(c.id) === String(resolvedActiveRootId))
       : undefined;
-    return found ?? filteredRootCategorias[0];
-  }, [filteredRootCategorias, resolvedActiveRootId]);
+    return found ?? rootCategorias[0];
+  }, [rootCategorias, resolvedActiveRootId]);
+
+  const activeChildren = useMemo(() => {
+    const children = activeRoot?.children;
+    return Array.isArray(children) ? children : [];
+  }, [activeRoot]);
 
   const clearCloseTimeout = () => {
     if (closeTimeoutRef.current) {
@@ -156,7 +150,6 @@ export default function CategoryHeader() {
                     >
                       Sem categoria
                     </Link>
-                    <Separator orientation="vertical" className="h-5" />
                     <Link
                       href="/categorias"
                       className="text-sm text-muted-foreground hover:text-foreground"
@@ -164,15 +157,6 @@ export default function CategoryHeader() {
                       Ver todas →
                     </Link>
                   </div>
-                </div>
-
-                <div className="mt-4">
-                  <Input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Buscar categoria..."
-                    className="h-10"
-                  />
                 </div>
 
                 <div className="mt-5 grid grid-cols-[280px_1fr] gap-6">
@@ -187,12 +171,12 @@ export default function CategoryHeader() {
                         <div className="px-2 py-2 text-sm text-destructive">
                           {categoriasTreeError ?? "Falha ao carregar categorias."}
                         </div>
-                      ) : filteredRootCategorias.length === 0 ? (
+                      ) : rootCategorias.length === 0 ? (
                         <div className="px-2 py-2 text-sm text-muted-foreground">
                           Nenhuma categoria encontrada.
                         </div>
                       ) : (
-                        filteredRootCategorias.map((root) => {
+                        rootCategorias.map((root) => {
                           const isActive = String(resolvedActiveRootId) === String(root.id);
                           return (
                             <DropdownMenuItem
@@ -217,89 +201,32 @@ export default function CategoryHeader() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-[1fr_260px] gap-6">
-                    <div className="min-w-0">
-                      {activeRoot ? (
-                        <div className="grid gap-4 md:grid-cols-3">
-                          {((activeRoot.children ?? []) as CategoriaNode[]).length === 0 ? (
-                            <div className="text-sm text-muted-foreground">
-                              Sem subcategorias.
-                            </div>
+                  <div className="min-w-0">
+                    {activeRoot ? (
+                      <>
+                        <div className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
+                          {activeRoot.name}
+                        </div>
+                        <div className="mt-3 max-h-[60vh] overflow-auto rounded-lg border bg-muted/30 p-1">
+                          {activeChildren.length === 0 ? (
+                            <div className="px-2 py-2 text-sm text-muted-foreground">Sem subcategorias.</div>
                           ) : (
-                            ((activeRoot.children ?? []) as CategoriaNode[]).map((child) => {
-                              const level3 = (child.children ?? []) as CategoriaNode[];
-                              return (
-                                <div key={`l2-${child.id}`} className="min-w-0">
-                                  <Link
-                                    href={child.slug}
-                                    className="text-sm font-semibold text-foreground hover:underline"
-                                  >
-                                    {child.name}
-                                  </Link>
-                                  {level3.length === 0 ? null : (
-                                    <ul className="mt-2 space-y-1">
-                                      {level3.slice(0, 8).map((leaf) => (
-                                        <li key={`l3-${leaf.id}`}>
-                                          <Link
-                                            href={leaf.slug}
-                                            className="text-sm text-muted-foreground hover:text-foreground"
-                                          >
-                                            {leaf.name}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                </div>
-                              );
-                            })
+                            activeChildren.map((child) => (
+                              <DropdownMenuItem key={`child-${child.id}`} asChild className="cursor-pointer py-2.5">
+                                <Link href={child.slug}>{child.name}</Link>
+                              </DropdownMenuItem>
+                            ))
                           )}
                         </div>
-                      ) : (
-                        <div className="text-sm text-muted-foreground">
-                          Selecione uma categoria para ver as opções.
-                        </div>
-                      )}
-
-                      {activeRoot ? (
-                        <div className="mt-5">
-                          <Link
-                            href={activeRoot.slug}
-                            className="text-sm text-muted-foreground hover:text-foreground"
-                          >
+                        <div className="mt-4">
+                          <Link href={activeRoot.slug} className="text-sm text-muted-foreground hover:text-foreground">
                             Ver tudo em {activeRoot.name} →
                           </Link>
                         </div>
-                      ) : null}
-                    </div>
-
-                    <div className="space-y-3">
-                      <Link
-                        href="/ofertas"
-                        className="block rounded-xl border p-4 hover:bg-accent"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="text-sm font-semibold">Ofertas da semana</div>
-                          <Badge variant="secondary">-%</Badge>
-                        </div>
-                        <div className="mt-1 text-sm text-muted-foreground tracking-normal">
-                          Descontos por tempo limitado.
-                        </div>
-                      </Link>
-
-                      <Link
-                        href="/mais-vendidos"
-                        className="block rounded-xl border p-4 hover:bg-accent"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="text-sm font-semibold">Mais vendidos</div>
-                          <Badge variant="secondary">Top</Badge>
-                        </div>
-                        <div className="mt-1 text-sm text-muted-foreground tracking-normal">
-                          Os itens mais comprados da loja.
-                        </div>
-                      </Link>
-                    </div>
+                      </>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Selecione uma categoria para ver as opções.</div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { buildCatalogHeaders } from "@/lib/integration/catalogHeaders"
 import type { Categoria } from "@/lib/types/produtos"
 import { buildCategoriasTreeFromCategorias } from "@/liz_refator/contracts/lopes/translate"
 
@@ -22,10 +23,13 @@ export async function GET() {
     const tree = buildCategoriasTreeFromCategorias(categorias)
     return NextResponse.json(
       { success: true, data: tree },
-      { headers: { "x-data-source": "categorias.json" } }
+      { headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected integration error"
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
+    )
   }
 }

@@ -228,3 +228,9 @@ Implementação: pode ler do Redis via `SCAN catalog:category:*` + `JSON.GET` (s
 ```bash
 npm run clean
 ```
+
+Limpar apenas categorias:
+
+```bash
+npm run clean -- --only categorias
+```

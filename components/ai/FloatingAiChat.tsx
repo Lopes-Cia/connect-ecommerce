@@ -15,6 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 
+import { useControlStore } from "@/stores/control-store";
 import ErpSection from "@/components/ai/sections/ErpSection";
 import RedisSection from "@/components/ai/sections/RedisSection";
 import RedisCategoriesSection from "@/components/ai/sections/RedisCategoriesSection";
@@ -90,6 +91,7 @@ function getProductContext(): ProductContext {
 }
 
 export default function FloatingAiChat() {
+  const copilotoEnabled = useControlStore((s) => s.copilotoEnabled);
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -112,8 +114,11 @@ export default function FloatingAiChat() {
   const [homeOpen, setHomeOpen] = useState(true);
 
   useEffect(() => {
+    if (!copilotoEnabled) return;
     console.log("[AI CHAT] Product context loaded", getProductContext());
-  }, []);
+  }, [copilotoEnabled]);
+
+  if (!copilotoEnabled) return null;
 
   function resetConversation() {
     setMessages([]);

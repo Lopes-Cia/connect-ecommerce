@@ -24,7 +24,8 @@ export interface CatalogProductsQueryResult<TItem = unknown> {
   items: TItem[]
 }
 
-const INDEX_NAME = 'idx:catalog:product'
+const PRODUCT_INDEX_NAME = 'idx:catalog:product'
+const CATEGORY_INDEX_NAME = 'idx:catalog:category'
 
 function logCatalogSource(event: string, meta?: Record<string, unknown>) {
   if (process.env.NODE_ENV === 'production') return
@@ -86,6 +87,50 @@ function parseFtSearchResponse(raw: unknown): { total: number; docs: FtDoc[] } {
   }
 
   return { total, docs }
+}
+
+function parseJsonDocsFromFtResponse<TItem>(raw: unknown): { total: number; items: TItem[] } {
+  const parsed = parseFtSearchResponse(raw)
+  const items = parsed.docs
+    .map((d) => d.fields?.['$'])
+    .filter((v): v is string => typeof v === 'string')
+    .map((v) => {
+      try {
+        return JSON.parse(v) as TItem
+      } catch {
+        return null
+      }
+    })
+    .filter((v): v is TItem => Boolean(v))
+  return { total: parsed.total, items }
+}
+
+function escapeTagValue(value: string): string {
+  return String(value).replace(/([\\{}|,])/g, '\\$1')
+}
+
+export async function getCatalogProductBySlug<TItem = unknown>(slug: string): Promise<TItem | null> {
+  logCatalogSource('catalog.product.by-slug')
+  const client = await getCatalogRedisClient()
+  const normalized = String(slug ?? '').trim()
+  if (!normalized) return null
+
+  const query = `@slug:{${escapeTagValue(normalized)}}`
+  const raw = await client.sendCommand([
+    'FT.SEARCH',
+    PRODUCT_INDEX_NAME,
+    query,
+    'LIMIT',
+    '0',
+    '1',
+    'RETURN',
+    '1',
+    '$',
+    'DIALECT',
+    '2',
+  ])
+  const parsed = parseJsonDocsFromFtResponse<TItem>(raw)
+  return parsed.items[0] ?? null
 }
 
 function normalizeModuleName(value: unknown): string {
@@ -198,7 +243,7 @@ export async function searchCatalogProducts<TItem = unknown>(input: {
 
   const raw = await client.sendCommand([
     'FT.SEARCH',
-    INDEX_NAME,
+    PRODUCT_INDEX_NAME,
     input.query,
     'SORTBY',
     sort.field,
@@ -213,20 +258,8 @@ export async function searchCatalogProducts<TItem = unknown>(input: {
     '2',
   ])
 
-  const parsed = parseFtSearchResponse(raw)
-  const items = parsed.docs
-    .map((d) => d.fields?.['$'])
-    .filter((v): v is string => typeof v === 'string')
-    .map((v) => {
-      try {
-        return JSON.parse(v) as TItem
-      } catch {
-        return null
-      }
-    })
-    .filter((v): v is TItem => Boolean(v))
-
-  return { total: parsed.total, page: input.page, pageSize: input.pageSize, items }
+  const parsed = parseJsonDocsFromFtResponse<TItem>(raw)
+  return { total: parsed.total, page: input.page, pageSize: input.pageSize, items: parsed.items }
 }
 
 async function fetchJsonByKeyPrefix<TDoc>(input: { keyPrefix: string; batchSize?: number }): Promise<TDoc[]> {
@@ -264,9 +297,38 @@ async function fetchJsonByKeyPrefix<TDoc>(input: { keyPrefix: string; batchSize?
 
 export async function listCatalogCategories<TCategory = unknown>(): Promise<TCategory[]> {
   logCatalogSource('catalog.categories.list')
-  const prefix = getCatalogKeyPrefix()
-  const keyPrefix = `${prefix}:category:`
-  return fetchJsonByKeyPrefix<TCategory>({ keyPrefix })
+  const client = await getCatalogRedisClient()
+  const batchSize = 1000
+  let offset = 0
+  let total = 0
+  const items: TCategory[] = []
+
+  while (true) {
+    const raw = await client.sendCommand([
+      'FT.SEARCH',
+      CATEGORY_INDEX_NAME,
+      '*',
+      'SORTBY',
+      'id',
+      'ASC',
+      'LIMIT',
+      String(offset),
+      String(batchSize),
+      'RETURN',
+      '1',
+      '$',
+      'DIALECT',
+      '2',
+    ])
+    const parsed = parseJsonDocsFromFtResponse<TCategory>(raw)
+    if (total === 0) total = parsed.total
+    items.push(...parsed.items)
+    offset += batchSize
+    if (items.length >= total) break
+    if (!parsed.items.length) break
+  }
+
+  return items
 }
 
 export async function listCatalogBrands<TBrand = unknown>(): Promise<TBrand[]> {

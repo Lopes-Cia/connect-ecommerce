@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { buildCatalogHeaders } from "@/lib/integration/catalogHeaders"
 import type { Categoria, CategoriaNode } from "@/lib/types/produtos"
 import { buildCategoriasTreeFromCategorias } from "@/liz_refator/contracts/lopes/translate"
 
@@ -27,6 +28,7 @@ function findBySlug(nodes: CategoriaNode[], slug: string): CategoriaNode | null 
 
 export async function GET(_request: Request, context: { params: Promise<{ slug: string[] }> }) {
   try {
+    const headers = buildCatalogHeaders({ origin: "lopes", readModel: "none" })
     const { slug } = await context.params
     const parts = Array.isArray(slug) ? slug.map((p) => String(p ?? "").trim()).filter(Boolean) : []
     const safeSlug = parts.join("/")
@@ -34,7 +36,7 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     if (!safeSlug) {
       return NextResponse.json(
         { success: false, message: "slug must include category path segments" },
-        { status: 400 }
+        { status: 400, headers }
       )
     }
 
@@ -44,29 +46,26 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     if (normalized === "/categoria/sem-categoria") {
       const raw = categorias.find((c) => c.id === 0) ?? null
       if (!raw) {
-        return NextResponse.json({ success: false, message: "Categoria not found" }, { status: 404 })
+        return NextResponse.json({ success: false, message: "Categoria not found" }, { status: 404, headers })
       }
 
       const category: CategoriaNode = { ...raw, children: [] }
-      return NextResponse.json(
-        { success: true, data: { category } },
-        { headers: { "x-data-source": "categorias.json" } }
-      )
+      return NextResponse.json({ success: true, data: { category } }, { headers })
     }
 
     const tree = buildCategoriasTreeFromCategorias(categorias)
     const category = findBySlug(tree, normalized)
 
     if (!category) {
-      return NextResponse.json({ success: false, message: "Categoria not found" }, { status: 404 })
+      return NextResponse.json({ success: false, message: "Categoria not found" }, { status: 404, headers })
     }
 
-    return NextResponse.json(
-      { success: true, data: { category } },
-      { headers: { "x-data-source": "categorias.json" } }
-    )
+    return NextResponse.json({ success: true, data: { category } }, { headers })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected integration error"
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
+    )
   }
 }

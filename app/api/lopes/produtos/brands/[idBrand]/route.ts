@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { buildCatalogHeaders } from "@/lib/integration/catalogHeaders"
 import type { Brand, BrandByIdPayload, Produto } from "@/lib/types/produtos"
 
 export const dynamic = "force-dynamic"
@@ -23,27 +24,31 @@ async function readBrandsSnapshot(): Promise<Brand[]> {
 
 export async function GET(request: NextRequest, context: { params: Promise<{ idBrand: string }> }) {
   try {
+    const headers = buildCatalogHeaders({ origin: "lopes", readModel: "none" })
     const { idBrand } = await context.params
     const parsedId = Number.parseInt(idBrand, 10)
 
     if (Number.isNaN(parsedId)) {
-      return NextResponse.json({ success: false, message: "idBrand must be a valid number" }, { status: 400 })
+      return NextResponse.json({ success: false, message: "idBrand must be a valid number" }, { status: 400, headers })
     }
 
     const page = parseIntOr(request.nextUrl.searchParams.get("page"), 1)
     const pageSize = parseIntOr(request.nextUrl.searchParams.get("pageSize"), 24)
 
     if (page < 1) {
-      return NextResponse.json({ success: false, message: "page must be >= 1" }, { status: 400 })
+      return NextResponse.json({ success: false, message: "page must be >= 1" }, { status: 400, headers })
     }
     if (pageSize < 1 || pageSize > 100) {
-      return NextResponse.json({ success: false, message: "pageSize must be between 1 and 100" }, { status: 400 })
+      return NextResponse.json(
+        { success: false, message: "pageSize must be between 1 and 100" },
+        { status: 400, headers }
+      )
     }
 
     const brands = await readBrandsSnapshot()
     const brand = brands.find((b) => b.id === parsedId)
     if (!brand) {
-      return NextResponse.json({ success: false, message: "Brand not found" }, { status: 404 })
+      return NextResponse.json({ success: false, message: "Brand not found" }, { status: 404, headers })
     }
 
     const payload: BrandByIdPayload = {
@@ -57,13 +62,13 @@ export async function GET(request: NextRequest, context: { params: Promise<{ idB
       },
     }
 
-    return NextResponse.json(
-      { success: true, data: payload },
-      { headers: { "x-data-source": "brands.json" } }
-    )
+    return NextResponse.json({ success: true, data: payload }, { headers })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected integration error"
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
+    )
   }
 }
 
