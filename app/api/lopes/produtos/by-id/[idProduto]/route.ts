@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { buildCatalogHeaders } from "@/lib/integration/catalogHeaders"
 import { getBackProdutoLoja } from "@/lib/integration/lopesBackClient"
 import { HttpError } from "@/lib/integration/network"
 import type { Brand, Categoria } from "@/lib/types/produtos"
@@ -32,11 +33,12 @@ function buildCategoriasById(categorias: Categoria[]): Map<number, Categoria> {
 
 export async function GET(_request: Request, context: { params: Promise<{ idProduto: string }> }) {
   try {
+    const headers = buildCatalogHeaders({ origin: "lopes", readModel: "none" })
     const { idProduto } = await context.params
     const parsedId = Number.parseInt(idProduto, 10)
 
     if (Number.isNaN(parsedId)) {
-      return NextResponse.json({ success: false, message: "idProduto must be a valid number" }, { status: 400 })
+      return NextResponse.json({ success: false, message: "idProduto must be a valid number" }, { status: 400, headers })
     }
 
     const categorias = await readJsonArray<Categoria>(["lib", "mockups", "data", "categorias.json"])
@@ -49,22 +51,22 @@ export async function GET(_request: Request, context: { params: Promise<{ idProd
     })
 
     if (!produto) {
-      return NextResponse.json({ success: false, message: "Produto not found" }, { status: 404 })
+      return NextResponse.json({ success: false, message: "Produto not found" }, { status: 404, headers })
     }
 
-    return NextResponse.json(
-      { success: true, data: produto },
-      { headers: { "x-data-source": "lopes-back + categorias.json + brands.json" } }
-    )
+    return NextResponse.json({ success: true, data: produto }, { headers })
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json(
         error.data ?? { success: false, message: "Erro na integração (lopes back)" },
-        { status: error.status }
+        { status: error.status, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
       )
     }
 
     const message = error instanceof Error ? error.message : "Unexpected integration error"
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
+    )
   }
 }

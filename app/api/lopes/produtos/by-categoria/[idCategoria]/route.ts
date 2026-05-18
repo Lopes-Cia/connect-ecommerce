@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { buildCatalogHeaders } from "@/lib/integration/catalogHeaders"
 import { getBackListProdutoLoja } from "@/lib/integration/lopesBackClient"
 import { HttpError } from "@/lib/integration/network"
 import type { Brand, Categoria } from "@/lib/types/produtos"
@@ -86,13 +87,14 @@ export async function GET(
   context: { params: Promise<{ idCategoria: string }> }
 ) {
   try {
+    const headers = buildCatalogHeaders({ origin: "lopes", readModel: "none" })
     const { idCategoria } = await context.params
     const parsedId = Number.parseInt(idCategoria, 10)
 
     if (Number.isNaN(parsedId)) {
       return NextResponse.json(
         { success: false, message: "idCategoria must be a valid number" },
-        { status: 400 }
+        { status: 400, headers }
       )
     }
 
@@ -101,7 +103,7 @@ export async function GET(
     if (includeDescendants !== 0 && includeDescendants !== 1) {
       return NextResponse.json(
         { success: false, message: "includeDescendants must be 0 or 1" },
-        { status: 400 }
+        { status: 400, headers }
       )
     }
 
@@ -109,12 +111,12 @@ export async function GET(
     const pageSize = parseIntOr(request.nextUrl.searchParams.get("pageSize"), 24)
 
     if (page < 1) {
-      return NextResponse.json({ success: false, message: "page must be >= 1" }, { status: 400 })
+      return NextResponse.json({ success: false, message: "page must be >= 1" }, { status: 400, headers })
     }
     if (pageSize < 1 || pageSize > 100) {
       return NextResponse.json(
         { success: false, message: "pageSize must be between 1 and 100" },
-        { status: 400 }
+        { status: 400, headers }
       )
     }
 
@@ -156,19 +158,19 @@ export async function GET(
     const start = (page - 1) * pageSize
     const data = merged.slice(start, start + pageSize)
 
-    return NextResponse.json(
-      { success: true, data, page, pageSize, total, totalPages },
-      { headers: { "x-data-source": "lopes-back + categorias.json + brands.json" } }
-    )
+    return NextResponse.json({ success: true, data, page, pageSize, total, totalPages }, { headers })
   } catch (error) {
     if (error instanceof HttpError) {
       return NextResponse.json(
         error.data ?? { success: false, message: "Erro na integração (lopes back)" },
-        { status: error.status }
+        { status: error.status, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
       )
     }
 
     const message = error instanceof Error ? error.message : "Unexpected integration error"
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
+    )
   }
 }

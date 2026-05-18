@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import type { ProdutosByCategoriaResponse } from '@/lib/api/produtos'
 import type { Categoria, Produto } from '@/lib/types/produtos'
+import { ensureCatalogSynced } from '@/lib/integration/catalogAutoSync'
+import { buildCatalogHeaders } from '@/lib/integration/catalogHeaders'
 import { listCatalogCategories, searchCatalogProducts } from '@/lib/integration/catalogService'
 
 export const dynamic = 'force-dynamic'
@@ -56,25 +58,27 @@ function buildCategoryFilterQuery(categoryIds: number[]): string {
 
 export async function GET(request: NextRequest, context: { params: Promise<{ idCategoria: string }> }) {
   try {
+    await ensureCatalogSynced()
+    const headers = buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' })
     const { idCategoria } = await context.params
     const parsedId = Number.parseInt(idCategoria, 10)
     if (Number.isNaN(parsedId)) {
-      return NextResponse.json({ success: false, message: 'idCategoria must be a valid number' }, { status: 400 })
+      return NextResponse.json({ success: false, message: 'idCategoria must be a valid number' }, { status: 400, headers })
     }
 
     const includeDescendantsRaw = request.nextUrl.searchParams.get('includeDescendants')
     const includeDescendants = parseIntOr(includeDescendantsRaw, 1)
     if (includeDescendants !== 0 && includeDescendants !== 1) {
-      return NextResponse.json({ success: false, message: 'includeDescendants must be 0 or 1' }, { status: 400 })
+      return NextResponse.json({ success: false, message: 'includeDescendants must be 0 or 1' }, { status: 400, headers })
     }
 
     const page = parseIntOr(request.nextUrl.searchParams.get('page'), 1)
     const pageSize = parseIntOr(request.nextUrl.searchParams.get('pageSize'), 24)
     if (page < 1) {
-      return NextResponse.json({ success: false, message: 'page must be >= 1' }, { status: 400 })
+      return NextResponse.json({ success: false, message: 'page must be >= 1' }, { status: 400, headers })
     }
     if (pageSize < 1 || pageSize > 100) {
-      return NextResponse.json({ success: false, message: 'pageSize must be between 1 and 100' }, { status: 400 })
+      return NextResponse.json({ success: false, message: 'pageSize must be between 1 and 100' }, { status: 400, headers })
     }
 
     const categorias = await listCatalogCategories<Categoria>()
@@ -108,9 +112,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ idC
       totalPages,
     }
 
-    return NextResponse.json(payload)
+    return NextResponse.json(payload, { headers })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected Redis error'
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' }) }
+    )
   }
 }

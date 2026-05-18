@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { buildCatalogHeaders } from "@/lib/integration/catalogHeaders"
 import type { Categoria } from "@/lib/types/produtos"
 
 export const dynamic = "force-dynamic"
@@ -35,11 +36,15 @@ async function readCategoriasSnapshot(): Promise<Categoria[]> {
 
 export async function GET(_request: Request, context: { params: Promise<{ idCategoria: string }> }) {
   try {
+    const headers = buildCatalogHeaders({ origin: "lopes", readModel: "none" })
     const { idCategoria } = await context.params
     const parsedId = Number.parseInt(idCategoria, 10)
 
     if (Number.isNaN(parsedId)) {
-      return NextResponse.json({ success: false, message: "idCategoria must be a valid number" }, { status: 400 })
+      return NextResponse.json(
+        { success: false, message: "idCategoria must be a valid number" },
+        { status: 400, headers }
+      )
     }
 
     const categorias = await readCategoriasSnapshot()
@@ -51,16 +56,16 @@ export async function GET(_request: Request, context: { params: Promise<{ idCate
 
     const category = byId.get(parsedId)
     if (!category) {
-      return NextResponse.json({ success: false, message: "Categoria not found" }, { status: 404 })
+      return NextResponse.json({ success: false, message: "Categoria not found" }, { status: 404, headers })
     }
 
     const children = parsedId === 0 ? [] : sortCategorias(categorias.filter((c) => toIntOrNaN(c?.parentId) === parsedId))
-    return NextResponse.json(
-      { success: true, data: { category, children } },
-      { headers: { "x-data-source": "categorias.json" } }
-    )
+    return NextResponse.json({ success: true, data: { category, children } }, { headers })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected integration error"
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
+    )
   }
 }

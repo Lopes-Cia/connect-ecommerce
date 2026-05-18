@@ -556,6 +556,44 @@ function buildCreateIndexCommand(prefix: string) {
   ]
 }
 
+function buildCreateCategoryIndexCommand(prefix: string) {
+  const keyPrefix = `${prefix}:category:`
+  return [
+    'FT.CREATE',
+    'idx:catalog:category',
+    'ON',
+    'JSON',
+    'PREFIX',
+    '1',
+    keyPrefix,
+    'SCHEMA',
+    '$.id',
+    'AS',
+    'id',
+    'NUMERIC',
+    'SORTABLE',
+    '$.parentId',
+    'AS',
+    'parentId',
+    'NUMERIC',
+    'SORTABLE',
+    '$.order',
+    'AS',
+    'order',
+    'NUMERIC',
+    'SORTABLE',
+    '$.name',
+    'AS',
+    'name',
+    'TEXT',
+    'SORTABLE',
+    '$.slug',
+    'AS',
+    'slug',
+    'TAG',
+  ]
+}
+
 export async function ensureCatalogIndex(input?: { drop?: boolean }) {
   const client = await getCatalogRedisClient()
   const prefix = getCatalogKeyPrefix()
@@ -563,19 +601,40 @@ export async function ensureCatalogIndex(input?: { drop?: boolean }) {
 
   const indexes = await client.sendCommand(['FT._LIST'])
   const existing = Array.isArray(indexes) ? indexes.map(String) : []
-  const has = existing.includes('idx:catalog:product')
+  const hasProduct = existing.includes('idx:catalog:product')
+  const hasCategory = existing.includes('idx:catalog:category')
 
-  if (drop && has) {
+  const product = { created: false, dropped: false }
+  const category = { created: false, dropped: false }
+
+  if (drop && hasProduct) {
     await client.sendCommand(['FT.DROPINDEX', 'idx:catalog:product', 'DD'])
+    product.dropped = true
+  }
+  if (drop && hasCategory) {
+    await client.sendCommand(['FT.DROPINDEX', 'idx:catalog:category', 'DD'])
+    category.dropped = true
   }
 
-  if (!has || drop) {
+  if (!hasProduct || drop) {
     const cmd = buildCreateIndexCommand(prefix)
     await client.sendCommand(cmd)
-    return { ok: true, created: true, dropped: drop && has }
+    product.created = true
   }
 
-  return { ok: true, created: false, dropped: false }
+  if (!hasCategory || drop) {
+    const cmd = buildCreateCategoryIndexCommand(prefix)
+    await client.sendCommand(cmd)
+    category.created = true
+  }
+
+  return {
+    ok: true,
+    created: product.created || category.created,
+    dropped: product.dropped || category.dropped,
+    product,
+    category,
+  }
 }
 
 export async function cleanCatalogNamespace(input?: { types?: Array<'category' | 'product' | 'brand'> }) {

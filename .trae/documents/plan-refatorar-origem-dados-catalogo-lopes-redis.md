@@ -6,6 +6,26 @@ Objetivo: refatorar com segurança a forma como o projeto decide e consome a **o
 
 Diretriz adicional: o Redis entra para **complementar/enriquecer** dados que não existem no Lopes (ex.: `slug`, `rank`, normalizações), via um pipeline de sync.
 
+## Status (o que já foi feito vs pendente)
+
+### Concluído
+
+- Auto-sync Redis com throttle de ~5min + lock no Redis, chamando `syncCatalogToRedis()` + `ensureCatalogIndex()`.
+- Endpoints Redis chamam auto-sync antes de responder:
+  - `GET /api/catalog/products`
+  - `GET /api/catalog/categories`
+  - `GET /api/catalog/brands`
+- `GET /api/ecommerce/home` usa Redis como fonte obrigatória e chama auto-sync antes de ler.
+- Client de produtos travado para Lopes (com exceção de `mock`):
+  - `lib/api/produtos.ts` agora resolve para `/lopes/produtos` (e `/produtos` só quando `NEXT_PUBLIC_FONTE=mock`).
+- Página de categoria (`/categoria/*`) sempre lista produtos via `/api/catalog/products` (sem fallback para endpoints não-Redis).
+
+### Pendente
+
+- Criar o doc de referência: `.trae/documents/ref-origem-dados-catalogo-lopes-redis.md`.
+- Padronizar headers de diagnóstico (`x-catalog-origin`, `x-catalog-read-model`) nos endpoints principais.
+- Fase C: remover `SCAN` por `slug` (criar/ajustar índice(s) e migrar rotas `by-slug`).
+
 Primeiro deliverable (antes de qualquer refactor): criar um **doc de referência** em `.trae/documents/` descrevendo:
 
 - Estado atual (onde a escolha acontece e quais rotas dependem disso)
@@ -17,12 +37,12 @@ Primeiro deliverable (antes de qualquer refactor): criar um **doc de referência
 ### Como o front escolhe a fonte
 
 - O layout injeta `data-fonte` e `data-catalog-fonte` no `<html>`: [layout.tsx](file:///c:/LOPES/www/connect-ecommerce/app/layout.tsx#L24-L43)
-- O client “genérico” de produtos escolhe o basePath a partir de env/dataset (hoje permite múltiplas origens): [produtos.ts](file:///c:/LOPES/www/connect-ecommerce/lib/api/produtos.ts#L24-L45)
-- A página de categoria já tem um caminho “Redis-first” (bypassando `produtosBasePath`) quando Redis está habilitado: [categoria page](file:///c:/LOPES/www/connect-ecommerce/app/%28shop%29/categoria/%5B...slug%5D/page.tsx#L385-L436)
+- O client “genérico” de produtos resolve para Lopes (com exceção de `mock`): [produtos.ts](file:///c:/LOPES/www/connect-ecommerce/lib/api/produtos.ts#L29-L40)
+- A página de categoria lista produtos via `GET /api/catalog/products`: [categoria page](file:///c:/LOPES/www/connect-ecommerce/app/%28shop%29/categoria/%5B...slug%5D/page.tsx)
 
 Pontos de duplicidade do “switch”:
 
-- A rota da home reimplementa a decisão de fonte (env `CATALOGO_FONTE|NEXT_PUBLIC_CATALOGO_FONTE` e `FONTE|NEXT_PUBLIC_FONTE`): [home route](file:///c:/LOPES/www/connect-ecommerce/app/api/ecommerce/home/route.ts#L31-L66)
+- Não há mais “switch” por env na Home: `GET /api/ecommerce/home` é Redis obrigatório: [home route](file:///c:/LOPES/www/connect-ecommerce/app/api/ecommerce/home/route.ts)
 
 ### Famílias de endpoints (BFF) no Next
 

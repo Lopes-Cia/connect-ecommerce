@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { ensureCatalogSynced } from '@/lib/integration/catalogAutoSync'
+import { buildCatalogHeaders } from '@/lib/integration/catalogHeaders'
 import { applyHomeCollectionsRandomProducts, getHomeFromRedisOrNull, getRandomInStockPricedProducts } from '@/lib/integration/catalogHomeService'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +14,7 @@ export async function GET() {
     if (!home) {
       return NextResponse.json(
         { success: false, message: 'Home não importado no Redis. Rode POST /api/dev/catalog/home/import' },
-        { status: 500, headers: { 'x-data-source': 'redis (missing home)' } }
+        { status: 500, headers: buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' }) }
       )
     }
 
@@ -25,10 +26,13 @@ export async function GET() {
     const data = applyHomeCollectionsRandomProducts({ home, maisVendidos, promocao })
     return NextResponse.json(
       { success: true, data },
-      { headers: { 'x-data-source': 'redis (home + random products)' } }
+      { headers: buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' }) }
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected integration error'
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' }) }
+    )
   }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { buildCatalogHeaders } from "@/lib/integration/catalogHeaders"
 import type { Brand } from "@/lib/types/produtos"
 
 export const dynamic = "force-dynamic"
@@ -20,11 +21,14 @@ export async function GET() {
     const brands = await readBrandsSnapshot()
     return NextResponse.json(
       { success: true, data: brands },
-      { headers: { "x-data-source": "brands.json" } }
+      { headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected integration error"
-    return NextResponse.json({ success: false, message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message },
+      { status: 500, headers: buildCatalogHeaders({ origin: "lopes", readModel: "none" }) }
+    )
   }
 }
 
