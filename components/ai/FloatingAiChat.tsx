@@ -1,32 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Boxes,
-  ChevronDown,
-  Image as ImageIcon,
-  Layers,
-  List,
-  Menu,
-  MessageSquare,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Tags,
-  Zap,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, FileText, MessageSquare, Sparkles, Tag } from "lucide-react";
+import JsonView from "@uiw/react-json-view";
 
 import { useControlStore } from "@/stores/control-store";
-import ErpSection from "@/components/ai/sections/ErpSection";
-import RedisSection from "@/components/ai/sections/RedisSection";
-import RedisCategoriesSection from "@/components/ai/sections/RedisCategoriesSection";
+import ChatView from "@/components/ai/views/ChatView";
+import ContextoView from "@/components/ai/views/ContextoView";
+import RecursosView, { type RecursosSubTab } from "@/components/ai/views/RecursosView";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
+
+type ActiveTab = "chat" | "contexto" | "recursos";
 
 type ProductContext = {
   url: string;
@@ -91,68 +80,66 @@ function getProductContext(): ProductContext {
 }
 
 export default function FloatingAiChat() {
-  const copilotoEnabled = useControlStore((s) => s.copilotoEnabled);
+  const useIaStore = useControlStore((s) => s.IASTORE);
+  const aiChatEnabled = useIaStore((s) => s.aiChatEnabled);
+  const contratoRaw = useIaStore((s) => s.contratoRaw);
+  const contratoView = useIaStore((s) => s.contratoView);
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("contexto");
+  const [recursosExpanded, setRecursosExpanded] = useState(false);
+  const [recursosSubTab, setRecursosSubTab] = useState<RecursosSubTab>("brands");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeView, setActiveView] = useState<
-    | "chat"
-    | "atalhos"
-    | "produtos_erp"
-    | "produtos_redis"
-    | "produtos_categorias"
-    | "produtos_marcas"
-    | "produtos_infos"
-    | "home_banners"
-    | "home_colecoes_a"
-    | "home_colecoes_b"
-  >("chat");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [produtosOpen, setProdutosOpen] = useState(true);
-  const [homeOpen, setHomeOpen] = useState(true);
+  const [jsonOpen, setJsonOpen] = useState(false);
+  const [jsonValue, setJsonValue] = useState("");
+  const [syncRawAction, setSyncRawAction] = useState<null | (() => Promise<void>)>(null);
+  const [syncRawLoading, setSyncRawLoading] = useState(false);
 
-  useEffect(() => {
-    if (!copilotoEnabled) return;
-    console.log("[AI CHAT] Product context loaded", getProductContext());
-  }, [copilotoEnabled]);
+  const jsonParsedValue = useMemo(() => {
+    if (!jsonValue.trim()) return null;
+    try {
+      return JSON.parse(jsonValue) as unknown;
+    } catch {
+      return null;
+    }
+  }, [jsonValue]);
 
-  if (!copilotoEnabled) return null;
-
-  function resetConversation() {
-    setMessages([]);
-    setMessage("");
-    setActiveView("chat");
+  async function copyText(value: string) {
+    try {
+      if (!value.trim()) return;
+      await navigator.clipboard.writeText(value);
+    } catch {
+    }
   }
 
-  function getNavButtonClass(active: boolean) {
+  function getMenuButtonClass(active: boolean) {
     return `w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
       active ? "bg-zinc-950 text-white" : "text-zinc-800 hover:bg-zinc-200"
     }`;
   }
 
-  function getNavIconClass(active: boolean) {
-    return active ? "text-white" : "text-zinc-700";
-  }
+  useEffect(() => {
+    if (!open) {
+      setJsonOpen(false);
+      setJsonValue("");
+      setSyncRawAction(null);
+    }
+  }, [open]);
 
-  function closeMobileMenu() {
-    setMobileMenuOpen(false);
-  }
+  useEffect(() => {
+    if (activeTab !== "contexto") {
+      setJsonOpen(false);
+      setJsonValue("");
+      setSyncRawAction(null);
+    }
+  }, [activeTab]);
 
-  function getActiveViewLabel() {
-    if (activeView === "chat") return "Chat";
-    if (activeView === "atalhos") return "Atalhos";
-    if (activeView === "produtos_erp") return "Produtos • ERP";
-    if (activeView === "produtos_redis") return "Produtos • Redis";
-    if (activeView === "produtos_categorias") return "Produtos • Categorias";
-    if (activeView === "produtos_marcas") return "Produtos • Marcas";
-    if (activeView === "produtos_infos") return "Produtos • Infos";
-    if (activeView === "home_banners") return "Home • Banners";
-    if (activeView === "home_colecoes_a") return "Home • Coleções A";
-    if (activeView === "home_colecoes_b") return "Home • Coleções B";
-    return "Chat";
-  }
+  useEffect(() => {
+    if (activeTab === "recursos") setRecursosExpanded(true);
+  }, [activeTab]);
+
+  if (!aiChatEnabled) return null;
 
   async function sendMessage(customMessage?: string) {
     const text = (customMessage ?? message).trim();
@@ -160,11 +147,6 @@ export default function FloatingAiChat() {
     if (!text || loading) return;
 
     const currentProductContext = getProductContext();
-
-    console.log("[AI CHAT] Sending message", {
-      message: text,
-      productContext: currentProductContext,
-    });
 
     const nextMessages: ChatMessage[] = [
       ...messages,
@@ -192,8 +174,6 @@ export default function FloatingAiChat() {
 
       const data = await response.json();
 
-      console.log("[AI CHAT] API response", data);
-
       if (!response.ok) {
         throw new Error(data?.error ?? "Erro ao consultar assistente IA.");
       }
@@ -206,8 +186,6 @@ export default function FloatingAiChat() {
         },
       ]);
     } catch (error) {
-      console.error("[AI CHAT] Frontend error", error);
-
       setMessages((current) => [
         ...current,
         {
@@ -233,7 +211,7 @@ export default function FloatingAiChat() {
         />
       ) : null}
       {open ? (
-        <div className="relative z-40 mb-3 flex h-[min(88vh,860px)] w-[calc(100vw-24px)] max-w-[1400px] flex-col overflow-hidden rounded-2xl border bg-background text-foreground shadow-2xl md:w-[82vw]">
+        <div className="fixed left-3 right-3 top-[30px] bottom-[30px] z-40 flex flex-col overflow-hidden rounded-2xl border bg-background text-foreground shadow-2xl md:left-auto md:right-5 md:w-[80vw] md:max-w-none">
           <div className="flex items-center justify-between bg-zinc-950 px-4 py-3 text-white">
             <div>
               <p className="text-sm font-semibold">Assistente IA</p>
@@ -241,22 +219,6 @@ export default function FloatingAiChat() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="inline-flex items-center justify-center rounded-full px-2 py-1 text-sm hover:bg-white/10 md:hidden"
-                aria-label="Abrir menu"
-              >
-                <Menu size={18} />
-              </button>
-              <button
-                type="button"
-                onClick={resetConversation}
-                className="rounded-full px-2 py-1 text-xs text-zinc-200 hover:bg-white/10 hover:text-white"
-                aria-label="Nova conversa"
-              >
-                Nova
-              </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -268,502 +230,176 @@ export default function FloatingAiChat() {
             </div>
           </div>
 
-          <div className="border-b border-zinc-200 bg-white px-4 py-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600">{getActiveViewLabel()}</p>
-          </div>
-
           <div className="flex min-h-0 flex-1">
-            <div
-              className={`hidden shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 p-3 md:flex ${
-                sidebarCollapsed ? "w-14" : "w-64"
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => setSidebarCollapsed((current) => !current)}
-                className="mb-2 flex w-full items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-zinc-900 hover:bg-zinc-100"
-                aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
-              >
-                {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveView("chat")}
-                className={getNavButtonClass(activeView === "chat")}
-              >
-                <span className="flex items-center gap-2">
-                  <MessageSquare size={18} className={getNavIconClass(activeView === "chat")} />
-                  {sidebarCollapsed ? null : <span>Chat</span>}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProdutosOpen((current) => !current)}
-                className={`mt-2 ${getNavButtonClass(
-                  activeView === "produtos_erp" ||
-                    activeView === "produtos_redis" ||
-                    activeView === "produtos_categorias" ||
-                    activeView === "produtos_marcas" ||
-                    activeView === "produtos_infos"
-                )}`}
-                aria-expanded={produtosOpen}
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-2">
-                    <Boxes
-                      size={18}
-                      className={getNavIconClass(
-                        activeView === "produtos_erp" ||
-                          activeView === "produtos_redis" ||
-                          activeView === "produtos_categorias" ||
-                          activeView === "produtos_marcas" ||
-                          activeView === "produtos_infos"
-                      )}
-                    />
-                    {sidebarCollapsed ? null : <span>Produtos</span>}
-                  </span>
-                  {sidebarCollapsed ? null : (
-                    <ChevronDown
-                      size={16}
-                      className={`transition ${produtosOpen ? "rotate-0" : "-rotate-90"}`}
-                    />
-                  )}
-                </span>
-              </button>
-
-              {produtosOpen && !sidebarCollapsed ? (
-                <div className="mt-1 space-y-1 pl-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveView("produtos_erp");
-                    }}
-                    className={getNavButtonClass(activeView === "produtos_erp")}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Boxes size={18} className={getNavIconClass(activeView === "produtos_erp")} />
-                      <span>ERP</span>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveView("produtos_redis");
-                    }}
-                    className={getNavButtonClass(activeView === "produtos_redis")}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Boxes size={18} className={getNavIconClass(activeView === "produtos_redis")} />
-                      <span>Redis</span>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveView("produtos_categorias");
-                    }}
-                    className={getNavButtonClass(activeView === "produtos_categorias")}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Layers size={18} className={getNavIconClass(activeView === "produtos_categorias")} />
-                      <span>Categorias</span>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveView("produtos_marcas");
-                      sendMessage("Quais marcas estão disponíveis? Liste em ordem alfabética.");
-                    }}
-                    className={getNavButtonClass(activeView === "produtos_marcas")}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Tags size={18} className={getNavIconClass(activeView === "produtos_marcas")} />
-                      <span>Marcas</span>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveView("produtos_infos");
-                      sendMessage("Liste as infos do catálogo disponíveis (campos, status e origem dos dados).");
-                    }}
-                    className={getNavButtonClass(activeView === "produtos_infos")}
-                  >
-                    <span className="flex items-center gap-2">
-                      <List size={18} className={getNavIconClass(activeView === "produtos_infos")} />
-                      <span>Infos</span>
-                    </span>
-                  </button>
-                </div>
-              ) : null}
-
-              <button
-                type="button"
-                onClick={() => setHomeOpen((current) => !current)}
-                className={`mt-2 ${getNavButtonClass(
-                  activeView === "home_banners" || activeView === "home_colecoes_a" || activeView === "home_colecoes_b"
-                )}`}
-                aria-expanded={homeOpen}
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-2">
-                    <ImageIcon
-                      size={18}
-                      className={getNavIconClass(
-                        activeView === "home_banners" ||
-                          activeView === "home_colecoes_a" ||
-                          activeView === "home_colecoes_b"
-                      )}
-                    />
-                    {sidebarCollapsed ? null : <span>Home</span>}
-                  </span>
-                  {sidebarCollapsed ? null : (
-                    <ChevronDown size={16} className={`transition ${homeOpen ? "rotate-0" : "-rotate-90"}`} />
-                  )}
-                </span>
-              </button>
-
-              {homeOpen && !sidebarCollapsed ? (
-                <div className="mt-1 space-y-1 pl-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveView("home_banners");
-                      sendMessage("Mostre o mockup/estrutura de banners da Home (dados, ordem e cache).");
-                    }}
-                    className={getNavButtonClass(activeView === "home_banners")}
-                  >
-                    <span className="flex items-center gap-2">
-                      <ImageIcon size={18} className={getNavIconClass(activeView === "home_banners")} />
-                      <span>Banners</span>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveView("home_colecoes_a");
-                      sendMessage("Mostre o mockup/estrutura de Coleções A na Home (dados, regra e cache).");
-                    }}
-                    className={getNavButtonClass(activeView === "home_colecoes_a")}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Layers size={18} className={getNavIconClass(activeView === "home_colecoes_a")} />
-                      <span>Coleções A</span>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveView("home_colecoes_b");
-                      sendMessage("Mostre o mockup/estrutura de Coleções B na Home (dados, regra e cache).");
-                    }}
-                    className={getNavButtonClass(activeView === "home_colecoes_b")}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Layers size={18} className={getNavIconClass(activeView === "home_colecoes_b")} />
-                      <span>Coleções B</span>
-                    </span>
-                  </button>
-                </div>
-              ) : null}
-
-              <button
-                type="button"
-                onClick={() => setActiveView("atalhos")}
-                className={`mt-2 ${getNavButtonClass(activeView === "atalhos")}`}
-              >
-                <span className="flex items-center gap-2">
-                  <Zap size={18} className={getNavIconClass(activeView === "atalhos")} />
-                  {sidebarCollapsed ? null : <span>Atalhos</span>}
-                </span>
-              </button>
-              <div className="mt-auto pt-3">
+            <div className="w-44 shrink-0 border-r border-zinc-200 bg-zinc-50 p-3">
+              <div className="space-y-2">
                 <button
                   type="button"
-                  onClick={resetConversation}
-                  className={`w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-left text-sm font-medium text-zinc-900 hover:bg-zinc-100 ${
-                    sidebarCollapsed ? "px-0 text-center" : ""
-                  }`}
+                  onClick={() => setActiveTab("contexto")}
+                  className={getMenuButtonClass(activeTab === "contexto")}
                 >
-                  {sidebarCollapsed ? "×" : "Limpar conversa"}
+                  <span className="flex items-center gap-2">
+                    <FileText size={18} className={activeTab === "contexto" ? "text-white" : "text-zinc-700"} />
+                    <span>Contexto</span>
+                  </span>
+                </button>
+
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    className={getMenuButtonClass(activeTab === "recursos")}
+                    onClick={() => {
+                      if (activeTab !== "recursos") {
+                        setActiveTab("recursos");
+                        setRecursosExpanded(true);
+                        return;
+                      }
+                      setRecursosExpanded((current) => !current);
+                    }}
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2">
+                        <Sparkles size={18} className={activeTab === "recursos" ? "text-white" : "text-zinc-700"} />
+                        <span>Recursos</span>
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`transition ${recursosExpanded ? "rotate-180" : ""} ${
+                          activeTab === "recursos" ? "text-white" : "text-zinc-700"
+                        }`}
+                      />
+                    </span>
+                  </button>
+
+                  {recursosExpanded ? (
+                    <button
+                      type="button"
+                      className={`w-full rounded-xl py-2 pl-8 pr-3 text-left text-xs font-semibold transition ${
+                        activeTab === "recursos" && recursosSubTab === "brands"
+                          ? "bg-zinc-950 text-white"
+                          : "text-zinc-800 hover:bg-zinc-200"
+                      }`}
+                      onClick={() => {
+                        setActiveTab("recursos");
+                        setRecursosExpanded(true);
+                        setRecursosSubTab("brands");
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Tag
+                          size={16}
+                          className={
+                            activeTab === "recursos" && recursosSubTab === "brands" ? "text-white" : "text-zinc-700"
+                          }
+                        />
+                        <span>Brands</span>
+                      </span>
+                    </button>
+                  ) : null}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("chat")}
+                  className={getMenuButtonClass(activeTab === "chat")}
+                >
+                  <span className="flex items-center gap-2">
+                    <MessageSquare size={18} className={activeTab === "chat" ? "text-white" : "text-zinc-700"} />
+                    <span>Chat</span>
+                  </span>
                 </button>
               </div>
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col">
-              <div className="flex-1 overflow-y-auto p-4 text-sm">
-                {activeView === "produtos_erp" ? (
-                  <ErpSection />
-                ) : activeView === "produtos_redis" ? (
-                  <RedisSection />
-                ) : activeView === "produtos_categorias" ? (
-                  <RedisCategoriesSection />
-                ) : activeView === "atalhos" ? (
-                  <div className="space-y-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveView("chat");
-                        sendMessage("Quais endpoints de API esta tela chama?");
-                      }}
-                      className="w-full rounded-xl bg-zinc-950 px-4 py-3 text-left text-sm font-medium text-white hover:bg-zinc-800"
-                    >
-                      Quais endpoints de API esta tela chama?
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveView("chat");
-                        sendMessage("Onde estão os componentes principais desta página?");
-                      }}
-                      className="w-full rounded-xl bg-zinc-950 px-4 py-3 text-left text-sm font-medium text-white hover:bg-zinc-800"
-                    >
-                      Onde estão os componentes principais desta página?
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {messages.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-4">
-                        <p className="text-sm font-semibold text-zinc-900">Como posso ajudar?</p>
-                        <p className="mt-1 text-xs text-zinc-600">
-                          Pergunte sobre a página atual (texto e imagens) ou use um atalho no menu.
-                        </p>
-                        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => sendMessage("Resuma esta página em 5 bullets objetivos.")}
-                          >
-                            Resumir página
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => sendMessage("Quais dúvidas comuns um cliente teria sobre este produto?")}
-                          >
-                            Dúvidas comuns
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => sendMessage("Sugira melhorias de copy (título, descrição e benefícios).")}
-                          >
-                            Melhorar copy
-                          </Button>
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {messages.map((item, index) => (
-                      <div
-                        key={`${item.role}-${index}`}
-                        className={
-                          item.role === "user"
-                            ? "ml-auto max-w-[85%] rounded-2xl bg-zinc-950 px-3 py-2 text-white"
-                            : "mr-auto max-w-[85%] whitespace-pre-wrap rounded-2xl bg-zinc-100 px-3 py-2 text-zinc-800"
-                        }
-                      >
-                        {item.content}
-                      </div>
-                    ))}
-
-                    {loading ? (
-                      <div className="mr-auto rounded-2xl bg-zinc-100 px-3 py-2 text-zinc-500">
-                        Analisando...
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-              </div>
-
-              {activeView === "produtos_erp" || activeView === "produtos_redis" ? null : (
-                <div className="border-t border-zinc-200 p-3">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="min-w-0 flex-1">
-                      <Input
-                        value={message}
-                        onChange={(event) => setMessage(event.target.value)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                            sendMessage();
-                          }
-                        }}
-                        placeholder="Digite sua pergunta (ou /redis help)"
-                        className="h-10 rounded-xl border-zinc-300 focus-visible:border-zinc-900 focus-visible:ring-zinc-900/20"
-                      />
-                    </div>
-
-                    <Button
-                      type="button"
-                      onClick={() => sendMessage()}
-                      disabled={loading || !message.trim()}
-                      className="h-10 rounded-xl bg-zinc-950 text-white hover:bg-zinc-800"
-                    >
-                      Enviar
-                    </Button>
-                  </div>
-                </div>
+              {activeTab === "chat" ? (
+                <ChatView
+                  messages={messages}
+                  loading={loading}
+                  message={message}
+                  setMessage={setMessage}
+                  sendMessage={() => sendMessage()}
+                />
+              ) : activeTab === "contexto" ? (
+                <ContextoView
+                  contratoRaw={contratoRaw}
+                  contratoView={contratoView}
+                  setSyncRawAction={setSyncRawAction}
+                  openJson={(json) => {
+                    setJsonValue(json);
+                    setJsonOpen(true);
+                  }}
+                />
+              ) : (
+                <RecursosView activeSubTab={recursosSubTab} />
               )}
             </div>
-          </div>
 
-          <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Menu</DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-2">
-                <Button
-                  type="button"
-                  variant={activeView === "chat" ? "default" : "outline"}
-                  className="w-full justify-start"
-                  onClick={() => {
-                    setActiveView("chat");
-                    closeMobileMenu();
-                  }}
-                >
-                  <MessageSquare />
-                  Chat
-                </Button>
-
-                <div className="pt-2">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Produtos</p>
-                  <div className="mt-2 space-y-2">
-                    <Button
-                      type="button"
-                      variant={activeView === "produtos_erp" ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setActiveView("produtos_erp");
-                        closeMobileMenu();
-                      }}
-                    >
-                      <Boxes />
-                      ERP
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeView === "produtos_redis" ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setActiveView("produtos_redis");
-                        closeMobileMenu();
-                      }}
-                    >
-                      <Boxes />
-                      Redis
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeView === "produtos_categorias" ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setActiveView("produtos_categorias");
-                        closeMobileMenu();
-                      }}
-                    >
-                      <Layers />
-                      Categorias
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeView === "produtos_marcas" ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setActiveView("produtos_marcas");
-                        closeMobileMenu();
-                        sendMessage("Quais marcas estão disponíveis? Liste em ordem alfabética.");
-                      }}
-                    >
-                      <Tags />
-                      Marcas
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeView === "produtos_infos" ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setActiveView("produtos_infos");
-                        closeMobileMenu();
-                        sendMessage("Liste as infos do catálogo disponíveis (campos, status e origem dos dados).");
-                      }}
-                    >
-                      <List />
-                      Infos
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Home</p>
-                  <div className="mt-2 space-y-2">
-                    <Button
-                      type="button"
-                      variant={activeView === "home_banners" ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setActiveView("home_banners");
-                        closeMobileMenu();
-                        sendMessage("Mostre o mockup/estrutura de banners da Home (dados, ordem e cache).");
-                      }}
-                    >
-                      <ImageIcon />
-                      Banners
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeView === "home_colecoes_a" ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setActiveView("home_colecoes_a");
-                        closeMobileMenu();
-                        sendMessage("Mostre o mockup/estrutura de Coleções A na Home (dados, regra e cache).");
-                      }}
-                    >
-                      <Layers />
-                      Coleções A
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={activeView === "home_colecoes_b" ? "default" : "outline"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setActiveView("home_colecoes_b");
-                        closeMobileMenu();
-                        sendMessage("Mostre o mockup/estrutura de Coleções B na Home (dados, regra e cache).");
-                      }}
-                    >
-                      <Layers />
-                      Coleções B
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <Button
+            {jsonOpen ? (
+              <div className="hidden h-full w-[360px] shrink-0 flex-col border-l border-zinc-200 bg-white md:flex">
+                <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
+                  <p className="text-sm font-semibold text-zinc-900">JSON</p>
+                  <button
                     type="button"
-                    variant={activeView === "atalhos" ? "default" : "outline"}
-                    className="w-full justify-start"
                     onClick={() => {
-                      setActiveView("atalhos");
-                      closeMobileMenu();
+                      setJsonOpen(false);
+                      setJsonValue("");
                     }}
+                    className="rounded-full px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100"
+                    aria-label="Fechar JSON"
                   >
-                    <Zap />
-                    Atalhos
-                  </Button>
+                    ✕
+                  </button>
+                </div>
+
+                <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
+                  <div className="min-h-0 flex-1 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs font-mono text-zinc-900">
+                    <div className="h-full overflow-auto">
+                      {jsonParsedValue ? (
+                        <JsonView value={jsonParsedValue} displayDataTypes={false} />
+                      ) : (
+                        <pre className="whitespace-pre-wrap break-words">{jsonValue || "—"}</pre>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2">
+                    {syncRawAction ? (
+                      <Button
+                        disabled={syncRawLoading}
+                        size="sm"
+                        onClick={() => {
+                          if (!syncRawAction) return;
+                          (async () => {
+                            setSyncRawLoading(true);
+                            try {
+                              await syncRawAction();
+                            } finally {
+                              setSyncRawLoading(false);
+                            }
+                          })();
+                        }}
+                      >
+                        {syncRawLoading ? "Sincronizando..." : "Sincronizar RAW > REDIS"}
+                      </Button>
+                    ) : null}
+                    <Button variant="outline" disabled={!jsonValue.trim()} onClick={() => void copyText(jsonValue)}>
+                      Copiar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setJsonOpen(false);
+                        setJsonValue("");
+                      }}
+                    >
+                      Fechar
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
+            ) : null}
+          </div>
         </div>
       ) : null}
 

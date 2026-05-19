@@ -1,0 +1,14 @@
+node_modules/
+storage/
+
+data/output/*.json
+data/input/*.json
+
+data/assets/images/produtos/*
+data/assets/images/categorias/*
+
+!data/assets/images/produtos/.gitkeep
+!data/assets/images/categorias/.gitkeep
+
+.env
+

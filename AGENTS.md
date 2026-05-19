@@ -1,5 +1,10 @@
+Vamos implentar alguns recursos dno projeto, faça de forma simplificada e minimalista  (estilo MVP), 
+O uso de fallback, compatibilidade com codigo legado. Me mostre chat a situação , e eu aprovo ou nao  (tem que ser via chat pois se ficar dentro de um spec ou plan pode passar despercebido)
+A regra que vamos seguir tem ser muito clara, Quem tomas as decisões sou EU, vc tem direito de sugerir, mas tem que ser minimalista, nao gaste tempo criando complexidade pra uma situação que eu posso nem aprovar
 
-Vamos fazer algumas correções , vamos fazer de forma simples e seguindo o padrao de código do projeto. Não tente adivinhar, pergunte que eu indico o que tem que ser feito.
+nunca rode npm run dev , esse comando quem executa sou eu , a menos que eu diga para vc rodar
+
+por padrao execute somente a validação da sintaxe do script (lint), execute a build somente se for uma ação complexa, pequenas ações nao é necessario
 
 
 

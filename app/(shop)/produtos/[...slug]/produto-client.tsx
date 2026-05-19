@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { useProdutosStore } from "@/stores/produtos-store";
+import { useControlStore } from "@/stores/control-store";
 import ImageViewer from "../_components/ImageViewer";
 import ProductActivity from "../_components/ProductActivity";
 import ProductSummary from "../_components/ProductSummary";
@@ -79,6 +80,8 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
   const loadProdutoBySlug = useProdutosStore((s) => s.loadProdutoBySlug);
   const loadBrands = useProdutosStore((s) => s.loadBrands);
   const loadProdutosByCategoria = useProdutosStore((s) => s.loadProdutosByCategoria);
+  const useIaStore = useControlStore((s) => s.IASTORE);
+  const setContratoData = useIaStore((s) => s.setContratoData);
 
   const [rawProduct, setRawProduct] = useState<unknown>(null);
   const [rawBrands, setRawBrands] = useState<unknown[] | null>(null);
@@ -136,6 +139,13 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
     const brands = Array.isArray(rawBrands) ? rawBrands.filter(isBrandCandidate) : undefined;
     return toProdutoDetailViewModel(rawProduct, { brands });
   }, [rawBrands, rawProduct]);
+
+  useEffect(() => {
+    setContratoData({ raw: rawProduct, view });
+    return () => {
+      setContratoData({ raw: null, view: null });
+    };
+  }, [rawProduct, setContratoData, view]);
 
   useEffect(() => {
     let active = true;

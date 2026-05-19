@@ -1,0 +1,20 @@
+{
+  "name": "image-scraper",
+  "version": "1.0.0",
+  "description": "Microservice para coleta de imagens (A/B pipeline)",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "clean:assets": "node scripts/clean-assets.mjs",
+    "fresh": "npm run clean:assets && node src/index.js --no-safe"
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "crawlee": "^3.0.0",
+    "dotenv": "^17.4.1",
+    "image-size": "^2.0.2",
+    "playwright": "^1.40.0",
+    "sharp": "^0.34.5"
+  }
+}

@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { useClientesStore } from "./clientes-store";
 import { useCarrinhoStore } from "./carrinho-store";
 import { useEcommerceStore } from "./ecommerce-store";
+import { useIaStore } from "./ia-store";
 import { usePedidosStore } from "./pedidos-store";
 import { useProdutosStore } from "./produtos-store";
 
@@ -12,21 +13,17 @@ export type ControlState = {
   PEDIDOSSTORE: typeof usePedidosStore;
   CARRINHOSTORE: typeof useCarrinhoStore;
   ECOMMERCESTORE: typeof useEcommerceStore;
-  copilotoEnabled: boolean;
-  setCopilotoEnabled: (value: boolean) => void;
-  toggleCopiloto: () => void;
+  IASTORE: typeof useIaStore;
   live: () => string;
 };
 
-export const useControlStore = create<ControlState>((set) => ({
+export const useControlStore = create<ControlState>(() => ({
   PRODUTOSSTORE: useProdutosStore,
   CLIENTESSTORE: useClientesStore,
   PEDIDOSSTORE: usePedidosStore,
   CARRINHOSTORE: useCarrinhoStore,
   ECOMMERCESTORE: useEcommerceStore,
-  copilotoEnabled: false,
-  setCopilotoEnabled: (value) => set({ copilotoEnabled: Boolean(value) }),
-  toggleCopiloto: () => set((state) => ({ copilotoEnabled: !state.copilotoEnabled })),
+  IASTORE: useIaStore,
   live: () => {
     fetch("/api/produtos/categorias", { cache: "no-store" })
       .then(async (res) => {
