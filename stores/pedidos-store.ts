@@ -191,7 +191,11 @@ export function buildPedidoItensFromCarrinho(items: CartItem[]) {
     const qt = Number.isFinite(qtCandidate) && qtCandidate > 0 ? Math.floor(qtCandidate) : 0;
 
     const valorUnitarioCandidate = Number(item.unitPrice);
-    const valorUnitario = Number.isFinite(valorUnitarioCandidate) ? valorUnitarioCandidate : 0;
+    const unitPrice = Number.isFinite(valorUnitarioCandidate) ? valorUnitarioCandidate : 0;
+    const embalagemUnitsCandidate = Number(item.embalagemUnits);
+    const embalagemUnits =
+      Number.isFinite(embalagemUnitsCandidate) && embalagemUnitsCandidate > 1 ? Math.floor(embalagemUnitsCandidate) : 1;
+    const valorUnitario = unitPrice * embalagemUnits;
 
     const subtotalCandidate = valorUnitario * qt;
     const subTotal = Number.isFinite(subtotalCandidate) ? Number(subtotalCandidate.toFixed(2)) : 0;

@@ -15,6 +15,7 @@ export interface CartItem {
   category: string;
   imageUrl: string;
   unitPrice: number;
+  embalagemUnits?: number | null;
   quantity: number;
 }
 
@@ -24,6 +25,7 @@ interface AddCartItemInput {
   category?: string;
   imageUrl?: string;
   unitPrice: number;
+  embalagemUnits?: number | null;
   quantity?: number;
 }
 
@@ -77,6 +79,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       category: input.category ?? "Sem categoria",
       imageUrl: input.imageUrl ?? "/placeholder.svg",
       unitPrice: input.unitPrice,
+      embalagemUnits: input.embalagemUnits,
       quantity,
     });
     void frontModal.success({

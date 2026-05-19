@@ -68,11 +68,17 @@ export default function CartPage() {
 
           <div className="divide-y divide-custom-light-300">
             {items.map((item) => {
-              const subtotal = item.unitPrice * item.quantity;
+              const embalagemUnits =
+                typeof item.embalagemUnits === "number" && Number.isFinite(item.embalagemUnits) && item.embalagemUnits > 1
+                  ? Math.floor(item.embalagemUnits)
+                  : 1;
+              const subtotal = item.unitPrice * embalagemUnits * item.quantity;
               const idSegment = String(item.id ?? "").trim();
               const baseSlug = slugify(item.name) || encodeURIComponent(idSegment);
               const slugSegment = idSegment ? `${baseSlug}-${encodeURIComponent(idSegment)}` : baseSlug;
               const productHref = `/produtos/${slugSegment}`;
+              const priceLabel = embalagemUnits > 1 ? "por embalagem" : "por unidade";
+              const unitPriceLabelValue = embalagemUnits > 1 ? item.unitPrice * embalagemUnits : item.unitPrice;
 
               return (
                 <div
@@ -105,7 +111,7 @@ export default function CartPage() {
                       </Link>
                       <p className="text-sm text-custom-dark-700">{item.category}</p>
                       <p className="text-sm text-custom-dark-700">
-                        {formatCurrency(item.unitPrice)} por unidade
+                        {formatCurrency(unitPriceLabelValue)} {priceLabel}
                       </p>
                     </div>
                   </div>

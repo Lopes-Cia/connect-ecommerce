@@ -144,7 +144,11 @@ function CartSidebar({ sidebarRef, onClose }: CartSidebarProps) {
           </div>
         ) : (
           items.map((item) => {
-            const subtotal = item.unitPrice * item.quantity;
+            const embalagemUnits =
+              typeof item.embalagemUnits === "number" && Number.isFinite(item.embalagemUnits) && item.embalagemUnits > 1
+                ? Math.floor(item.embalagemUnits)
+                : 1;
+            const subtotal = item.unitPrice * embalagemUnits * item.quantity;
             const idSegment = String(item.id ?? "").trim();
             const baseSlug = slugify(item.name) || encodeURIComponent(idSegment);
             const slugSegment = idSegment ? `${baseSlug}-${encodeURIComponent(idSegment)}` : baseSlug;

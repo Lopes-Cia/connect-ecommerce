@@ -8,6 +8,7 @@ export type CartItem = {
   category: string;
   imageUrl: string;
   unitPrice: number;
+  embalagemUnits?: number | null;
   quantity: number;
 };
 
@@ -18,12 +19,17 @@ function normalizeQuantity(value: number | undefined): number {
   return Math.floor(value);
 }
 
+function normalizeEmbalagemUnits(value: number | undefined | null): number {
+  if (!value || Number.isNaN(value) || value <= 1) return 1;
+  return Math.floor(value);
+}
+
 function computeTotalItems(items: CartItem[]): number {
   return items.reduce((acc, item) => acc + item.quantity, 0);
 }
 
 function computeTotalAmount(items: CartItem[]): number {
-  return items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0);
+  return items.reduce((acc, item) => acc + item.unitPrice * item.quantity * normalizeEmbalagemUnits(item.embalagemUnits), 0);
 }
 
 export type CarrinhoState = {
@@ -33,7 +39,15 @@ export type CarrinhoState = {
   totalAmount: number;
   hydrateFromStorage: () => void;
   persistToStorage: () => void;
-  addItem: (input: { id: string; name: string; category?: string; imageUrl?: string; unitPrice: number; quantity?: number }) => Promise<void>;
+  addItem: (input: {
+    id: string;
+    name: string;
+    category?: string;
+    imageUrl?: string;
+    unitPrice: number;
+    embalagemUnits?: number | null;
+    quantity?: number;
+  }) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
   setItemQuantity: (id: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -55,10 +69,14 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
       }
       const parsed = JSON.parse(raw) as CartItem[];
       if (Array.isArray(parsed)) {
+        const normalized = parsed.map((item) => ({
+          ...item,
+          embalagemUnits: normalizeEmbalagemUnits(item?.embalagemUnits),
+        }));
         set({
-          items: parsed,
-          totalItems: computeTotalItems(parsed),
-          totalAmount: computeTotalAmount(parsed),
+          items: normalized,
+          totalItems: computeTotalItems(normalized),
+          totalAmount: computeTotalAmount(normalized),
           hasHydratedStorage: true,
         });
         return;
@@ -78,13 +96,23 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
 
   addItem: async (input) => {
     const quantity = normalizeQuantity(input.quantity);
+    const embalagemUnits = normalizeEmbalagemUnits(input.embalagemUnits);
     let alreadyInCart = false;
     const nextItems = (() => {
       const current = get().items;
       const existing = current.find((x) => x.id === input.id);
       if (existing) {
         alreadyInCart = true;
-        return current.map((x) => (x.id === input.id ? { ...x, quantity: x.quantity + quantity } : x));
+        return current.map((x) => {
+          if (x.id !== input.id) return x;
+          const existingUnits = normalizeEmbalagemUnits(x.embalagemUnits);
+          const shouldUpdateUnits = embalagemUnits > 1 && existingUnits === 1;
+          return {
+            ...x,
+            quantity: x.quantity + quantity,
+            embalagemUnits: shouldUpdateUnits ? embalagemUnits : existingUnits,
+          };
+        });
       }
       return [
         ...current,
@@ -94,6 +122,7 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
           category: input.category ?? "Sem categoria",
           imageUrl: input.imageUrl ?? "/placeholder.svg",
           unitPrice: Number.isFinite(input.unitPrice) ? input.unitPrice : 0,
+          embalagemUnits,
           quantity,
         },
       ];

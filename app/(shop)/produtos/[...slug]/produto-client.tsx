@@ -275,6 +275,7 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
                 productCategory={view.category}
                 sku={sku}
                 embalagemValue={embalagemValue}
+                embalagemUnits={embalagemUnits}
                 inStock={view.inStock}
                 showHeaderPrice={false}
               />

@@ -16,6 +16,7 @@ interface ProductActivityProps {
   productCategory?: string;
   sku?: string;
   embalagemValue?: number | null;
+  embalagemUnits?: number | null;
   showHeaderPrice?: boolean;
   pricePerUnit?: string;
   installments?: number;
@@ -34,6 +35,7 @@ export default function ProductActivity({
   productCategory,
   sku,
   embalagemValue,
+  embalagemUnits,
   showHeaderPrice = true,
   pricePerUnit,
   installments = 10,
@@ -53,6 +55,8 @@ export default function ProductActivity({
   const safeSku = String(sku ?? "").trim();
   const safeEmbalagemValue =
     typeof embalagemValue === "number" && Number.isFinite(embalagemValue) && embalagemValue > 0 ? embalagemValue : null;
+  const safeEmbalagemUnits =
+    typeof embalagemUnits === "number" && Number.isFinite(embalagemUnits) && embalagemUnits > 1 ? Math.floor(embalagemUnits) : 1;
   const totalValue = safeEmbalagemValue != null ? safeEmbalagemValue * quantity : null;
 
   const addCurrentProductToCart = async (selectedQuantity: number) => {
@@ -68,6 +72,7 @@ export default function ProductActivity({
         category: productCategory,
         imageUrl: productImageUrl,
         unitPrice: price,
+        embalagemUnits: safeEmbalagemUnits,
         quantity: selectedQuantity,
       });
       void frontModal.success({
