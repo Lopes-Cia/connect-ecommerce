@@ -8,7 +8,6 @@ import {
 } from "react";
 import { frontModal } from "@/stores/front-modal-store";
 import { useCarrinhoStore } from "@/stores/carrinho-store";
-import { useClientesStore } from "@/stores/clientes-store";
 
 export interface CartItem {
   id: string;
@@ -56,8 +55,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const totalAmount = useCarrinhoStore((s) => s.totalAmount);
   const hydrateFromStorage = useCarrinhoStore((s) => s.hydrateFromStorage);
   const persistToStorage = useCarrinhoStore((s) => s.persistToStorage);
-  const switchToServerIfLoggedIn = useCarrinhoStore((s) => s.switchToServerIfLoggedIn);
-  const isLoggedIn = useClientesStore((s) => s.isLoggedIn);
   const addItemStore = useCarrinhoStore((s) => s.addItem);
   const removeItemStore = useCarrinhoStore((s) => s.removeItem);
   const setItemQuantityStore = useCarrinhoStore((s) => s.setItemQuantity);
@@ -70,11 +67,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void persistToStorage();
   }, [items, persistToStorage]);
-
-  useEffect(() => {
-    if (!isLoggedIn) return;
-    void switchToServerIfLoggedIn();
-  }, [isLoggedIn, switchToServerIfLoggedIn]);
 
   async function addItem(input: AddCartItemInput) {
     const quantity = normalizeQuantity(input.quantity);

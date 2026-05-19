@@ -855,45 +855,6 @@ export const usePedidosStore = create<PedidosState>((set, get) => ({
         throw new Error("Informe o UF para continuar.");
       }
 
-      // 1) Carrinho: se o app já está em modo server, o carrinho do servidor já é a fonte de verdade.
-      // Caso ainda esteja em modo anonymous, sincroniza (wipe & recreate) apenas neste momento.
-      const carrinhoMode = useCarrinhoStore.getState().mode;
-      if (carrinhoMode !== "server") {
-        const carrinhoAtual = await apiClient<{ success: true; data: unknown }>(`carrinho/${clienteId}`, {
-          method: "GET",
-        });
-        const carrinhoData = asRecord(carrinhoAtual?.data);
-        const itensServidor = Array.isArray(carrinhoData?.itens) ? carrinhoData.itens : [];
-        for (const rawItem of itensServidor) {
-          const serverItem = asRecord(rawItem);
-          const serverItemId = Number.parseInt(String(serverItem?.itemId ?? "").trim(), 10);
-          if (!Number.isFinite(serverItemId)) continue;
-          await apiClient<{ success: true; data: unknown }>(`carrinho/itens/${serverItemId}`, {
-            method: "DELETE",
-            body: JSON.stringify({ clienteId }),
-          });
-        }
-
-        for (const item of items) {
-          const produtoId = Number.parseInt(String(item.id ?? "").trim(), 10);
-          if (!Number.isFinite(produtoId)) {
-            throw new Error(`Item do carrinho sem produtoId numerico: ${item.id}`);
-          }
-          await apiClient<{ success: true; data: unknown }>("carrinho/itens", {
-            method: "POST",
-            body: JSON.stringify({
-              clienteId,
-              item: {
-                produtoId,
-                quantidade: item.quantity,
-              },
-            }),
-          });
-        }
-
-        await useCarrinhoStore.getState().switchToServerIfLoggedIn();
-      }
-
       // 2) Cria sessao de checkout.
       const sessao = await apiClient<{ success: true; data: unknown }>("checkout/sessoes", {
         method: "POST",
@@ -967,13 +928,7 @@ export const usePedidosStore = create<PedidosState>((set, get) => ({
 
       const draft = asRecord(pedido?.data) ?? {};
       set({ checkoutStatus: "success", lastDraft: draft });
-
-      const nextMode = useCarrinhoStore.getState().mode;
-      if (nextMode === "server") {
-        await useCarrinhoStore.getState().refreshFromServer();
-      } else {
-        await useCarrinhoStore.getState().clearCart();
-      }
+      await useCarrinhoStore.getState().clearCart();
 
       return draft;
     } catch (error) {

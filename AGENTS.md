@@ -1,3 +1,8 @@
+
+Vamos fazer algumas correções , vamos fazer de forma simples e seguindo o padrao de código do projeto. Não tente adivinhar, pergunte que eu indico o que tem que ser feito.
+
+
+
 # connect-ecommerce — AGENTS (EntryPoint do Trae Solo)
 
 Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteador”: curto, direto e com links para as definições canônicas.
