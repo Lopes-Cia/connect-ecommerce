@@ -1,0 +1,16 @@
+{
+  "name": "url-scraper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test",
+    "clean": "node scripts/clean.js"
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "dotenv": "^17.4.1",
+    "playwright": "^1.40.0"
+  }
+}

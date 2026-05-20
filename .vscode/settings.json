@@ -1,5 +1,7 @@
 {
     "githubPullRequests.ignoredPullRequestBranches": [
         "develop"
-    ]
+    ],
+    "playwright.showTrace": false,
+    "playwright.pickLocatorCopyToClipboard": true
 }

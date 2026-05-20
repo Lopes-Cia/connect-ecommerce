@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/tests/
 
 # next.js
 /.next/
@@ -34,6 +35,8 @@ yarn-error.log*
 .claude/
 openspec
 .vscode
+.agents/
+.trae/
 
 # env files (não versionar)
 .env*
@@ -45,3 +48,27 @@ openspec
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+playwright.config.js
+
+# Projetos específicos - dados gerados
+MICROSERVICES/url-scraper/data/output/
+MICROSERVICES/url-scraper/data/assets/files/
+!MICROSERVICES/url-scraper/data/assets/files/.gitkeep
+
+MICROSERVICES/image-scraper/data/output/
+MICROSERVICES/image-scraper/data/input/
+MICROSERVICES/image-scraper/data/assets/images/produtos/
+MICROSERVICES/image-scraper/data/assets/images/categorias/
+MICROSERVICES/image-scraper/data/assets/images/terms/
+!MICROSERVICES/image-scraper/data/assets/images/produtos/.gitkeep
+!MICROSERVICES/image-scraper/data/assets/images/categorias/.gitkeep
+
+MICROSERVICES/image-scraper-mcp-server/dist/

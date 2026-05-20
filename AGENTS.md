@@ -7,7 +7,6 @@ nunca rode npm run dev , esse comando quem executa sou eu , a menos que eu diga 
 por padrao execute somente a validação da sintaxe do script (lint), execute a build somente se for uma ação complexa, pequenas ações nao é necessario
 
 
-
 # connect-ecommerce — AGENTS (EntryPoint do Trae Solo)
 
 Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteador”: curto, direto e com links para as definições canônicas.

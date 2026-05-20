@@ -2,11 +2,29 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import ImageScraperResultView from "@/components/ai/views/ImageScraperResult";
 
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
+
+function tryParseJsonObjectFromText(value: string): unknown | null {
+  const text = String(value ?? "");
+  const start = text.indexOf("{");
+  if (start === -1) return null;
+  const candidate = text.slice(start).trim();
+  try {
+    return JSON.parse(candidate) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+function isImageScraperResult(value: unknown): value is { items?: unknown } {
+  if (!value || typeof value !== "object") return false;
+  return "items" in value;
+}
 
 export default function ChatView({
   messages,
@@ -41,7 +59,17 @@ export default function ChatView({
                   : "mr-auto max-w-[85%] whitespace-pre-wrap rounded-2xl bg-zinc-100 px-3 py-2 text-zinc-800"
               }
             >
-              {item.content}
+              {(() => {
+                if (item.role !== "assistant") return item.content;
+                const parsed = tryParseJsonObjectFromText(item.content);
+                if (!isImageScraperResult(parsed)) return item.content;
+
+                return (
+                  <>
+                    <ImageScraperResultView result={parsed} />
+                  </>
+                );
+              })()}
             </div>
           ))}
 

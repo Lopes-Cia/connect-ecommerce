@@ -227,3 +227,12 @@ Conseqüência prática: para rodar “somente um termo”, o projeto hoje depen
 ---
 
 Se você quiser, eu continuo a etapa 2 (refinamento): você me diz quais partes “não servem/não são compatíveis” para o Connect (ex.: Playwright, sharp, filesystem, SSE), e eu reescrevo esta doc com uma seção “o que remover” baseada nesses critérios (sem inventar comportamento).
+
+
+
+
+
+
+### MEU OBJETIVO
+
+Essa ferramenta tem q te rum contrato de MCP, presciso gerar a configuração dela por um agente de IA, dessa forma vamos conseguir as imagens que falta no nosso catalago. 
