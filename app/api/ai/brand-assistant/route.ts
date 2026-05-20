@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { spawn } from "node:child_process";
 import { getCatalogKeyPrefix, getCatalogRedisClient } from "@/lib/integration/catalogRedis";
 
 async function loadAssistantContext() {
@@ -33,12 +34,45 @@ type RedisCommandResult = {
   answer: string;
 };
 
+type ImageScraperCommandResult = {
+  ok: boolean;
+  answer: string;
+};
+
 function tryParseJson(value: string): unknown | null {
   try {
     return JSON.parse(value) as unknown;
   } catch {
     return null;
   }
+}
+
+function splitCommandArgs(input: string) {
+  const text = String(input ?? "").trim();
+  if (!text) return [];
+  const matches = text.match(/"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|\S+/g);
+  return matches ? matches.map((token) => token.trim()).filter(Boolean) : [];
+}
+
+function unquoteToken(token: string) {
+  const t = String(token ?? "");
+  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+    return t.slice(1, -1).replace(/\\(["'])/g, "$1");
+  }
+  return t;
+}
+
+function extractLastJsonObject(value: string): unknown | null {
+  const text = String(value ?? "").trim();
+  if (!text) return null;
+
+  for (let i = text.length - 1; i >= 0; i -= 1) {
+    if (text[i] !== "{") continue;
+    const candidate = text.slice(i);
+    const parsed = tryParseJson(candidate);
+    if (parsed && typeof parsed === "object") return parsed;
+  }
+  return null;
 }
 
 function extractYesFlag(input: string) {
@@ -300,6 +334,134 @@ async function handleRedisCommand(rawMessage: string): Promise<RedisCommandResul
   return { ok: false, answer: "Comando não reconhecido. Use: /redis help" };
 }
 
+async function runImageScraperTermDownload(params: {
+  term: string;
+  count: number;
+  profile: "logo" | "generic";
+}): Promise<{ ok: boolean; json: unknown | null; stdout: string; stderr: string; code: number | null }> {
+  const repoRoot = process.cwd();
+  const scraperRoot = path.join(repoRoot, "MICROSERVICES", "image-scraper");
+  const entry = path.join(scraperRoot, "src", "index.js");
+
+  const args = [
+    entry,
+    "--term",
+    params.term,
+    "--count",
+    String(params.count),
+    "--profile",
+    params.profile,
+  ];
+
+  return await new Promise((resolve) => {
+    const child = spawn(process.execPath, args, {
+      cwd: scraperRoot,
+      env: process.env,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    let stdout = "";
+    let stderr = "";
+    const limit = 1_000_000;
+
+    const push = (current: string, chunk: Buffer) => {
+      if (current.length >= limit) return current;
+      const next = current + chunk.toString("utf8");
+      if (next.length <= limit) return next;
+      return next.slice(0, limit);
+    };
+
+    const timeout = setTimeout(() => {
+      child.kill();
+      resolve({ ok: false, json: null, stdout, stderr, code: null });
+    }, 120_000);
+
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdout = push(stdout, chunk);
+    });
+    child.stderr.on("data", (chunk: Buffer) => {
+      stderr = push(stderr, chunk);
+    });
+
+    child.on("close", (code) => {
+      clearTimeout(timeout);
+      const json = extractLastJsonObject(stdout);
+      resolve({ ok: code === 0, json, stdout, stderr, code });
+    });
+  });
+}
+
+async function handleImageScraperCommand(rawMessage: string): Promise<ImageScraperCommandResult> {
+  if (process.env.IMAGE_SCRAPER_ENABLED !== "1") {
+    return {
+      ok: false,
+      answer:
+        'image-scraper está desabilitado. Para habilitar, setar IMAGE_SCRAPER_ENABLED="1" no ambiente do servidor.',
+    };
+  }
+
+  const rest = String(rawMessage ?? "").trim().replace(/^\/img\b/i, "").trim();
+  if (!rest || rest.toLowerCase() === "help") {
+    return {
+      ok: true,
+      answer: [
+        "Comandos image-scraper (modo termo):",
+        "",
+        '- /img "brahma logo"',
+        '- /img logo "brahma"',
+        '- /img generic "cerveja original lata 269ml 15 unidades"',
+        "- /img generic \"cerveja original\" --count 3",
+        "",
+        "Obs: por segurança, roda somente se IMAGE_SCRAPER_ENABLED=1.",
+      ].join("\n"),
+    };
+  }
+
+  const tokensRaw = splitCommandArgs(rest);
+  const tokens = tokensRaw.map(unquoteToken);
+
+  let profile: "logo" | "generic" = "generic";
+  if (tokens[0] && (tokens[0].toLowerCase() === "logo" || tokens[0].toLowerCase() === "generic")) {
+    profile = tokens[0].toLowerCase() === "logo" ? "logo" : "generic";
+    tokens.shift();
+  }
+
+  let count = 3;
+  const countIndex = tokens.findIndex((t) => String(t).toLowerCase() === "--count");
+  if (countIndex !== -1) {
+    const raw = tokens[countIndex + 1];
+    const parsed = Number.parseInt(String(raw ?? ""), 10);
+    if (Number.isFinite(parsed) && !Number.isNaN(parsed)) {
+      count = Math.max(1, Math.min(10, parsed));
+    }
+    tokens.splice(countIndex, 2);
+  }
+
+  const term = tokens.join(" ").trim();
+  if (!term) return { ok: false, answer: 'Uso: /img [logo|generic] "<termo>" [--count N]' };
+
+  const result = await runImageScraperTermDownload({ term, count, profile });
+  if (!result.ok) {
+    const details = result.stderr.trim() || result.stdout.trim();
+    return {
+      ok: false,
+      answer: ["Falha ao executar image-scraper.", details ? `\n\n${details}` : ""].join(""),
+    };
+  }
+
+  if (result.json) {
+    return {
+      ok: true,
+      answer: `OK\n\n${JSON.stringify(result.json, null, 2)}`,
+    };
+  }
+
+  return {
+    ok: true,
+    answer: `OK\n\n${result.stdout.trim() || "(sem stdout)"}`,
+  };
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -312,6 +474,11 @@ export async function POST(request: Request) {
 
     if (typeof message === "string" && message.trim().toLowerCase().startsWith("/redis")) {
       const result = await handleRedisCommand(message);
+      return Response.json({ answer: result.answer }, { status: result.ok ? 200 : 400 });
+    }
+
+    if (typeof message === "string" && message.trim().toLowerCase().startsWith("/img")) {
+      const result = await handleImageScraperCommand(message);
       return Response.json({ answer: result.answer }, { status: result.ok ? 200 : 400 });
     }
 
