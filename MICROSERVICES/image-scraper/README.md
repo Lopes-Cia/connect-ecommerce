@@ -40,6 +40,8 @@ Comportamento:
 ## Flags úteis
 
 - `--term <texto>` (MVP: termo → URL → download; salva em `data/assets/images/terms/`)
+- `--lookup-sku <sku>` (MVP: busca web por GTIN/EAN e retorna `{name, brand, image}` + candidatos)
+- `--lookup-name <texto>` (MVP: busca web e retorna GTIN/EAN por nome)
 - `--count <n>` (no modo `--term`: quantas imagens baixar; default 3)
 - `--profile <logo|generic>` (no modo `--term`: perfil de busca; default `logo`)
 - `--target-type produto|categoria|marca|banner`
@@ -55,6 +57,18 @@ Exemplo (modo termo):
 
 ```bash
 npm start -- --term brahma --count 3
+```
+
+Exemplo (lookup por SKU/GTIN):
+
+```bash
+npm start -- --lookup-sku 7891991307048-83
+```
+
+Exemplo (lookup por nome → GTIN/EAN):
+
+```bash
+npm start -- --lookup-name "Cerveja Brahma Lata 350ml"
 ```
 
 ## Qualidade da imagem (1 produto)

@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { createHash } from 'node:crypto'
+
 import type { Brand, Categoria } from '@/liz_refator/adapters/produtos-types'
 import { translateLopesCategoriasToCategorias, translateLopesProdutosToProdutosMock } from '@/liz_refator/contracts/lopes/translate'
 import { getBackListCategoria, getBackListProdutoLoja } from '@/lib/integration/lopesBackClient'
@@ -12,6 +14,7 @@ export type CatalogSyncInput = {
   batchSize?: number
   scanCount?: number
   prune?: boolean
+  skipIfUnchanged?: boolean
 }
 
 type PruneResult = { scanned: number; deleted: number }
@@ -44,6 +47,42 @@ function buildBrandsById(brands: Brand[]): Map<number, Brand> {
   const byId = new Map<number, Brand>()
   for (const b of brands) byId.set(Number(b.id) || 0, b)
   return byId
+}
+
+function computeProdutosSnapshotSignature(produtos: unknown[]): string {
+  const normalized = produtos
+    .map((p) => {
+      const obj = p && typeof p === 'object' && !Array.isArray(p) ? (p as Record<string, unknown>) : null
+      const idRaw = obj?.id
+      const id = typeof idRaw === 'number' ? idRaw : typeof idRaw === 'string' ? Number(idRaw) : NaN
+      const priceRaw = obj?.price
+      const price = typeof priceRaw === 'number' ? priceRaw : typeof priceRaw === 'string' ? Number(priceRaw) : NaN
+      const stockRaw = obj?.stock
+      const stock = typeof stockRaw === 'number' ? stockRaw : typeof stockRaw === 'string' ? Number(stockRaw) : NaN
+      const imageRaw = obj?.image
+      const image = typeof imageRaw === 'string' ? imageRaw.trim() : ''
+      const priceCents = Number.isFinite(price) ? Math.max(0, Math.round(price * 100)) : 0
+      const safeStock = Number.isFinite(stock) ? Math.max(0, Math.trunc(stock)) : 0
+      return { id: Number.isFinite(id) ? id : 0, priceCents, safeStock, image }
+    })
+    .filter((p) => p.id > 0)
+
+  normalized.sort((a, b) => a.id - b.id)
+
+  const hash = createHash('sha256')
+  hash.update(String(normalized.length))
+  hash.update('|')
+  for (const p of normalized) {
+    hash.update(String(p.id))
+    hash.update('|')
+    hash.update(String(p.priceCents))
+    hash.update('|')
+    hash.update(String(p.safeStock))
+    hash.update('|')
+    hash.update(p.image)
+    hash.update('\n')
+  }
+  return hash.digest('hex')
 }
 
 async function upsertJsonDocs(input: {
@@ -357,6 +396,7 @@ export async function syncCatalogToRedis(input: CatalogSyncInput) {
   const batchSize = input.batchSize ?? 250
   const scanCount = input.scanCount ?? 2000
   const prune = input.prune ?? true
+  const skipIfUnchanged = input.skipIfUnchanged ?? false
 
   if (batchSize < 1 || batchSize > 5000) throw new Error('batchSize fora do intervalo (1..5000)')
   if (scanCount < 1 || scanCount > 100000) throw new Error('scanCount fora do intervalo (1..100000)')
@@ -432,44 +472,70 @@ export async function syncCatalogToRedis(input: CatalogSyncInput) {
       return { ...p, rank }
     })
 
-    const existingProducts = await readExistingJsonDocsById({
-      type: 'product',
-      ids: produtos.map((p) => (p as { id?: unknown } | null)?.id).filter((v): v is number | string => v !== null && v !== undefined),
-      batchSize,
-    })
-    const produtosMerged = produtos.map((p) => {
-      if (!p || typeof p !== 'object' || Array.isArray(p)) return p
-      const id = (p as { id?: unknown } | null)?.id
-      const key = id === undefined || id === null ? '' : String(id)
-      const merged = mergeProductFromExisting({
-        next: p as Record<string, unknown>,
-        existing: key ? existingProducts.get(key) : undefined,
-      })
-      const mergedObj = merged && typeof merged === 'object' && !Array.isArray(merged) ? (merged as Record<string, unknown>) : null
-      if (!mergedObj) return merged
-      const brandObj = asObject(mergedObj.brand)
-      if (!brandObj) return merged
-      const normalized = normalizeBrandDoc(brandObj)
-      if (!normalized) return merged
-      const out = { ...mergedObj, brand: normalized }
-      delete (out as Record<string, unknown>).brandId
-      delete (out as Record<string, unknown>).marca
-      return out
-    })
+    let shouldWriteProdutos = true
+    let produtosSignatureToPersist: { key: string; value: string } | null = null
+    if (skipIfUnchanged) {
+      const signature = computeProdutosSnapshotSignature(produtos)
+      const client = await getCatalogRedisClient()
+      const key = `${prefix}:meta:rawSignature:produtosLoja`
+      const last = await client.get(key)
+      if (last && last === signature) {
+        shouldWriteProdutos = false
+        result.written.produtos = 0
+        if (prune) result.pruned.produtos = { scanned: 0, deleted: 0 }
+        result.notes.push('produtos: RAW não mudou; sync pulado.')
+      } else {
+        produtosSignatureToPersist = { key, value: signature }
+      }
+    }
 
-    result.fetched.produtos = Array.isArray(rawProdutos) ? rawProdutos.length : produtos.length
-    result.written.produtos = await upsertJsonDocs({
-      type: 'product',
-      docs: produtosMerged,
-      batchSize,
-    })
-    if (prune) {
-      result.pruned.produtos = await pruneByPrefix({
-        scanPrefix: `${prefix}:product:`,
-        keepIds: idsFromDocs(produtosMerged),
+    if (!shouldWriteProdutos) {
+      result.fetched.produtos = Array.isArray(rawProdutos) ? rawProdutos.length : produtos.length
+    } else {
+      const existingProducts = await readExistingJsonDocsById({
+        type: 'product',
+        ids: produtos.map((p) => (p as { id?: unknown } | null)?.id).filter((v): v is number | string => v !== null && v !== undefined),
         batchSize,
-        scanCount,
       })
+      const produtosMerged = produtos.map((p) => {
+        if (!p || typeof p !== 'object' || Array.isArray(p)) return p
+        const id = (p as { id?: unknown } | null)?.id
+        const key = id === undefined || id === null ? '' : String(id)
+        const merged = mergeProductFromExisting({
+          next: p as Record<string, unknown>,
+          existing: key ? existingProducts.get(key) : undefined,
+        })
+        const mergedObj = merged && typeof merged === 'object' && !Array.isArray(merged) ? (merged as Record<string, unknown>) : null
+        if (!mergedObj) return merged
+        const brandObj = asObject(mergedObj.brand)
+        if (!brandObj) return merged
+        const normalized = normalizeBrandDoc(brandObj)
+        if (!normalized) return merged
+        const out = { ...mergedObj, brand: normalized }
+        delete (out as Record<string, unknown>).brandId
+        delete (out as Record<string, unknown>).marca
+        return out
+      })
+
+      result.fetched.produtos = Array.isArray(rawProdutos) ? rawProdutos.length : produtos.length
+      result.written.produtos = await upsertJsonDocs({
+        type: 'product',
+        docs: produtosMerged,
+        batchSize,
+      })
+      if (prune) {
+        result.pruned.produtos = await pruneByPrefix({
+          scanPrefix: `${prefix}:product:`,
+          keepIds: idsFromDocs(produtosMerged),
+          batchSize,
+          scanCount,
+        })
+      }
+
+      if (produtosSignatureToPersist) {
+        const client = await getCatalogRedisClient()
+        await client.set(produtosSignatureToPersist.key, produtosSignatureToPersist.value)
+      }
     }
   }
 

@@ -6,6 +6,7 @@ import { ImageScraper } from "./scraper.js";
 import { SseHubPublisher } from "./sse-publisher.js";
 import { findImageUrlsForTerm } from "./term-url.js";
 import { downloadImagesToTermsFolder } from "./download-url.js";
+import { lookupByName, lookupBySku } from "./gtin-enricher.js";
 
 const program = new Command();
 
@@ -27,6 +28,8 @@ program
   .version("1.0.0")
   .option("--target-type <type>", "Tipo de alvo: produto|categoria|marca|banner", process.env.TARGET_TYPE || "produto")
   .option("--term <text>", "MVP: termo → URL → download (salva em data/assets/images/terms)", "")
+  .option("--lookup-sku <sku>", "Lookup por SKU/GTIN (retorna JSON no stdout)", "")
+  .option("--lookup-name <text>", "Lookup por nome (retorna GTIN/EAN; retorna JSON no stdout)", "")
   .option("--count <n>", "No modo --term: quantas imagens baixar (default 3)", parseCount, 3)
   .option("--profile <name>", "No modo --term: perfil de busca (logo|generic)", parseProfile, "logo")
   .option("--input <path>", "Arquivo JSON de entrada (produtos)", process.env.INPUT_JSON || "./data/input/produtos.json")
@@ -40,11 +43,21 @@ program
   .option("--no-safe", "Desativar modo seguro e processar 100%")
   .option("--retry-not-found", "Processar somente a fila de não encontrados", false)
   .action(async (options) => {
-    console.log("Iniciando image-scraper com opções:");
-    console.log(options);
-    
     try {
       const runId = crypto.randomUUID();
+      const lookupSkuInput = String(options.lookupSku || "").trim();
+      const lookupNameInput = String(options.lookupName || "").trim();
+      if (lookupSkuInput || lookupNameInput) {
+        const out = lookupSkuInput
+          ? await lookupBySku({ sku: lookupSkuInput })
+          : await lookupByName({ name: lookupNameInput });
+        console.log(JSON.stringify({ runId, ...out }, null, 2));
+        return;
+      }
+
+      console.log("Iniciando image-scraper com opções:");
+      console.log(options);
+
       const term = String(options.term || "").trim();
       const count = parseCount(options.count);
       if (term) {

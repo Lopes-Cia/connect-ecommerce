@@ -15,7 +15,7 @@ type OverwriteFlags = {
   image: 0 | 1;
 };
 
-const DEFAULT_OVERWRITE_FLAGS: OverwriteFlags = { category: 0, brand: 0, image: 0 };
+const DEFAULT_GLOBAL_OVERWRITE_FLAGS: OverwriteFlags = { category: 0, brand: 1, image: 0 };
 
 function getPageName(pathname: string | null): string {
   const raw = String(pathname ?? "").trim();
@@ -39,7 +39,7 @@ function normalizeFlag(value: unknown): 0 | 1 {
 
 function toOverwriteFlags(value: unknown): OverwriteFlags {
   const record = asRecord(value);
-  if (!record) return DEFAULT_OVERWRITE_FLAGS;
+  if (!record) return DEFAULT_GLOBAL_OVERWRITE_FLAGS;
   return {
     category: normalizeFlag(record.category),
     brand: normalizeFlag(record.brand),
@@ -120,50 +120,42 @@ export default function ContextoView({
   const [updateLoading, setUpdateLoading] = useState(false);
   const [idProduto, setIdProduto] = useState("");
   const [stock, setStock] = useState("");
-  const [overwriteLoading, setOverwriteLoading] = useState(false);
-  const [overwriteSaving, setOverwriteSaving] = useState(false);
-  const [overwriteFlags, setOverwriteFlags] = useState<OverwriteFlags>(DEFAULT_OVERWRITE_FLAGS);
+  const [brandId, setBrandId] = useState("");
+  const [globalOverwriteLoading, setGlobalOverwriteLoading] = useState(false);
+  const [globalOverwriteSaving, setGlobalOverwriteSaving] = useState(false);
+  const [globalOverwriteFlags, setGlobalOverwriteFlags] = useState<OverwriteFlags>(DEFAULT_GLOBAL_OVERWRITE_FLAGS);
 
   useEffect(() => {
     const id = asNumber(asRecord(contratoRaw)?.id);
     setIdProduto(id ? String(id) : "");
     setStock("");
+    setBrandId("");
     setSyncRawAction(null);
   }, [contratoRaw, setSyncRawAction]);
-
-  const contratoId = asNumber(asRecord(contratoRaw)?.id);
 
   useEffect(() => {
     let active = true;
 
-    if (!contratoId) {
-      setOverwriteFlags(DEFAULT_OVERWRITE_FLAGS);
-      setOverwriteLoading(false);
-      return () => {
-        active = false;
-      };
-    }
-
     (async () => {
-      setOverwriteLoading(true);
+      setGlobalOverwriteLoading(true);
       try {
-        const response = await fetch(`/api/catalog/produtos/overwrite/by-id/${contratoId}`);
+        const response = await fetch("/api/catalog/produtos/overwrite/global");
         const body = await response.json().catch(() => null);
         if (!active) return;
         const flags = toOverwriteFlags(asRecord(body)?.success === true ? asRecord(body)?.data : null);
-        setOverwriteFlags(flags);
+        setGlobalOverwriteFlags(flags);
       } catch {
         if (!active) return;
-        setOverwriteFlags(DEFAULT_OVERWRITE_FLAGS);
+        setGlobalOverwriteFlags(DEFAULT_GLOBAL_OVERWRITE_FLAGS);
       } finally {
-        if (active) setOverwriteLoading(false);
+        if (active) setGlobalOverwriteLoading(false);
       }
     })();
 
     return () => {
       active = false;
     };
-  }, [contratoId]);
+  }, []);
 
   const validateSync = async (id: number) => {
     const response = await fetch(`/api/catalog/produtos/by-id/${id}`);
@@ -342,49 +334,42 @@ export default function ContextoView({
 
         <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-4">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-zinc-900">Overwrite (RAW &lt;- Redis)</p>
+            <p className="text-sm font-semibold text-zinc-900">Overwrite (GLOBAL)</p>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              disabled={!contratoId || overwriteLoading || overwriteSaving}
+              disabled={globalOverwriteLoading || globalOverwriteSaving}
               onClick={() => {
-                if (!contratoId) {
-                  openJson(JSON.stringify({ ok: false, message: "id não disponível" }, null, 2));
-                  return;
-                }
-
                 (async () => {
-                  setOverwriteSaving(true);
+                  setGlobalOverwriteSaving(true);
                   try {
-                    const response = await fetch(`/api/catalog/produtos/overwrite/by-id/${contratoId}`, {
+                    const response = await fetch("/api/catalog/produtos/overwrite/global", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(overwriteFlags),
+                      body: JSON.stringify(globalOverwriteFlags),
                     });
                     const body = await response.json().catch(() => null);
                     openJson(JSON.stringify(body, null, 2));
                   } catch (error) {
                     openJson(
                       JSON.stringify(
-                        { success: false, message: error instanceof Error ? error.message : "Erro ao salvar overwrite" },
+                        { success: false, message: error instanceof Error ? error.message : "Erro ao salvar overwrite global" },
                         null,
                         2
                       )
                     );
                   } finally {
-                    setOverwriteSaving(false);
+                    setGlobalOverwriteSaving(false);
                   }
                 })();
               }}
             >
-              {overwriteSaving ? "Salvando..." : "Salvar"}
+              {globalOverwriteSaving ? "Salvando..." : "Salvar"}
             </Button>
           </div>
 
-          {!contratoId ? (
-            <p className="mt-1 text-xs text-zinc-600">id não disponível para salvar flags.</p>
-          ) : overwriteLoading ? (
+          {globalOverwriteLoading ? (
             <p className="mt-1 text-xs text-zinc-600">Carregando...</p>
           ) : (
             <div className="mt-3 space-y-2">
@@ -402,18 +387,18 @@ export default function ContextoView({
                     variant="outline"
                     size="sm"
                     className={
-                      overwriteFlags[item.key] === 1
+                      globalOverwriteFlags[item.key] === 1
                         ? "border-green-600 text-green-700 hover:bg-green-50 hover:text-green-800"
                         : "border-red-600 text-red-700 hover:bg-red-50 hover:text-red-800"
                     }
                     onClick={() =>
-                      setOverwriteFlags((current) => ({
+                      setGlobalOverwriteFlags((current) => ({
                         ...current,
                         [item.key]: current[item.key] === 1 ? 0 : 1,
                       }))
                     }
                   >
-                    {overwriteFlags[item.key] === 1 ? "ON" : "OFF"}
+                    {globalOverwriteFlags[item.key] === 1 ? "ON" : "OFF"}
                   </Button>
                 </div>
               ))}
@@ -449,9 +434,18 @@ export default function ContextoView({
                   className="mt-1 h-9"
                 />
               </div>
+              <div>
+                <p className="text-xs font-medium text-zinc-700">idBrand</p>
+                <Input
+                  value={brandId}
+                  onChange={(e) => setBrandId(e.target.value)}
+                  placeholder="Ex.: 10"
+                  className="mt-1 h-9"
+                />
+              </div>
             </div>
 
-            <div className="mt-3 flex items-center justify-end">
+            <div className="mt-3 flex items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -496,6 +490,51 @@ export default function ContextoView({
                 }}
               >
                 {updateLoading ? "Atualizando..." : "Atualizar"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={updateLoading}
+                onClick={() => {
+                  const parsedId = asNumber(idProduto);
+                  const parsedBrand = asNumber(brandId);
+
+                  if (!parsedId || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                    openJson(JSON.stringify({ ok: false, message: "idProduto inválido" }, null, 2));
+                    return;
+                  }
+
+                  if (parsedBrand === null || parsedBrand < 0 || !Number.isInteger(parsedBrand)) {
+                    openJson(JSON.stringify({ ok: false, message: "idBrand inválido" }, null, 2));
+                    return;
+                  }
+
+                  (async () => {
+                    setUpdateLoading(true);
+                    try {
+                      const response = await fetch("/api/dev/redis/catalog/produto/brand", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ idProduto: parsedId, idBrand: parsedBrand }),
+                      });
+                      const body = await response.json().catch(() => null);
+                      openJson(JSON.stringify(body, null, 2));
+                    } catch (error) {
+                      openJson(
+                        JSON.stringify(
+                          { ok: false, message: error instanceof Error ? error.message : "Erro ao atualizar Redis" },
+                          null,
+                          2
+                        )
+                      );
+                    } finally {
+                      setUpdateLoading(false);
+                    }
+                  })();
+                }}
+              >
+                {updateLoading ? "Atualizando..." : "Atualizar Marca"}
               </Button>
             </div>
           </div>

@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test",
-    "clean": "node scripts/clean.js"
+    "clean": "node scripts/clean.js",
+    "logo:webp:scan": "node scripts/logo-bg-webp.mjs scan",
+    "logo:webp:process": "node scripts/logo-bg-webp.mjs process",
+    "png:square:scan": "node scripts/png-square-webp.mjs scan",
+    "png:square:process": "node scripts/png-square-webp.mjs process"
   },
   "dependencies": {
     "commander": "^14.0.3",

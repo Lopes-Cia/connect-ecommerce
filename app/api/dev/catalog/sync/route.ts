@@ -38,12 +38,14 @@ export async function POST(request: NextRequest) {
       : undefined
 
     const pruneParsed = parseBoolOrNull(usp.get('prune'))
+    const skipIfUnchangedParsed = parseBoolOrNull(usp.get('skipIfUnchanged'))
 
     const result = await syncCatalogToRedis({
       only,
       batchSize: parseIntOrNull(usp.get('batch')) ?? undefined,
       scanCount: parseIntOrNull(usp.get('scanCount')) ?? undefined,
       prune: pruneParsed ?? undefined,
+      skipIfUnchanged: skipIfUnchangedParsed ?? undefined,
     })
 
     return NextResponse.json(result)

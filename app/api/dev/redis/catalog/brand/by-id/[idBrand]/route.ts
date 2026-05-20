@@ -15,6 +15,16 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>
 }
 
+function slugify(value: string): string {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 export async function GET(_request: NextRequest, context: { params: Promise<{ idBrand: string }> }) {
   const headers = buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' })
 
@@ -70,8 +80,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ idB
       return NextResponse.json({ ok: false, message: 'nome é obrigatório' }, { status: 400, headers })
     }
 
-    const slug = asString(record.slug) || asString(existingRecord?.slug)
-    const image = asString(record.image) || asString(existingRecord?.image)
+    const slug = asString(record.slug) || asString(existingRecord?.slug) || `/marca/${slugify(nome) || 'no-brand'}`
+    const image = asString(record.image) || asString(existingRecord?.image) || 'https://lopesecia.com.br/img/semImagem.png'
 
     const doc = { ...(existingRecord ?? {}), id: parsedId, nome, slug, image }
 

@@ -1,0 +1,14 @@
+{
+  "name": "editor_imagem",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/cli.js",
+    "bg:webp": "node src/cli.js bg-webp"
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "sharp": "^0.34.0"
+  }
+}

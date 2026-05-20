@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, use, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, Suspense, use, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, FolderTree, SlidersHorizontal, ArrowDownUp } from "lucide-react";
@@ -285,7 +285,15 @@ function canonicalizeCatalogQuery(input: URLSearchParams): {
   };
 }
 
-export default function CategoriaPage({ params }: { params: Promise<{ slug: string[] | string }> }) {
+export default function CategoriaPage(props: { params: Promise<{ slug: string[] | string }> }) {
+  return (
+    <Suspense fallback={<div className="min-h-[40vh]" />}>
+      <CategoriaPageInner {...props} />
+    </Suspense>
+  );
+}
+
+function CategoriaPageInner({ params }: { params: Promise<{ slug: string[] | string }> }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

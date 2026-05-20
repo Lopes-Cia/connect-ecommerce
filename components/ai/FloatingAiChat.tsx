@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, FileText, MessageSquare, Sparkles, Tag } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, FileText, MessageSquare, Sparkles, Tag } from "lucide-react";
 import JsonView from "@uiw/react-json-view";
 
 import { useControlStore } from "@/stores/control-store";
@@ -86,6 +86,7 @@ export default function FloatingAiChat() {
   const contratoView = useIaStore((s) => s.contratoView);
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>("contexto");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [recursosExpanded, setRecursosExpanded] = useState(false);
   const [recursosSubTab, setRecursosSubTab] = useState<RecursosSubTab>("brands");
   const [message, setMessage] = useState("");
@@ -114,9 +115,9 @@ export default function FloatingAiChat() {
   }
 
   function getMenuButtonClass(active: boolean) {
-    return `w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
+    return `w-full rounded-xl text-sm font-medium transition ${
       active ? "bg-zinc-950 text-white" : "text-zinc-800 hover:bg-zinc-200"
-    }`;
+    } ${sidebarCollapsed ? "flex items-center justify-center p-2" : "px-3 py-2 text-left"}`;
   }
 
   useEffect(() => {
@@ -136,8 +137,12 @@ export default function FloatingAiChat() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (activeTab === "recursos") setRecursosExpanded(true);
-  }, [activeTab]);
+    if (activeTab === "recursos" && !sidebarCollapsed) setRecursosExpanded(true);
+  }, [activeTab, sidebarCollapsed]);
+
+  useEffect(() => {
+    if (sidebarCollapsed) setRecursosExpanded(false);
+  }, [sidebarCollapsed]);
 
   if (!aiChatEnabled) return null;
 
@@ -211,7 +216,7 @@ export default function FloatingAiChat() {
         />
       ) : null}
       {open ? (
-        <div className="fixed left-3 right-3 top-[30px] bottom-[30px] z-40 flex flex-col overflow-hidden rounded-2xl border bg-background text-foreground shadow-2xl md:left-auto md:right-5 md:w-[80vw] md:max-w-none">
+        <div className="fixed left-3 right-3 top-[30px] bottom-[30px] z-40 flex flex-col overflow-hidden rounded-2xl border bg-background text-foreground shadow-2xl md:left-auto md:right-5 md:w-[90vw] md:max-w-none">
           <div className="flex items-center justify-between bg-zinc-950 px-4 py-3 text-white">
             <div>
               <p className="text-sm font-semibold">Assistente IA</p>
@@ -219,6 +224,15 @@ export default function FloatingAiChat() {
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSidebarCollapsed((current) => !current)}
+                className="rounded-full px-2 py-1 text-sm hover:bg-white/10"
+                aria-label={sidebarCollapsed ? "Abrir menu" : "Fechar menu"}
+                title={sidebarCollapsed ? "Abrir menu" : "Fechar menu"}
+              >
+                {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+              </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -231,7 +245,11 @@ export default function FloatingAiChat() {
           </div>
 
           <div className="flex min-h-0 flex-1">
-            <div className="w-44 shrink-0 border-r border-zinc-200 bg-zinc-50 p-3">
+            <div
+              className={`shrink-0 border-r border-zinc-200 bg-zinc-50 p-3 ${
+                sidebarCollapsed ? "w-14" : "w-44"
+              }`}
+            >
               <div className="space-y-2">
                 <button
                   type="button"
@@ -240,7 +258,7 @@ export default function FloatingAiChat() {
                 >
                   <span className="flex items-center gap-2">
                     <FileText size={18} className={activeTab === "contexto" ? "text-white" : "text-zinc-700"} />
-                    <span>Contexto</span>
+                    {sidebarCollapsed ? null : <span>Contexto</span>}
                   </span>
                 </button>
 
@@ -249,6 +267,11 @@ export default function FloatingAiChat() {
                     type="button"
                     className={getMenuButtonClass(activeTab === "recursos")}
                     onClick={() => {
+                      if (sidebarCollapsed) {
+                        setActiveTab("recursos");
+                        setRecursosExpanded(false);
+                        return;
+                      }
                       if (activeTab !== "recursos") {
                         setActiveTab("recursos");
                         setRecursosExpanded(true);
@@ -260,18 +283,20 @@ export default function FloatingAiChat() {
                     <span className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-2">
                         <Sparkles size={18} className={activeTab === "recursos" ? "text-white" : "text-zinc-700"} />
-                        <span>Recursos</span>
+                        {sidebarCollapsed ? null : <span>Recursos</span>}
                       </span>
-                      <ChevronDown
-                        size={16}
-                        className={`transition ${recursosExpanded ? "rotate-180" : ""} ${
-                          activeTab === "recursos" ? "text-white" : "text-zinc-700"
-                        }`}
-                      />
+                      {sidebarCollapsed ? null : (
+                        <ChevronDown
+                          size={16}
+                          className={`transition ${recursosExpanded ? "rotate-180" : ""} ${
+                            activeTab === "recursos" ? "text-white" : "text-zinc-700"
+                          }`}
+                        />
+                      )}
                     </span>
                   </button>
 
-                  {recursosExpanded ? (
+                  {recursosExpanded && !sidebarCollapsed ? (
                     <button
                       type="button"
                       className={`w-full rounded-xl py-2 pl-8 pr-3 text-left text-xs font-semibold transition ${
@@ -305,7 +330,7 @@ export default function FloatingAiChat() {
                 >
                   <span className="flex items-center gap-2">
                     <MessageSquare size={18} className={activeTab === "chat" ? "text-white" : "text-zinc-700"} />
-                    <span>Chat</span>
+                    {sidebarCollapsed ? null : <span>Chat</span>}
                   </span>
                 </button>
               </div>

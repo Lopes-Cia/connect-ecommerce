@@ -90,16 +90,16 @@ export default function ProductSummary({
           >
             <div className="text-custom-dark-1000 font-montserrat text-xs font-semibold">Marca</div>
             <div className="min-w-0 flex items-center gap-2">
+              <div className="truncate text-custom-light-700 font-montserrat text-xs">{brandName}</div>
               {brandImageSrc ? (
-                <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded border border-custom-light-400 bg-white">
+                <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded border border-custom-light-400 bg-white">
                   {shouldDisableOptimization(brandImageSrc) ? (
-                    <img src={brandImageSrc} alt={brandName} width={20} height={20} className="h-full w-full object-contain" />
+                    <img src={brandImageSrc} alt={brandName} width={56} height={56} className="h-full w-full object-contain" />
                   ) : (
-                    <Image src={brandImageSrc} alt={brandName} fill className="object-contain" sizes="20px" />
+                    <Image src={brandImageSrc} alt={brandName} fill className="object-contain" sizes="56px" />
                   )}
                 </span>
               ) : null}
-              <div className="truncate text-custom-light-700 font-montserrat text-xs">{brandName}</div>
             </div>
           </Link>
         ) : null}

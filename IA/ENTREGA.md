@@ -1,3 +1,6 @@
+Exemplo prático de busca: "7891991307048" portaria pmpf
+
+
 ## Mix de produtos
 
 - Atualizar os produtos que vão ser comercializados no e-commerce.

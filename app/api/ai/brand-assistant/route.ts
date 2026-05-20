@@ -398,6 +398,108 @@ async function runImageScraperTermDownload(params: {
   });
 }
 
+async function runImageScraperTermResolveViaMcp(params: {
+  term: string;
+  count: number;
+  profile: "logo" | "generic";
+}): Promise<{ ok: boolean; json: unknown | null; stdout: string; stderr: string; code: number | null }> {
+  const repoRoot = process.cwd();
+  const serverRoot = path.join(repoRoot, "MICROSERVICES", "image-scraper-mcp-server");
+  const serverEntry = path.join(serverRoot, "dist", "index.js");
+
+  try {
+    const st = await fs.stat(serverEntry);
+    if (!st.isFile()) {
+      return { ok: false, json: null, stdout: "", stderr: `mcp_entry_not_found:${serverEntry}`, code: null };
+    }
+  } catch (err) {
+    return { ok: false, json: null, stdout: "", stderr: err instanceof Error ? err.message : "mcp_entry_not_found", code: null };
+  }
+
+  const isLogo = params.profile === "logo";
+  const queries = isLogo
+    ? [`${params.term} logo`, `logo ${params.term} png`, `${params.term} logotipo`]
+    : [params.term];
+
+  const toolArgs = {
+    name: params.term,
+    queries,
+    count: params.count,
+    localFirst: true,
+    localKind: isLogo ? "logo" : "image",
+  };
+
+  const script = [
+    "import process from 'node:process';",
+    "import { Client } from '@modelcontextprotocol/sdk/client/index.js';",
+    "import { StdioClientTransport, getDefaultEnvironment } from '@modelcontextprotocol/sdk/client/stdio.js';",
+    "const serverEntry = process.env.MCP_SERVER_ENTRY || '';",
+    "const toolName = process.env.MCP_TOOL_NAME || '';",
+    "const rawArgs = process.env.MCP_TOOL_ARGS_JSON || '{}';",
+    "if (!serverEntry || !toolName) { throw new Error('mcp_missing_env'); }",
+    "const toolArgs = JSON.parse(rawArgs);",
+    "const transport = new StdioClientTransport({",
+    "  command: process.execPath,",
+    "  args: [serverEntry],",
+    "  cwd: process.cwd(),",
+    "  env: { ...getDefaultEnvironment(), ...process.env, IMAGE_SCRAPER_MCP_ENABLED: '1' },",
+    "  stderr: 'inherit',",
+    "});",
+    "const client = new Client({ name: 'connect-img', version: '1.0.0' }, { capabilities: {} });",
+    "await client.connect(transport);",
+    "try {",
+    "  const result = await client.callTool({ name: toolName, arguments: toolArgs });",
+    "  const sc = result && typeof result === 'object' && 'structuredContent' in result ? result.structuredContent : null;",
+    "  console.log(JSON.stringify(sc ?? result, null, 2));",
+    "} finally {",
+    "  await transport.close().catch(() => {});",
+    "}",
+  ].join("\n");
+
+  return await new Promise((resolve) => {
+    const child = spawn(process.execPath, ["--input-type=module", "-e", script], {
+      cwd: serverRoot,
+      env: {
+        ...process.env,
+        MCP_SERVER_ENTRY: serverEntry,
+        MCP_TOOL_NAME: "image_scraper_term_resolve",
+        MCP_TOOL_ARGS_JSON: JSON.stringify(toolArgs),
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    let stdout = "";
+    let stderr = "";
+    const limit = 1_000_000;
+
+    const push = (current: string, chunk: Buffer) => {
+      if (current.length >= limit) return current;
+      const next = current + chunk.toString("utf8");
+      if (next.length <= limit) return next;
+      return next.slice(0, limit);
+    };
+
+    const timeout = setTimeout(() => {
+      child.kill();
+      resolve({ ok: false, json: null, stdout, stderr, code: null });
+    }, 60_000);
+
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdout = push(stdout, chunk);
+    });
+    child.stderr.on("data", (chunk: Buffer) => {
+      stderr = push(stderr, chunk);
+    });
+
+    child.on("close", (code) => {
+      clearTimeout(timeout);
+      const json = extractLastJsonObject(stdout);
+      const ok = code === 0 && Boolean(json && typeof json === "object" && "ok" in (json as Record<string, unknown>));
+      resolve({ ok, json, stdout, stderr, code });
+    });
+  });
+}
+
 async function handleImageScraperCommand(rawMessage: string): Promise<ImageScraperCommandResult> {
   if (process.env.IMAGE_SCRAPER_ENABLED !== "1") {
     return {
@@ -449,6 +551,15 @@ async function handleImageScraperCommand(rawMessage: string): Promise<ImageScrap
 
   const term = tokens.join(" ").trim();
   if (!term) return { ok: false, answer: 'Uso: /img [logo|generic] "<termo>" [--count N]' };
+
+  const mcp = await runImageScraperTermResolveViaMcp({ term, count, profile });
+  if (mcp.ok && mcp.json && typeof mcp.json === "object") {
+    const merged = { ...(mcp.json as Record<string, unknown>), term, profile, countRequested: count };
+    return {
+      ok: true,
+      answer: `OK\n\n${JSON.stringify(merged, null, 2)}`,
+    };
+  }
 
   const result = await runImageScraperTermDownload({ term, count, profile });
   if (!result.ok) {
