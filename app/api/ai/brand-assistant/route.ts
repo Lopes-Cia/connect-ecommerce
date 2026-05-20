@@ -39,6 +39,13 @@ type ImageScraperCommandResult = {
   answer: string;
 };
 
+function extractFirstImgCommand(value: string): string | null {
+  const text = String(value ?? "");
+  const match = text.match(/(?:^|\n)\s*(\/img\b[^\n]*)/i);
+  if (!match?.[1]) return null;
+  return match[1].trim();
+}
+
 function tryParseJson(value: string): unknown | null {
   try {
     return JSON.parse(value) as unknown;
@@ -421,7 +428,10 @@ async function handleImageScraperCommand(rawMessage: string): Promise<ImageScrap
   const tokens = tokensRaw.map(unquoteToken);
 
   let profile: "logo" | "generic" = "generic";
-  if (tokens[0] && (tokens[0].toLowerCase() === "logo" || tokens[0].toLowerCase() === "generic")) {
+  if (
+    tokens[0] &&
+    (tokens[0].toLowerCase() === "logo" || tokens[0].toLowerCase() === "generic" || tokens[0].toLowerCase() === "produto")
+  ) {
     profile = tokens[0].toLowerCase() === "logo" ? "logo" : "generic";
     tokens.shift();
   }
@@ -520,6 +530,15 @@ Use obrigatoriamente o contexto do repositório abaixo quando a pergunta envolve
 CONTEXTO DO REPOSITÓRIO:
 ${assistantContext}
 
+Ferramenta de imagens (quando o usuário pedir imagens/logo/fotos de produto):
+- Você pode solicitar o scraper de imagens retornando UM comando (uma única linha) no formato:
+  - /img produto "<query>" --count N
+  - /img logo "<query>" --count N
+- Use "produto" para fotos do produto (fundo branco, packshot). Use "logo" para logo de marca.
+- Gere o <query> a partir do pedido do usuário + dados da página atual quando útil (nome/sku/slug).
+- N é a quantidade de imagens pedida pelo usuário. Se não houver quantidade explícita: N=3 para produto e N=1 para logo.
+- Se você retornar um comando /img, não inclua texto extra (apenas a linha do comando), para permitir execução automática.
+
 Comportamento principal:
 - converse normalmente com o usuário
 - responda cumprimentos como "oi", "olá", "bom dia"
@@ -593,6 +612,12 @@ ${message}
       "Não consegui responder agora.";
 
     console.log("[AI API] Final answer", answer);
+
+    const imgCommand = extractFirstImgCommand(String(answer ?? ""));
+    if (imgCommand) {
+      const toolResult = await handleImageScraperCommand(imgCommand);
+      return Response.json({ answer: toolResult.answer }, { status: toolResult.ok ? 200 : 400 });
+    }
 
     return Response.json({
       answer,

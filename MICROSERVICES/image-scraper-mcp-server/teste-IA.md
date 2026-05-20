@@ -45,3 +45,7 @@ Leve em consideração que a imagem do produto vai ser usada em um ecommerce onl
 
 
 para extrair essas imagens, use o MCP image-scraper
+
+
+
+/img logo "Original cerveja" --count 1

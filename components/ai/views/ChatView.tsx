@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ImageScraperResultView from "@/components/ai/views/ImageScraperResult";
+import ProductImageScraperButton from "@/components/ai/views/ProductImageScraperButton";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -32,12 +33,14 @@ export default function ChatView({
   message,
   setMessage,
   sendMessage,
+  contratoRaw,
 }: {
   messages: ChatMessage[];
   loading: boolean;
   message: string;
   setMessage: (value: string) => void;
-  sendMessage: () => Promise<void>;
+  sendMessage: (customMessage?: string) => Promise<void>;
+  contratoRaw: unknown | null;
 }) {
   return (
     <>
@@ -47,6 +50,7 @@ export default function ChatView({
             <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-4">
               <p className="text-sm font-semibold text-zinc-900">Como posso ajudar?</p>
               <p className="mt-1 text-xs text-zinc-600">Pergunte sobre a página atual (texto e imagens).</p>
+              <ProductImageScraperButton contratoRaw={contratoRaw} loading={loading} sendMessage={sendMessage} />
             </div>
           ) : null}
 

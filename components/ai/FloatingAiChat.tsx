@@ -318,7 +318,8 @@ export default function FloatingAiChat() {
                   loading={loading}
                   message={message}
                   setMessage={setMessage}
-                  sendMessage={() => sendMessage()}
+                  sendMessage={sendMessage}
+                  contratoRaw={contratoRaw}
                 />
               ) : activeTab === "contexto" ? (
                 <ContextoView
