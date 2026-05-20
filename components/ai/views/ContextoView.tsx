@@ -183,7 +183,7 @@ export default function ContextoView({
       return { ok: true as const, divergencias: [] as typeof divergencias };
     }
 
-    setSyncRawAction(() => async () => {
+    setSyncRawAction(async () => {
       const patch = pickProdutoSubset(contratoRaw);
       const response = await fetch("/api/dev/redis/catalog/produto/sync-raw", {
         method: "POST",
