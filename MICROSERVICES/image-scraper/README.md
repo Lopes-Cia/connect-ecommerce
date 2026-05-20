@@ -2,6 +2,11 @@
 
 Coleta imagens de produtos e atualiza JSON local, sem usar MOCK-END e sem tenant.
 
+## MCP (opcional)
+
+Este microservice também está exposto como tool MCP (stdio) via:
+- `MICROSERVICES/image-scraper-mcp-server` (tool: `image_scraper_term_download`)
+
 ## Estrutura esperada
 
 - `data/input/produtos.json` (entrada)

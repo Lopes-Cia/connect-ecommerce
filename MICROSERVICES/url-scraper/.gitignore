@@ -1,0 +1,6 @@
+node_modules/
+.env
+
+data/output/*.json
+data/assets/files/*
+!data/assets/files/.gitkeep

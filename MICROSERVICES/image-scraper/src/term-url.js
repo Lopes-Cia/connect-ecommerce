@@ -69,11 +69,10 @@ function buildQueries({ term, profile, preferTransparent }) {
   return ordered.map((q) => q.trim()).filter(Boolean);
 }
 
-export async function findImageUrlsForTerm({ term, count, profile, preferTransparent }) {
-  const baseTerm = String(term || "").trim();
+export async function findImageUrlsForQueries({ queries, count }) {
   const n = Number.isFinite(Number(count)) ? Math.max(1, Math.min(20, Number(count))) : 3;
-  const queries = buildQueries({ term: baseTerm, profile, preferTransparent: preferTransparent !== false });
-  if (!queries.length) return { ok: false, term: baseTerm, urls: [], providers: [], queries: [] };
+  const normalizedQueries = Array.isArray(queries) ? queries.map((q) => String(q || "").trim()).filter(Boolean) : [];
+  if (!normalizedQueries.length) return { ok: false, urls: [], providers: [], queries: [] };
 
   const ua =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
@@ -82,7 +81,7 @@ export async function findImageUrlsForTerm({ term, count, profile, preferTranspa
   const providers = [];
   const seen = new Set();
 
-  for (const query of queries) {
+  for (const query of normalizedQueries) {
     if (urls.length >= n) break;
     try {
       const vqd = await getVqdForQuery({ query, ua });
@@ -111,7 +110,7 @@ export async function findImageUrlsForTerm({ term, count, profile, preferTranspa
   }
 
   if (urls.length < n) {
-    for (const query of queries) {
+    for (const query of normalizedQueries) {
       if (urls.length >= n) break;
 
       let browser = null;
@@ -157,5 +156,12 @@ export async function findImageUrlsForTerm({ term, count, profile, preferTranspa
     }
   }
 
-  return { ok: urls.length > 0, term: baseTerm, urls, providers, queries };
+  return { ok: urls.length > 0, urls, providers, queries: normalizedQueries };
+}
+
+export async function findImageUrlsForTerm({ term, count, profile, preferTransparent }) {
+  const baseTerm = String(term || "").trim();
+  const queries = buildQueries({ term: baseTerm, profile, preferTransparent: preferTransparent !== false });
+  const found = await findImageUrlsForQueries({ queries, count });
+  return { ...found, term: baseTerm };
 }
