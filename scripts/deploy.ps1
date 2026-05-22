@@ -77,7 +77,6 @@ try {
 
 try {
   git merge --quiet --ff-only origin/main 2>$null | Out-Null
-  git push --quiet origin develop 2>$null | Out-Null
 } catch {
   FailReason $ReasonBehind
 }
