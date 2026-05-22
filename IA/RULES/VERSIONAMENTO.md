@@ -38,6 +38,7 @@ Garantir previsibilidade e segurança:
 ### Pipeline fixo — Quando você disser “faz o deploy”
 - Objetivo: sempre repetir o mesmo ritual, sem variação.
 - Regra: deploy em produção = merge na `main` (GitHub Actions faz o deploy automático).
+- Nota (importante): por segurança, o IDE pode ocultar arquivos `.env` do assistente. Então a “checagem de env” não depende de listar/abrir o arquivo no editor, e sim de validar existência via comando (sem exibir conteúdo).
 - Checklist rápido (antes de começar):
   - Você pediu explicitamente “faz o deploy”.
   - `develop` está em dia e validado.
