@@ -15,6 +15,22 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+      - name: Install deps (MICROSERVICES + REDIS)
+        run: |
+          set -eu
+          shopt -s nullglob
+          for dir in MICROSERVICES/* REDIS; do
+            if [ -f "$dir/package.json" ]; then
+              if [ -f "$dir/package-lock.json" ]; then
+                npm ci --prefix "$dir"
+              else
+                npm install --prefix "$dir"
+              fi
+            fi
+          done
+          if [ -f "MICROSERVICES/image-scraper-mcp-server/package.json" ]; then
+            npm run build --prefix "MICROSERVICES/image-scraper-mcp-server"
+          fi
       - run: npm ci
       - run: npm run lint
       - run: npm run build
@@ -62,6 +78,49 @@ jobs:
               exit 1
             fi
             chmod 600 .env
+
+            if [ -d "REDIS" ]; then
+              if [ ! -f "REDIS/.env" ]; then
+                echo "Arquivo REDIS/.env não encontrado no servidor. Copie o REDIS/.env via SSH (scp) antes de rodar o deploy."
+                exit 1
+              fi
+              chmod 600 "REDIS/.env"
+            fi
+
+            install_if_needed() {
+              dir="$1"
+              if [ ! -f "$dir/package.json" ]; then
+                return 0
+              fi
+              if [ -f "$dir/package-lock.json" ]; then
+                changed="$(git diff --name-only "$PREV..HEAD" -- "$dir/package-lock.json" "$dir/package.json" 2>/dev/null || true)"
+              else
+                changed="$(git diff --name-only "$PREV..HEAD" -- "$dir/package.json" 2>/dev/null || true)"
+              fi
+              if [ ! -d "$dir/node_modules" ] || echo "$changed" | grep -q .; then
+                if [ -f "$dir/package-lock.json" ]; then
+                  npm ci --prefix "$dir"
+                else
+                  npm install --prefix "$dir"
+                fi
+              fi
+            }
+
+            install_if_needed "REDIS"
+            if [ -d "MICROSERVICES" ]; then
+              for dir in MICROSERVICES/*; do
+                if [ -d "$dir" ]; then
+                  install_if_needed "$dir"
+                fi
+              done
+            fi
+
+            MCP_DIR="MICROSERVICES/image-scraper-mcp-server"
+            if [ -f "$MCP_DIR/package.json" ]; then
+              if [ ! -d "$MCP_DIR/dist" ] || git diff --name-only "$PREV..HEAD" -- "$MCP_DIR/" | grep -q .; then
+                npm run build --prefix "$MCP_DIR"
+              fi
+            fi
 
             if [ ! -d node_modules ] || git diff --name-only "$PREV..HEAD" -- package-lock.json package.json | grep -q .; then
               npm ci
