@@ -6,11 +6,15 @@ param(
   [switch]$Restart,
 
   [ValidateSet("sim", "não", "nao")]
-  [string]$ApproveMerge
+  [string]$ApproveMerge,
+
+  [switch]$Explain
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+$FailureContext = ""
 
 function FailReason([string]$Reason, [string]$PrUrl = "") {
   if ($Reason -eq "Develop divergiu" -and $PrUrl) {
@@ -19,6 +23,9 @@ function FailReason([string]$Reason, [string]$PrUrl = "") {
     exit 1
   }
   [Console]::Error.WriteLine($Reason)
+  if ($Explain -and $FailureContext) {
+    [Console]::Error.WriteLine("ref: $FailureContext")
+  }
   exit 1
 }
 
@@ -27,6 +34,7 @@ if ($Command -eq "help") {
   Write-Output "  pwsh scripts/deploy.ps1 run"
   Write-Output "  pwsh scripts/deploy.ps1 run -Restart"
   Write-Output "  pwsh scripts/deploy.ps1 run -ApproveMerge <sim|nao>"
+  Write-Output "  pwsh scripts/deploy.ps1 run -Explain"
   Write-Output ""
   Write-Output "Ritual (determinístico):"
   Write-Output "  1) Guardrails strict (develop + repo limpo + anti-surpresa com origin/main + gh ok + ssh ok)"
@@ -60,22 +68,30 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { FailReason $ReasonGh 
 
 $Branch = (git rev-parse --abbrev-ref HEAD).Trim()
 if ($Branch -ne "develop") {
+  $FailureContext = "branch=$Branch"
   FailReason $ReasonBranch
 }
 
 $Status = (git status --porcelain)
 if ($Status -and $Status.Trim().Length -gt 0) {
+  $StatusLines = $Status -split "`n" | Where-Object { $_ -and $_.Trim().Length -gt 0 }
+  $SampleCount = [Math]::Min(8, $StatusLines.Count)
+  $Sample = ($StatusLines | Select-Object -First $SampleCount) -join "; "
+  $FailureContext = "changed=$($StatusLines.Count) sample=$Sample"
   FailReason $ReasonDirty
 }
 
 try {
+  $FailureContext = "git: fetch origin develop/main"
   git fetch --quiet --prune origin develop main 2>$null | Out-Null
+  $FailureContext = "git: pull --ff-only origin develop"
   git pull --quiet --ff-only origin develop 2>$null | Out-Null
 } catch {
   FailReason $ReasonBehind
 }
 
 try {
+  $FailureContext = "git: merge --ff-only origin/main -> develop"
   git merge --quiet --ff-only origin/main 2>$null | Out-Null
 } catch {
   FailReason $ReasonBehind
@@ -83,6 +99,10 @@ try {
 
 git merge-base --is-ancestor origin/main HEAD
 if ($LASTEXITCODE -ne 0) {
+  $HeadSha = (git rev-parse HEAD).Trim()
+  $MainSha = (git rev-parse origin/main).Trim()
+  $Counts = (git rev-list --left-right --count HEAD...origin/main).Trim()
+  $FailureContext = "develop_head=$HeadSha origin_main=$MainSha ahead/behind=$Counts"
   FailReason $ReasonBehind
 }
 

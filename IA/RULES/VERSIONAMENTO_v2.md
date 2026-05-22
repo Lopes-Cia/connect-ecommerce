@@ -38,12 +38,19 @@ Nota de alinhamento (v2):
 - Comando: `npm run deploy`
 - Interação permitida: somente o checkpoint do merge (sim/não) após checks verdes.
 
+Parâmetros suportados (para padronizar o debug sem “achismo”):
+- Diagnóstico do motivo (mantém o motivo curto e acrescenta referência): `npm run deploy -- -Explain`
+- Reinício do app no VPS via env push (somente quando você quiser): `npm run deploy -- -Restart`
+- Aprovação não-interativa do merge (para rodar sem prompt): `npm run deploy -- -ApproveMerge sim`
+
 ## 5) Fluxo fixo (ordem não muda)
 
 1) Guardrails (strict, fail-fast):
    - branch atual deve ser `develop`
    - working tree deve estar limpa
+   - atualizar refs de git buscando somente `origin` (nunca `fetch --all`) para evitar ruído de remotes locais (ex.: `mdk-elis/*`)
    - `develop` deve conter `origin/main` (anti-surpresa)
+     - implementação: aplicar `merge --ff-only origin/main` localmente e abortar se não for possível (sem “resolver conflito” automaticamente)
    - ferramentas obrigatórias devem existir: `pwsh`, `git`, `npm`, `ssh`, `scp`, `gh`
    - `gh` deve estar autenticado sem browser/device flow (se falhar, aborta)
    - SSH deve funcionar (pré-requisito mínimo do VPS)
@@ -84,6 +91,10 @@ Nota de alinhamento (v2):
 - PR com conflito → `Merge conflito`
 - falha ao fechar PR automaticamente → `Falha fechar PR`
 - pós-produção fast-forward falhou → `Develop divergiu`
+
+Modo de referência (debug):
+- Por padrão, o comando imprime apenas o motivo.
+- Com `-Explain`, além do motivo imprime uma linha `ref:` com o contexto técnico (etapa e/ou SHAs e ahead/behind) para evitar “debug no escuro”.
 
 ## 8) Protocolo de testes do ritual (para considerar “pronto”)
 
