@@ -62,8 +62,9 @@ Parâmetros suportados (para padronizar o debug sem “achismo”):
    - se existir PR `develop → main` aberto: fechar e criar um novo PR
 
 4) Checks:
-   - esperar até ficar verde
-   - se falhar: abortar e fechar PR (comentário curto padrão)
+   - este repositório não reporta checks em PR (statusCheckRollup = 0 é esperado)
+   - regra do ritual: se não houver checks, tratar como `checks: NONE` e seguir para o gate do merge
+   - se houver checks e algum falhar: abortar e fechar PR (comentário curto padrão)
 
 5) Merge (gate humano em fluxo):
    - quando os checks estiverem verdes, perguntar: “Merge pronto para executar via gh. Aprova? (sim/não)”

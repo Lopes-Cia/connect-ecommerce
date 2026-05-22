@@ -40,7 +40,7 @@ if ($Command -eq "help") {
   Write-Output "  1) Guardrails strict (develop + repo limpo + anti-surpresa com origin/main + gh ok + ssh ok)"
   Write-Output "  2) Push de env no VPS (npm run vps:env:push)"
   Write-Output "  3) Fechar PR aberto (se existir) e criar novo PR develop -> main via gh"
-  Write-Output "  4) Esperar checks ficarem verdes (se falhar, fecha PR)"
+  Write-Output "  4) Checks: se não houver checks reportados, segue (checks: NONE); se houver, espera ficar verde (se falhar, fecha PR)"
   Write-Output "  5) Gate: 'Aprova? (sim/não)' e merge via gh"
   Write-Output "  6) Pós: fast-forward automático do develop para igualar main"
   exit 0
@@ -171,22 +171,36 @@ if ($MergeState -eq "DIRTY" -or $MergeState -eq "BLOCKED") {
   FailReason $ReasonConflict
 }
 
+$ChecksCount = ""
 try {
-  gh pr checks $PrNumber --watch | Out-Null
+  $FailureContext = "gh: statusCheckRollup length"
+  $ChecksCount = (gh pr view $PrNumber --json statusCheckRollup --jq '.statusCheckRollup | length').Trim()
 } catch {
-  try { gh pr close $PrNumber -c $CloseCommentChecks | Out-Null } catch { FailReason $ReasonClosePr }
-  FailReason $ReasonChecks
+  FailReason $ReasonGh
 }
-if ($LASTEXITCODE -ne 0) {
-  try { gh pr close $PrNumber -c $CloseCommentChecks | Out-Null } catch { FailReason $ReasonClosePr }
-  FailReason $ReasonChecks
+
+$ChecksLabel = "GREEN"
+if ($ChecksCount -eq "0") {
+  $ChecksLabel = "NONE"
+} else {
+  try {
+    $FailureContext = "gh: pr checks --watch (count=$ChecksCount)"
+    gh pr checks $PrNumber --watch | Out-Null
+  } catch {
+    try { gh pr close $PrNumber -c $CloseCommentChecks | Out-Null } catch { FailReason $ReasonClosePr }
+    FailReason $ReasonChecks
+  }
+  if ($LASTEXITCODE -ne 0) {
+    try { gh pr close $PrNumber -c $CloseCommentChecks | Out-Null } catch { FailReason $ReasonClosePr }
+    FailReason $ReasonChecks
+  }
 }
 
 $CommitSha = (git rev-parse HEAD).Trim()
 Write-Output "branch: develop"
 Write-Output "sha: $CommitSha"
 Write-Output "PR: $PrUrl"
-Write-Output "checks: GREEN"
+Write-Output "checks: $ChecksLabel"
 
 $Approval = ""
 if ($ApproveMerge) {
