@@ -69,8 +69,8 @@ if ($Status -and $Status.Trim().Length -gt 0) {
 }
 
 try {
-  git fetch --all --prune | Out-Null
-  git pull --ff-only origin develop | Out-Null
+  git fetch --quiet --prune origin develop main 2>$null | Out-Null
+  git pull --quiet --ff-only origin develop 2>$null | Out-Null
 } catch {
   FailReason $ReasonBehind
 }
@@ -182,11 +182,11 @@ try {
 }
 
 try {
-  git fetch origin main --prune | Out-Null
+  git fetch --quiet --prune origin main 2>$null | Out-Null
   $MainSha = (git rev-parse origin/main).Trim()
-  git pull --ff-only origin develop | Out-Null
-  git merge --ff-only origin/main | Out-Null
-  git push origin develop | Out-Null
+  git pull --quiet --ff-only origin develop 2>$null | Out-Null
+  git merge --quiet --ff-only origin/main 2>$null | Out-Null
+  git push --quiet origin develop 2>$null | Out-Null
 } catch {
   FailReason $ReasonDiverged $PrUrl
 }
