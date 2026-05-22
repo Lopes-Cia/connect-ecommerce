@@ -45,13 +45,22 @@ if (-not (Get-Command ssh -ErrorAction SilentlyContinue)) {
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $EnvFile = Join-Path $RepoRoot ".env"
+$RedisEnvFile = Join-Path $RepoRoot "REDIS\.env"
 
 if (-not (Test-Path -Path $EnvFile -PathType Leaf)) {
   Write-Error ".env não encontrado em $EnvFile"
   exit 1
 }
 
+if (-not (Test-Path -Path $RedisEnvFile -PathType Leaf)) {
+  Write-Error "REDIS/.env não encontrado em $RedisEnvFile"
+  exit 1
+}
+
 scp -P $Port $EnvFile "$User@$SshHost`:/tmp/connect-ecommerce.env"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+scp -P $Port $RedisEnvFile "$User@$SshHost`:/tmp/connect-ecommerce.redis.env"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $RestartCmd = ""
@@ -72,6 +81,10 @@ cd "{2}"
 mv /tmp/connect-ecommerce.env .env
 sed -i 's/\r$//' .env
 chmod 600 .env
+mkdir -p REDIS
+mv /tmp/connect-ecommerce.redis.env REDIS/.env
+sed -i 's/\r$//' REDIS/.env
+chmod 600 REDIS/.env
 {3}
 '@ -f $User, $NodeVersion, $AppDir, $RestartCmd
 

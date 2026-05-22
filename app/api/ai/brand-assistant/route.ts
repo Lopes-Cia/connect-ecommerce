@@ -500,6 +500,39 @@ async function runImageScraperTermResolveViaMcp(params: {
   });
 }
 
+function formatImageScraperFailure(input: { details: string; mcpDetails?: string }) {
+  const details = String(input.details ?? "").trim();
+  const mcpDetails = String(input.mcpDetails ?? "").trim();
+
+  const pkgMatch = (details || mcpDetails).match(/Cannot find package '([^']+)'/);
+  if (pkgMatch?.[1]) {
+    const pkg = pkgMatch[1];
+    const extra = [mcpDetails, details].filter(Boolean).join("\n\n");
+    return [
+      "Falha ao executar image-scraper.",
+      "",
+      `Dependência ausente: ${pkg}.`,
+      'Ação: executar "npm install" em MICROSERVICES/image-scraper no ambiente do servidor (ou configurar o projeto para instalar as dependências desse microservice).',
+      extra ? `\n\n${extra}` : "",
+    ].join("\n");
+  }
+
+  const mcpEntryMatch = mcpDetails.match(/mcp_entry_not_found:(.+)$/m);
+  if (mcpEntryMatch?.[1]) {
+    const entry = mcpEntryMatch[1].trim();
+    const extra = details ? `\n\n${details}` : "";
+    return [
+      "Falha ao executar image-scraper.",
+      "",
+      `MCP server não encontrado: ${entry}`,
+      extra,
+    ].join("\n");
+  }
+
+  const extra = [mcpDetails, details].filter(Boolean).join("\n\n");
+  return ["Falha ao executar image-scraper.", extra ? `\n\n${extra}` : ""].join("");
+}
+
 async function handleImageScraperCommand(rawMessage: string): Promise<ImageScraperCommandResult> {
   if (process.env.IMAGE_SCRAPER_ENABLED !== "1") {
     return {
@@ -553,6 +586,7 @@ async function handleImageScraperCommand(rawMessage: string): Promise<ImageScrap
   if (!term) return { ok: false, answer: 'Uso: /img [logo|generic] "<termo>" [--count N]' };
 
   const mcp = await runImageScraperTermResolveViaMcp({ term, count, profile });
+  const mcpDetails = mcp.stderr.trim() || mcp.stdout.trim();
   if (mcp.ok && mcp.json && typeof mcp.json === "object") {
     const merged = { ...(mcp.json as Record<string, unknown>), term, profile, countRequested: count };
     return {
@@ -566,7 +600,7 @@ async function handleImageScraperCommand(rawMessage: string): Promise<ImageScrap
     const details = result.stderr.trim() || result.stdout.trim();
     return {
       ok: false,
-      answer: ["Falha ao executar image-scraper.", details ? `\n\n${details}` : ""].join(""),
+      answer: formatImageScraperFailure({ details, mcpDetails }),
     };
   }
 
@@ -595,12 +629,16 @@ export async function POST(request: Request) {
 
     if (typeof message === "string" && message.trim().toLowerCase().startsWith("/redis")) {
       const result = await handleRedisCommand(message);
-      return Response.json({ answer: result.answer }, { status: result.ok ? 200 : 400 });
+      return Response.json(result.ok ? { answer: result.answer } : { error: result.answer }, {
+        status: result.ok ? 200 : 400,
+      });
     }
 
     if (typeof message === "string" && message.trim().toLowerCase().startsWith("/img")) {
       const result = await handleImageScraperCommand(message);
-      return Response.json({ answer: result.answer }, { status: result.ok ? 200 : 400 });
+      return Response.json(result.ok ? { answer: result.answer } : { error: result.answer }, {
+        status: result.ok ? 200 : 400,
+      });
     }
 
     const assistantContext = await loadAssistantContext();
@@ -727,7 +765,9 @@ ${message}
     const imgCommand = extractFirstImgCommand(String(answer ?? ""));
     if (imgCommand) {
       const toolResult = await handleImageScraperCommand(imgCommand);
-      return Response.json({ answer: toolResult.answer }, { status: toolResult.ok ? 200 : 400 });
+      return Response.json(toolResult.ok ? { answer: toolResult.answer } : { error: toolResult.answer }, {
+        status: toolResult.ok ? 200 : 400,
+      });
     }
 
     return Response.json({
