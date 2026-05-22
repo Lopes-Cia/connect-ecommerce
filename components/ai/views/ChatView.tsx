@@ -50,7 +50,7 @@ export default function ChatView({
             <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-4">
               <p className="text-sm font-semibold text-zinc-900">Como posso ajudar?</p>
               <p className="mt-1 text-xs text-zinc-600">Pergunte sobre a página atual (texto e imagens).</p>
-              <ProductImageScraperButton contratoRaw={contratoRaw} loading={loading} sendMessage={sendMessage} />
+              {/* <ProductImageScraperButton contratoRaw={contratoRaw} loading={loading} sendMessage={sendMessage} /> */}
             </div>
           ) : null}
 

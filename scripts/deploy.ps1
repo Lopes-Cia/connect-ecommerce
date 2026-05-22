@@ -6,11 +6,15 @@ param(
   [switch]$Restart,
 
   [ValidateSet("sim", "não", "nao")]
-  [string]$ApproveMerge
+  [string]$ApproveMerge,
+
+  [switch]$Explain
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+$FailureContext = ""
 
 function FailReason([string]$Reason, [string]$PrUrl = "") {
   if ($Reason -eq "Develop divergiu" -and $PrUrl) {
@@ -19,6 +23,9 @@ function FailReason([string]$Reason, [string]$PrUrl = "") {
     exit 1
   }
   [Console]::Error.WriteLine($Reason)
+  if ($Explain -and $FailureContext) {
+    [Console]::Error.WriteLine("ref: $FailureContext")
+  }
   exit 1
 }
 
@@ -27,12 +34,13 @@ if ($Command -eq "help") {
   Write-Output "  pwsh scripts/deploy.ps1 run"
   Write-Output "  pwsh scripts/deploy.ps1 run -Restart"
   Write-Output "  pwsh scripts/deploy.ps1 run -ApproveMerge <sim|nao>"
+  Write-Output "  pwsh scripts/deploy.ps1 run -Explain"
   Write-Output ""
   Write-Output "Ritual (determinístico):"
   Write-Output "  1) Guardrails strict (develop + repo limpo + anti-surpresa com origin/main + gh ok + ssh ok)"
   Write-Output "  2) Push de env no VPS (npm run vps:env:push)"
   Write-Output "  3) Fechar PR aberto (se existir) e criar novo PR develop -> main via gh"
-  Write-Output "  4) Esperar checks ficarem verdes (se falhar, fecha PR)"
+  Write-Output "  4) Checks: se não houver checks reportados, segue (checks: NONE); se houver, espera ficar verde (se falhar, fecha PR)"
   Write-Output "  5) Gate: 'Aprova? (sim/não)' e merge via gh"
   Write-Output "  6) Pós: fast-forward automático do develop para igualar main"
   exit 0
@@ -60,23 +68,41 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { FailReason $ReasonGh 
 
 $Branch = (git rev-parse --abbrev-ref HEAD).Trim()
 if ($Branch -ne "develop") {
+  $FailureContext = "branch=$Branch"
   FailReason $ReasonBranch
 }
 
 $Status = (git status --porcelain)
 if ($Status -and $Status.Trim().Length -gt 0) {
+  $StatusLines = $Status -split "`n" | Where-Object { $_ -and $_.Trim().Length -gt 0 }
+  $SampleCount = [Math]::Min(8, $StatusLines.Count)
+  $Sample = ($StatusLines | Select-Object -First $SampleCount) -join "; "
+  $FailureContext = "changed=$($StatusLines.Count) sample=$Sample"
   FailReason $ReasonDirty
 }
 
 try {
-  git fetch --all --prune | Out-Null
-  git pull --ff-only origin develop | Out-Null
+  $FailureContext = "git: fetch origin develop/main"
+  git fetch --quiet --prune origin develop main 2>$null | Out-Null
+  $FailureContext = "git: pull --ff-only origin develop"
+  git pull --quiet --ff-only origin develop 2>$null | Out-Null
+} catch {
+  FailReason $ReasonBehind
+}
+
+try {
+  $FailureContext = "git: merge --ff-only origin/main -> develop"
+  git merge --quiet --ff-only origin/main 2>$null | Out-Null
 } catch {
   FailReason $ReasonBehind
 }
 
 git merge-base --is-ancestor origin/main HEAD
 if ($LASTEXITCODE -ne 0) {
+  $HeadSha = (git rev-parse HEAD).Trim()
+  $MainSha = (git rev-parse origin/main).Trim()
+  $Counts = (git rev-list --left-right --count HEAD...origin/main).Trim()
+  $FailureContext = "develop_head=$HeadSha origin_main=$MainSha ahead/behind=$Counts"
   FailReason $ReasonBehind
 }
 
@@ -145,22 +171,36 @@ if ($MergeState -eq "DIRTY" -or $MergeState -eq "BLOCKED") {
   FailReason $ReasonConflict
 }
 
+$ChecksCount = ""
 try {
-  gh pr checks $PrNumber --watch | Out-Null
+  $FailureContext = "gh: statusCheckRollup length"
+  $ChecksCount = (gh pr view $PrNumber --json statusCheckRollup --jq '.statusCheckRollup | length').Trim()
 } catch {
-  try { gh pr close $PrNumber -c $CloseCommentChecks | Out-Null } catch { FailReason $ReasonClosePr }
-  FailReason $ReasonChecks
+  FailReason $ReasonGh
 }
-if ($LASTEXITCODE -ne 0) {
-  try { gh pr close $PrNumber -c $CloseCommentChecks | Out-Null } catch { FailReason $ReasonClosePr }
-  FailReason $ReasonChecks
+
+$ChecksLabel = "GREEN"
+if ($ChecksCount -eq "0") {
+  $ChecksLabel = "NONE"
+} else {
+  try {
+    $FailureContext = "gh: pr checks --watch (count=$ChecksCount)"
+    gh pr checks $PrNumber --watch | Out-Null
+  } catch {
+    try { gh pr close $PrNumber -c $CloseCommentChecks | Out-Null } catch { FailReason $ReasonClosePr }
+    FailReason $ReasonChecks
+  }
+  if ($LASTEXITCODE -ne 0) {
+    try { gh pr close $PrNumber -c $CloseCommentChecks | Out-Null } catch { FailReason $ReasonClosePr }
+    FailReason $ReasonChecks
+  }
 }
 
 $CommitSha = (git rev-parse HEAD).Trim()
 Write-Output "branch: develop"
 Write-Output "sha: $CommitSha"
 Write-Output "PR: $PrUrl"
-Write-Output "checks: GREEN"
+Write-Output "checks: $ChecksLabel"
 
 $Approval = ""
 if ($ApproveMerge) {
@@ -182,11 +222,11 @@ try {
 }
 
 try {
-  git fetch origin main --prune | Out-Null
+  git fetch --quiet --prune origin main 2>$null | Out-Null
   $MainSha = (git rev-parse origin/main).Trim()
-  git pull --ff-only origin develop | Out-Null
-  git merge --ff-only origin/main | Out-Null
-  git push origin develop | Out-Null
+  git pull --quiet --ff-only origin develop 2>$null | Out-Null
+  git merge --quiet --ff-only origin/main 2>$null | Out-Null
+  git push --quiet origin develop 2>$null | Out-Null
 } catch {
   FailReason $ReasonDiverged $PrUrl
 }
