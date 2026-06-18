@@ -15,6 +15,9 @@ export interface CartItem {
   category: string;
   imageUrl: string;
   unitPrice: number;
+  qtPalete?: number | null;
+  paleteValue?: number | null;
+  maxQuantity?: number | null;
   embalagemUnits?: number | null;
   quantity: number;
 }
@@ -25,6 +28,9 @@ interface AddCartItemInput {
   category?: string;
   imageUrl?: string;
   unitPrice: number;
+  qtPalete?: number | null;
+  paleteValue?: number | null;
+  maxQuantity?: number | null;
   embalagemUnits?: number | null;
   quantity?: number;
 }
@@ -79,6 +85,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       category: input.category ?? "Sem categoria",
       imageUrl: input.imageUrl ?? "/placeholder.svg",
       unitPrice: input.unitPrice,
+      qtPalete: input.qtPalete,
+      paleteValue: input.paleteValue,
+      maxQuantity: input.maxQuantity,
       embalagemUnits: input.embalagemUnits,
       quantity,
     });

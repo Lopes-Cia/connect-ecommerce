@@ -75,7 +75,7 @@ function pickProdutoSubset(value: unknown) {
     unitLabel: asString(record?.unitLabel),
     sizeLabel: asString(record?.sizeLabel),
     qtUnit: typeof record?.qtUnit === "number" ? record.qtUnit : asNumber(record?.qtUnit),
-    qtUnitCaixa: typeof record?.qtUnitCaixa === "number" ? record.qtUnitCaixa : asNumber(record?.qtUnitCaixa),
+    qtPalete: typeof record?.qtPalete === "number" ? record.qtPalete : asNumber(record?.qtPalete),
   };
 }
 
@@ -97,7 +97,7 @@ function buildDiffs(a: ReturnType<typeof pickProdutoSubset>, b: ReturnType<typeo
   add("unitLabel", a.unitLabel, b.unitLabel);
   add("sizeLabel", a.sizeLabel, b.sizeLabel);
   add("qtUnit", a.qtUnit, b.qtUnit);
-  add("qtUnitCaixa", a.qtUnitCaixa, b.qtUnitCaixa);
+  add("qtPalete", a.qtPalete, b.qtPalete);
 
   return diffs;
 }

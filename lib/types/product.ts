@@ -15,7 +15,7 @@ export interface ProdutoBean {
   idIntegradora: number
   indiceEstoque: number
   qtUnit: number
-  qtUnitCaixa: number
+  qtPalete: number
   codLocalOrig: number
   recalculaPrecoUnidade: boolean
   recalculaEstoqueUnidade: boolean

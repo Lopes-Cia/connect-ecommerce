@@ -347,11 +347,10 @@ export default function CheckoutForm() {
             const baseSlug = slugify(item.name) || encodeURIComponent(idSegment);
             const slugSegment = idSegment ? `${baseSlug}-${encodeURIComponent(idSegment)}` : baseSlug;
             const productHref = `/produtos/${slugSegment}`;
-            const embalagemUnits =
-              typeof item.embalagemUnits === "number" && Number.isFinite(item.embalagemUnits) && item.embalagemUnits > 1
-                ? Math.floor(item.embalagemUnits)
-                : 1;
-            const unitPriceLabelValue = embalagemUnits > 1 ? item.unitPrice * embalagemUnits : item.unitPrice;
+            const unitPriceLabelValue =
+              typeof item.paleteValue === "number" && Number.isFinite(item.paleteValue) && item.paleteValue > 0
+                ? item.paleteValue
+                : item.unitPrice;
             const lineTotal = unitPriceLabelValue * item.quantity;
             return (
               <div key={item.id} className="flex items-center gap-3">
@@ -375,7 +374,7 @@ export default function CheckoutForm() {
                     {item.name}
                   </Link>
                   <div className="text-xs text-custom-dark-700">
-                    {item.quantity} × {formatCurrency(unitPriceLabelValue)}
+                    {item.quantity} × {formatCurrency(unitPriceLabelValue)} por embalagem
                   </div>
                 </div>
                 <div className="text-sm font-semibold text-custom-dark-1000">

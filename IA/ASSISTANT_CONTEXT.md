@@ -184,7 +184,7 @@ categoryId: number
 brand: string
 unitLabel: string
 sizeLabel: string
-qtUnitCaixa?: number | null
+qtPalete?: number | null
 qtUnit?: number | null
 price: number
 compareAtPrice: number | null
@@ -247,3 +247,4 @@ Linha: Tixan
 Categoria sugerida: Limpeza / Lava-roupas
 Confiança: alta
 ```
+

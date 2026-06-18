@@ -78,7 +78,7 @@ type LopesProdutoRaw = {
   descricaoErp?: unknown
   ean?: unknown
   codVol?: unknown
-  qtUnitCaixa?: unknown
+  qtPalete?: unknown
   qtUnit?: unknown
   preco?: unknown
   qtEstoque?: unknown
@@ -106,7 +106,7 @@ export type ProdutoMock = {
   slug: string
   unitLabel: string
   sizeLabel: string
-  qtUnitCaixa: number | null
+  qtPalete: number | null
   qtUnit: number | null
   price: number | null
   compareAtPrice: number | null
@@ -193,7 +193,7 @@ export function translateLopesProdutosToProdutosMock(
 
     const unitLabel = detectUnitLabel(name, it?.codVol)
     const sizeLabel = detectSizeLabel(name)
-    const qtUnitCaixa = toNumberOrNullIfPresent(it?.qtUnitCaixa)
+    const qtPalete = toNumberOrNullIfPresent(it?.qtPalete)
     const qtUnit = toNumberOrNullIfPresent(it?.qtUnit)
 
     const price = toNumberOrNull(it?.preco)
@@ -212,7 +212,7 @@ export function translateLopesProdutosToProdutosMock(
       slug,
       unitLabel,
       sizeLabel,
-      qtUnitCaixa,
+      qtPalete,
       qtUnit,
       price,
       compareAtPrice: null,

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { formatCurrency } from "@/lib/formatting";
+import { normalizeNonNegativeInteger } from "@/lib/produtos/paletePricing";
 import { slugify } from "@/lib/utils";
 import { frontModal } from "@/stores/front-modal-store";
 import { useControlStore } from "@/stores/control-store";
@@ -68,17 +69,18 @@ export default function CartPage() {
 
           <div className="divide-y divide-custom-light-300">
             {items.map((item) => {
-              const embalagemUnits =
-                typeof item.embalagemUnits === "number" && Number.isFinite(item.embalagemUnits) && item.embalagemUnits > 1
-                  ? Math.floor(item.embalagemUnits)
-                  : 1;
-              const subtotal = item.unitPrice * embalagemUnits * item.quantity;
+              const paleteValue =
+                typeof item.paleteValue === "number" && Number.isFinite(item.paleteValue) && item.paleteValue > 0
+                  ? item.paleteValue
+                  : item.unitPrice;
+              const subtotal = paleteValue * item.quantity;
               const idSegment = String(item.id ?? "").trim();
               const baseSlug = slugify(item.name) || encodeURIComponent(idSegment);
               const slugSegment = idSegment ? `${baseSlug}-${encodeURIComponent(idSegment)}` : baseSlug;
               const productHref = `/produtos/${slugSegment}`;
-              const priceLabel = embalagemUnits > 1 ? "por embalagem" : "por unidade";
-              const unitPriceLabelValue = embalagemUnits > 1 ? item.unitPrice * embalagemUnits : item.unitPrice;
+              const priceLabel = "por embalagem";
+              const unitPriceLabelValue = paleteValue;
+              const maxQuantity = normalizeNonNegativeInteger(item.maxQuantity) ?? 0;
 
               return (
                 <div
@@ -120,7 +122,8 @@ export default function CartPage() {
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => void safeSetItemQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 rounded border border-custom-light-400 hover:bg-custom-light-100"
+                        disabled={item.quantity <= 1}
+                        className="w-8 h-8 rounded border border-custom-light-400 hover:bg-custom-light-100 disabled:opacity-40"
                         aria-label="Diminuir quantidade"
                       >
                         -
@@ -128,7 +131,8 @@ export default function CartPage() {
                       <span className="w-8 text-center">{item.quantity}</span>
                       <button
                         onClick={() => void safeSetItemQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 rounded border border-custom-light-400 hover:bg-custom-light-100"
+                        disabled={maxQuantity <= 0 || item.quantity >= maxQuantity}
+                        className="w-8 h-8 rounded border border-custom-light-400 hover:bg-custom-light-100 disabled:opacity-40"
                         aria-label="Aumentar quantidade"
                       >
                         +

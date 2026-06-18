@@ -8,7 +8,7 @@ esses são os dados disponiveis do produto
   "unitLabel": "lata",
   "sizeLabel": "269ml",
   "qtUnit": 15,
-  "qtUnitCaixa": 15,
+  "qtPalete": 15,
   "price": 1,
   "compareAtPrice": null,
   "badges": [],

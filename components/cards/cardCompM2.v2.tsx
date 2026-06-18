@@ -25,7 +25,7 @@ export function CardCompM2V2({
   imageAlt,
   title,
   priceLabel,
-  priceSubLabel = "por unidade",
+  priceSubLabel = "por embalagem",
   ctaLabel = "Adicionar",
   onAdd,
   className,

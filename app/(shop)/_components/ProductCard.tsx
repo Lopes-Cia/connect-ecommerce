@@ -55,6 +55,9 @@ export default function ProductCard({ type, product }: ProductCardProps) {
   const hasDiscount = type === "discount" || type === "highlighted-discount";
   const isHighlighted =
     type === "highlighted" || type === "highlighted-discount";
+  const maxQuantity =
+    typeof product.maxQuantity === "number" && Number.isFinite(product.maxQuantity) ? Math.max(0, Math.floor(product.maxQuantity)) : null;
+  const isPurchasable = !isComingSoon && (maxQuantity == null || maxQuantity > 0);
   const productHref = normalizeProductHref(product.slug) ?? "#";
   const [imageSrc, setImageSrc] = useState(product.image_url || "/placeholder.svg");
 
@@ -66,7 +69,7 @@ export default function ProductCard({ type, product }: ProductCardProps) {
     (imageSrc ?? "").startsWith("http://") || (imageSrc ?? "").startsWith("https://");
 
   const handleAddToCart = async () => {
-    if (isComingSoon) {
+    if (!isPurchasable) {
       return;
     }
 
@@ -78,6 +81,9 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         category: product.category,
         imageUrl: product.image_url,
         unitPrice: product.discountPrice ?? product.price,
+        qtPalete: product.qtPalete,
+        paleteValue: product.paleteValue,
+        maxQuantity: maxQuantity ?? undefined,
         quantity: 1,
       });
       void frontModal.success({
@@ -103,9 +109,9 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         </div>
       )}
 
-      <Link href={isComingSoon ? "#" : productHref}>
+      <Link href={isPurchasable ? productHref : "#"}>
         <div
-          className={`mb-4 h-56 shrink-0 flex items-center justify-center border border-black/10 rounded-xs ${isComingSoon ? "opacity-50" : ""}`}
+          className={`mb-4 h-56 shrink-0 flex items-center justify-center border border-black/10 rounded-xs ${!isPurchasable ? "opacity-50" : ""}`}
         >
           {shouldUseImgTag ? (
             <img
@@ -131,10 +137,10 @@ export default function ProductCard({ type, product }: ProductCardProps) {
 
       <div className="flex flex-col gap-1">
         <h3
-          className={`h-8 overflow-hidden line-clamp-2 font-montserrat text-[14px] font-black leading-tight ${isComingSoon ? "opacity-50" : ""}`}
+          className={`h-8 overflow-hidden line-clamp-2 font-montserrat text-[14px] font-black leading-tight ${!isPurchasable ? "opacity-50" : ""}`}
           style={{ color: "#192227" }}
         >
-          <Link href={isComingSoon ? "#" : productHref}>
+          <Link href={isPurchasable ? productHref : "#"}>
             {product.name}
           </Link>
         </h3>
@@ -175,22 +181,22 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         <p
           className={cn(
             "text-[11px] font-medium",
-            isComingSoon && "opacity-50"
+            !isPurchasable && "opacity-50"
           )}
           style={{ color: "#4D585E" }}
         >
-          por unidade
+          por embalagem
         </p>
 
         <button
           onClick={() => void handleAddToCart()}
           className={cn(
             "mt-1.5 w-full rounded-xs py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed",
-            isComingSoon ? "bg-tints-french-blue/60 cursor-not-allowed" : "bg-tints-french-blue cursor-pointer"
+            !isPurchasable ? "bg-tints-french-blue/60 cursor-not-allowed" : "bg-tints-french-blue cursor-pointer"
           )}
-          disabled={isComingSoon}
+          disabled={!isPurchasable}
         >
-          {isComingSoon ? "EM BREVE!" : "Adicionar"}
+          {!isPurchasable ? "EM BREVE!" : "Adicionar"}
         </button>
       </div>
     </div>

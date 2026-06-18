@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     if (typeof patch.price === 'number') doc.price = patch.price
     if (typeof patch.stock === 'number') doc.stock = patch.stock
     if (typeof patch.qtUnit === 'number') doc.qtUnit = patch.qtUnit
-    if (typeof patch.qtUnitCaixa === 'number') doc.qtUnitCaixa = patch.qtUnitCaixa
+    if (typeof patch.qtPalete === 'number') doc.qtPalete = patch.qtPalete
     if (typeof patch.inStock === 'boolean') doc.inStock = patch.inStock
     if (patch.compareAtPrice === null || typeof patch.compareAtPrice === 'number') {
       doc.compareAtPrice = patch.compareAtPrice

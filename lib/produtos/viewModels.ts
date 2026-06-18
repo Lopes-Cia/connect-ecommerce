@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { formatCurrency } from "@/lib/formatting";
+import { computeMaxQuantity, computePaleteValue } from "@/lib/produtos/paletePricing";
 
 export type ProdutoSpecViewModel = {
   label: string;
@@ -22,7 +23,10 @@ export type ProdutoDetailViewModel = {
   oldPrice?: number;
   images: string[];
   qtUnit: number | null;
-  qtUnitCaixa: number | null;
+  qtPalete: number | null;
+  stock: number;
+  paleteValue: number | null;
+  maxQuantity: number;
   specs: ProdutoSpecViewModel[];
   shortDescription: string;
   ingredients: string;
@@ -69,7 +73,7 @@ const ProdutoSchema = z
     imagens: z.array(z.unknown()).optional(),
     unitLabel: z.string().optional(),
     sizeLabel: z.string().optional(),
-    qtUnitCaixa: z.coerce.number().nullable().optional(),
+    qtPalete: z.coerce.number().nullable().optional(),
     qtUnit: z.coerce.number().nullable().optional(),
     price: z.coerce.number().optional(),
     compareAtPrice: z.coerce.number().nullable().optional(),
@@ -171,7 +175,6 @@ export function toProdutoDetailViewModel(
   const price = basePrice;
 
   const stock = Number.isFinite(parsed.stock) ? (parsed.stock as number) : 0;
-  const inStock = typeof parsed.inStock === "boolean" ? parsed.inStock && stock > 0 : stock > 0;
 
   const rawImages = [
     parsed.image,
@@ -199,10 +202,13 @@ export function toProdutoDetailViewModel(
 
   const qtUnit =
     typeof parsed.qtUnit === "number" && Number.isFinite(parsed.qtUnit) && parsed.qtUnit > 0 ? parsed.qtUnit : null;
-  const qtUnitCaixa =
-    typeof parsed.qtUnitCaixa === "number" && Number.isFinite(parsed.qtUnitCaixa) && parsed.qtUnitCaixa > 0
-      ? parsed.qtUnitCaixa
+  const qtPalete =
+    typeof parsed.qtPalete === "number" && Number.isFinite(parsed.qtPalete) && parsed.qtPalete > 0
+      ? parsed.qtPalete
       : null;
+  const paleteValue = computePaleteValue(price, qtPalete);
+  const maxQuantity = computeMaxQuantity(stock, qtPalete);
+  const inStock = maxQuantity > 0;
 
   const specs: ProdutoSpecViewModel[] = [
     { label: "Categoria", value: category },
@@ -210,7 +216,7 @@ export function toProdutoDetailViewModel(
     { label: "Unidade", value: unitLabel || "-" },
     { label: "Tamanho", value: sizeLabel || "-" },
     ...(qtUnit != null ? [{ label: "Quantidade por unidade", value: String(qtUnit) }] : []),
-    ...(qtUnitCaixa != null ? [{ label: "Quantidade por caixa", value: String(qtUnitCaixa) }] : []),
+    ...(qtPalete != null ? [{ label: "Quantidade por caixa", value: String(qtPalete) }] : []),
     { label: "SKU", value: sku || "-" },
     { label: "Disponibilidade", value: inStock ? "Em estoque" : "Indisponível" },
   ];
@@ -231,7 +237,7 @@ export function toProdutoDetailViewModel(
     { label: "Unidade", value: unitLabel || "-" },
     { label: "Tamanho", value: sizeLabel || "-" },
     ...(qtUnit != null ? [{ label: "Quantidade por unidade", value: String(qtUnit) }] : []),
-    ...(qtUnitCaixa != null ? [{ label: "Quantidade por caixa", value: String(qtUnitCaixa) }] : []),
+    ...(qtPalete != null ? [{ label: "Quantidade por caixa", value: String(qtPalete) }] : []),
     { label: "Preço", value: formatCurrency(price) },
     ...(oldPrice != null ? [{ label: "Preço anterior", value: formatCurrency(oldPrice) }] : []),
     { label: "Disponibilidade", value: inStock ? "Em estoque" : "Indisponível" },
@@ -247,7 +253,10 @@ export function toProdutoDetailViewModel(
     oldPrice,
     images: normalizedImages,
     qtUnit,
-    qtUnitCaixa,
+    qtPalete,
+    stock,
+    paleteValue,
+    maxQuantity,
     specs,
     shortDescription,
     ingredients,

@@ -22,7 +22,7 @@ export type ProdutoMock = {
   unitLabel: string
   sizeLabel: string
   qtUnit: number | null
-  qtUnitCaixa: number | null
+  qtPalete: number | null
   price: number | null
   compareAtPrice: number | null
   badges: string[]

@@ -1,5 +1,6 @@
 import type { Product } from '@/lib/types/product'
 import { formatCurrency } from '@/lib/formatting'
+import { computeMaxQuantity, computePaleteValue } from '@/lib/produtos/paletePricing'
 
 export type ProductCardType =
   | 'standard'
@@ -17,6 +18,11 @@ export interface ProductCardViewModel {
   image_url: string
   slug?: string
   cardType?: ProductCardType
+  qtUnit?: number | null
+  qtPalete?: number | null
+  stock?: number | null
+  paleteValue?: number | null
+  maxQuantity?: number | null
 }
 
 export interface ProductSpecViewModel {
@@ -105,7 +111,7 @@ function toStockStatus(product: Product): string {
 }
 
 function toPackageInfo(product: Product): string {
-  const quantityPerBox = product.qtUnitCaixa ?? 0
+  const quantityPerBox = product.qtPalete ?? 0
   const unit = normalizeText(product.codVol) || 'UN'
 
   if (quantityPerBox <= 0) {
@@ -118,15 +124,24 @@ function toPackageInfo(product: Product): string {
 }
 
 export function toProductCardViewModel(product: Product): ProductCardViewModel {
-  const inStock = (product.qtEstoque ?? 0) > 0
+  const price = Number.isFinite(product.preco) ? product.preco : 0
+  const qtPalete = Number.isFinite(product.qtPalete) && product.qtPalete > 0 ? product.qtPalete : null
+  const stock = Number.isFinite(product.qtEstoque) ? product.qtEstoque : 0
+  const maxQuantity = computeMaxQuantity(stock, qtPalete)
+  const inStock = maxQuantity > 0
 
   return {
     id: String(product.codProd),
     name: toName(product),
     category: toCategory(product),
-    price: Number.isFinite(product.preco) ? product.preco : 0,
+    price,
     image_url: toImageUrl(product.imagem),
     cardType: inStock ? 'standard' : 'coming-soon',
+    qtUnit: Number.isFinite(product.qtUnit) && product.qtUnit > 0 ? product.qtUnit : null,
+    qtPalete,
+    stock,
+    paleteValue: computePaleteValue(price, qtPalete),
+    maxQuantity,
   }
 }
 
@@ -172,7 +187,7 @@ export function toProductDetailViewModel(product: Product): ProductDetailViewMod
       { label: 'EAN caixa', value: normalizeText(product.eanCaixa) || '-' },
       { label: 'Unidade de venda', value: normalizeText(product.codVol) || '-' },
       { label: 'Quantidade por unidade', value: String(product.qtUnit ?? 1) },
-      { label: 'Quantidade por caixa', value: String(product.qtUnitCaixa ?? 0) },
+      { label: 'Quantidade por caixa', value: String(product.qtPalete ?? 0) },
       { label: 'Preco unitario', value: formatCurrency(Number.isFinite(product.preco) ? product.preco : 0) },
       { label: 'Disponibilidade', value: toStockStatus(product) },
       { label: 'Estoque disponivel', value: String(product.qtEstoque ?? 0) },

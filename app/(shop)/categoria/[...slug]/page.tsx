@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, FolderTree, SlidersHorizontal, ArrowDownUp } from "lucide-react";
 
 import ProductCardVariant from "../../_components/ProductCardVariant";
+import { computeMaxQuantity, computePaleteValue } from "@/lib/produtos/paletePricing";
 import { useProdutosStore } from "@/stores/produtos-store";
 import type { ProductCardViewModel } from "@/lib/products/viewModels";
 import {
@@ -135,7 +136,11 @@ function toProductItem(raw: unknown): ProductCardViewModel | null {
   const price = asNumber(record.price, 0);
   const compareAtPrice = asNumber(record.compareAtPrice, 0);
   const hasDiscount = compareAtPrice > 0 && compareAtPrice > price;
-  const inStock = Boolean(record.inStock ?? record.in_stock ?? true);
+  const qtUnit = asNumber(record.qtUnit, 0);
+  const qtPalete = asNumber(record.qtPalete, 0);
+  const stock = asNumber(record.stock, 0);
+  const maxQuantity = computeMaxQuantity(stock, qtPalete);
+  const inStock = maxQuantity > 0;
 
   const image_url = asString(record.image, asString(record.image_url, "/placeholder.svg"));
   const slug = normalizeSlugPath(record.slug);
@@ -149,6 +154,11 @@ function toProductItem(raw: unknown): ProductCardViewModel | null {
     image_url,
     slug: slug ?? undefined,
     cardType: inStock ? (hasDiscount ? "discount" : "standard") : "coming-soon",
+    qtUnit: qtUnit > 0 ? qtUnit : null,
+    qtPalete: qtPalete > 0 ? qtPalete : null,
+    stock: stock > 0 ? stock : 0,
+    paleteValue: computePaleteValue(price, qtPalete),
+    maxQuantity,
   };
 }
 

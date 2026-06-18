@@ -503,7 +503,7 @@ export default function DevPage() {
               imageAlt="Produto"
               title="Lava-louças líquido Ypê Maça, frasco 500 ml, caixa com 24 unidades"
               priceLabel="R$ 1,94"
-              priceSubLabel="por unidade"
+              priceSubLabel="por embalagem"
               onAdd={() => null}
             />
           </div>

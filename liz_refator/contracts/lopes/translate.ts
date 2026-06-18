@@ -125,7 +125,7 @@ export function translateLopesProdutosToProdutosMock(
     const unitLabel = detectUnitLabel(name, it?.codVol)
     const sizeLabel = detectSizeLabel(name)
     const qtUnit = toNumberOrNullIfPresent(it?.qtUnit)
-    const qtUnitCaixa = toNumberOrNullIfPresent(it?.qtUnitCaixa)
+    const qtPalete = toNumberOrNullIfPresent(it?.qtPalete)
 
     const price = toNumberOrNull(it?.preco)
     const stock = toIntOrZero(it?.qtEstoque)
@@ -144,7 +144,7 @@ export function translateLopesProdutosToProdutosMock(
       unitLabel,
       sizeLabel,
       qtUnit,
-      qtUnitCaixa,
+      qtPalete,
       price,
       compareAtPrice: null,
       badges: [],
