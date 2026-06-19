@@ -67,7 +67,7 @@ async function isValidSessionCookie(value: string): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  if (pathname.startsWith("/dev") || pathname.startsWith("/api/dev")) {
+  if (pathname.startsWith("/dev")) {
     if (process.env.NODE_ENV === "production") {
       return new NextResponse(null, { status: 404 });
     }
