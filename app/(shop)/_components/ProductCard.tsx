@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,8 +10,6 @@ import type {
   ProductCardType,
   ProductCardViewModel,
 } from "@/lib/products/viewModels";
-import { frontModal } from "@/stores/front-modal-store";
-import { useControlStore } from "@/stores/control-store";
 
 interface ProductCardProps {
   type: ProductCardType;
@@ -48,9 +46,7 @@ function normalizeProductHref(value: unknown): string | null {
 
 
 export default function ProductCard({ type, product }: ProductCardProps) {
-  const useCarrinhoStore = useControlStore((s) => s.CARRINHOSTORE);
-  const items = useCarrinhoStore((s) => s.items);
-  const addItem = useCarrinhoStore((s) => s.addItem);
+  const router = useRouter();
   const isComingSoon = type === "coming-soon";
   const hasDiscount = type === "discount" || type === "highlighted-discount";
   const isHighlighted =
@@ -59,46 +55,20 @@ export default function ProductCard({ type, product }: ProductCardProps) {
     typeof product.maxQuantity === "number" && Number.isFinite(product.maxQuantity) ? Math.max(0, Math.floor(product.maxQuantity)) : null;
   const isPurchasable = !isComingSoon && (maxQuantity == null || maxQuantity > 0);
   const productHref = normalizeProductHref(product.slug) ?? "#";
-  const [imageSrc, setImageSrc] = useState(product.image_url || "/placeholder.svg");
-
-  useEffect(() => {
-    setImageSrc(product.image_url || "/placeholder.svg");
-  }, [product.image_url]);
+  const imageSrc = product.image_url || "/placeholder.svg";
 
   const shouldUseImgTag =
     (imageSrc ?? "").startsWith("http://") || (imageSrc ?? "").startsWith("https://");
 
-  const handleAddToCart = async () => {
+  const handleBuyClick = () => {
     if (!isPurchasable) {
       return;
     }
-
-    const existed = items.some((x) => x.id === product.id);
-    try {
-      await addItem({
-        id: product.id,
-        name: product.name,
-        category: product.category,
-        imageUrl: product.image_url,
-        unitPrice: product.discountPrice ?? product.price,
-        qtPalete: product.qtPalete,
-        paleteValue: product.paleteValue,
-        maxQuantity: maxQuantity ?? undefined,
-        quantity: 1,
-      });
-      void frontModal.success({
-        title: existed ? "Quantidade atualizada" : "Adicionado ao carrinho",
-        description: existed
-          ? `${product.name} teve a quantidade atualizada no seu carrinho.`
-          : `${product.name} foi adicionado no seu carrinho.`,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Erro inesperado ao adicionar no carrinho.";
-      void frontModal.error({
-        title: "Erro no carrinho",
-        description: message,
-      });
+    if (productHref.startsWith("http://") || productHref.startsWith("https://")) {
+      window.location.href = productHref;
+      return;
     }
+    router.push(productHref);
   };
 
   return (
@@ -120,7 +90,9 @@ export default function ProductCard({ type, product }: ProductCardProps) {
               width={120}
               height={135}
               className="h-full w-6/10 object-contain"
-              onError={() => setImageSrc("/placeholder.svg")}
+              onError={(event) => {
+                event.currentTarget.src = "/placeholder.svg";
+              }}
             />
           ) : (
             <Image
@@ -130,6 +102,9 @@ export default function ProductCard({ type, product }: ProductCardProps) {
               height={135}
               className="h-full w-6/10 object-contain"
               unoptimized
+              onError={(event) => {
+                event.currentTarget.src = "/placeholder.svg";
+              }}
             />
           )}
         </div>
@@ -189,14 +164,14 @@ export default function ProductCard({ type, product }: ProductCardProps) {
         </p>
 
         <button
-          onClick={() => void handleAddToCart()}
+          onClick={handleBuyClick}
           className={cn(
             "mt-1.5 w-full rounded-xs py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed",
             !isPurchasable ? "bg-tints-french-blue/60 cursor-not-allowed" : "bg-tints-french-blue cursor-pointer"
           )}
           disabled={!isPurchasable}
         >
-          {!isPurchasable ? "EM BREVE!" : "Adicionar"}
+          {!isPurchasable ? "EM BREVE!" : "Comprar"}
         </button>
       </div>
     </div>
