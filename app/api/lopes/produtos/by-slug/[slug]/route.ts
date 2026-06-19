@@ -52,11 +52,9 @@ type OverwriteFlags = {
   category: 0 | 1
   brand: 0 | 1
   image: 0 | 1
-  name: 0 | 1
-  slug: 0 | 1
 }
 
-const DEFAULT_FLAGS: OverwriteFlags = { category: 0, brand: 1, image: 0, name: 0, slug: 0 }
+const DEFAULT_FLAGS: OverwriteFlags = { category: 0, brand: 1, image: 0 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null
@@ -77,8 +75,6 @@ function toFlags(value: unknown): OverwriteFlags {
     category: normalizeFlag(record.category),
     brand: normalizeFlag(record.brand),
     image: normalizeFlag(record.image),
-    name: normalizeFlag(record.name),
-    slug: normalizeFlag(record.slug),
   }
 }
 
@@ -161,9 +157,7 @@ async function tryApplyOverwriteFromRedis(input: { produto: ProdutoMock; idProdu
     const prefix = getCatalogKeyPrefix()
     const flagsDoc = await tryReadRedisJson(`${prefix}:product_overwrite:global`)
     const flags = toFlags(flagsDoc)
-    if (flags.brand === 0 && flags.category === 0 && flags.image === 0 && flags.name === 0 && flags.slug === 0) {
-      return input.produto
-    }
+    if (flags.brand === 0 && flags.category === 0 && flags.image === 0) return input.produto
 
     const productKey = `${prefix}:product:${input.idProduto}`
     const redisProduct = await tryReadRedisJson(productKey)
@@ -182,16 +176,6 @@ async function tryApplyOverwriteFromRedis(input: { produto: ProdutoMock; idProdu
     if (flags.image === 1) {
       const image = typeof redisProduct.image === "string" ? redisProduct.image.trim() : ""
       if (image) input.produto.image = image
-    }
-
-    if (flags.name === 1) {
-      const name = typeof redisProduct.name === "string" ? redisProduct.name.trim() : ""
-      if (name) input.produto.name = name
-    }
-
-    if (flags.slug === 1) {
-      const slug = typeof redisProduct.slug === "string" ? redisProduct.slug.trim() : ""
-      if (slug) input.produto.slug = slug
     }
 
     return input.produto

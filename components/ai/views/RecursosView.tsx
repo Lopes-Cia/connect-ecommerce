@@ -311,7 +311,7 @@ export default function RecursosView({ activeSubTab }: { activeSubTab: RecursosS
                                   setEditorLoading(true);
                                   setEditorError(null);
                                   try {
-                                    const response = await fetch(`/api/producao/redis/catalog/brand/by-id/${brand.id}`, {
+                                    const response = await fetch(`/api/dev/redis/catalog/brand/by-id/${brand.id}`, {
                                       method: "DELETE",
                                     });
                                     const body = await response.json().catch(() => null);
@@ -445,7 +445,7 @@ export default function RecursosView({ activeSubTab }: { activeSubTab: RecursosS
                                   continue;
                                 }
 
-                                const pubResponse = await fetch("/api/producao/assets/publish-image", {
+                                const pubResponse = await fetch("/api/dev/assets/publish-image", {
                                   method: "POST",
                                   headers: { "Content-Type": "application/json" },
                                   body: JSON.stringify({ absPath: candidate }),
@@ -572,7 +572,7 @@ export default function RecursosView({ activeSubTab }: { activeSubTab: RecursosS
                         setEditorLoading(true);
                         setEditorError(null);
                         try {
-                          const response = await fetch(`/api/producao/redis/catalog/brand/by-id/${id}`, {
+                          const response = await fetch(`/api/dev/redis/catalog/brand/by-id/${id}`, {
                             method: "PUT",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -786,7 +786,7 @@ export default function RecursosView({ activeSubTab }: { activeSubTab: RecursosS
                     let okCount = 0;
                     try {
                       for (const idProduto of ids) {
-                        const response = await fetch("/api/producao/redis/catalog/produto/brand", {
+                        const response = await fetch("/api/dev/redis/catalog/produto/brand", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ idProduto, idBrand: currentBrandId }),

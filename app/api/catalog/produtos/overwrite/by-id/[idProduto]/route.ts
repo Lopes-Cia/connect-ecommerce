@@ -11,11 +11,9 @@ type OverwriteFlags = {
   category: 0 | 1
   brand: 0 | 1
   image: 0 | 1
-  name: 0 | 1
-  slug: 0 | 1
 }
 
-const DEFAULT_FLAGS: OverwriteFlags = { category: 0, brand: 0, image: 0, name: 0, slug: 0 }
+const DEFAULT_FLAGS: OverwriteFlags = { category: 0, brand: 0, image: 0 }
 
 function normalizeFlag(value: unknown): 0 | 1 {
   if (value === true) return 1
@@ -31,8 +29,6 @@ function toFlags(value: unknown): OverwriteFlags {
     category: normalizeFlag(record.category),
     brand: normalizeFlag(record.brand),
     image: normalizeFlag(record.image),
-    name: normalizeFlag(record.name),
-    slug: normalizeFlag(record.slug),
   }
 }
 

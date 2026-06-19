@@ -67,10 +67,6 @@ async function isValidSessionCookie(value: string): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  if (pathname.startsWith("/api/producao")) {
-    return NextResponse.next();
-  }
-
   if (pathname.startsWith("/dev") || pathname.startsWith("/api/dev")) {
     if (process.env.NODE_ENV === "production") {
       return new NextResponse(null, { status: 404 });
@@ -95,5 +91,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/cliente/:path*", "/dev/:path*", "/api/dev/:path*", "/api/producao/:path*"],
+  matcher: ["/cliente/:path*", "/dev/:path*", "/api/dev/:path*"],
 };

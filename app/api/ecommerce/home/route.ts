@@ -13,7 +13,7 @@ export async function GET() {
     const home = await getHomeFromRedisOrNull()
     if (!home) {
       return NextResponse.json(
-        { success: false, message: 'Home não importado no Redis. Rode POST /api/producao/catalog/home/import' },
+        { success: false, message: 'Home não importado no Redis. Rode POST /api/dev/catalog/home/import' },
         { status: 500, headers: buildCatalogHeaders({ origin: 'lopes', readModel: 'redis' }) }
       )
     }

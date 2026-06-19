@@ -202,7 +202,7 @@ export default function RedisCategoriesSection() {
 
     try {
       const doc = parseJson(jsonValue);
-      const response = await fetch(`/api/producao/catalog/crud/category/${encodeURIComponent(String(selectedId))}`, {
+      const response = await fetch(`/api/dev/catalog/crud/category/${encodeURIComponent(String(selectedId))}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ doc }),
@@ -232,7 +232,7 @@ export default function RedisCategoriesSection() {
     setCrudInfo("");
 
     try {
-      const response = await fetch(`/api/producao/catalog/crud/category/${encodeURIComponent(String(selectedId))}`, {
+      const response = await fetch(`/api/dev/catalog/crud/category/${encodeURIComponent(String(selectedId))}`, {
         method: "DELETE",
       });
       const payload = (await response.json().catch(() => null)) as unknown as RedisCrudResponse | null;
@@ -285,7 +285,7 @@ export default function RedisCategoriesSection() {
         order: nextOrder,
       };
 
-      const response = await fetch(`/api/producao/catalog/crud/category/${encodeURIComponent(String(id))}`, {
+      const response = await fetch(`/api/dev/catalog/crud/category/${encodeURIComponent(String(id))}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ doc }),

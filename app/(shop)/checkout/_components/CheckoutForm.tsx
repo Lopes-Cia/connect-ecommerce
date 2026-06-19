@@ -107,7 +107,7 @@ export default function CheckoutForm() {
     setIsSendingGp(true);
     try {
       const pedido = buildPedidoMockupFromCarrinho(items, { checkoutForm, loginData });
-      const url = "/api/producao/insert-dado-integration";
+      const url = "/api/dev/insert-dado-integration";
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
