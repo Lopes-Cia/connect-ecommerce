@@ -5,10 +5,11 @@ import { formatCurrency } from "@/lib/formatting";
 interface ProductSummaryProps {
   name: string;
   category?: string;
-  description: string;
+  description?: string;
+  secondaryDescription?: string;
   price: number;
   oldPrice?: number;
-  embalagemValue?: number | null;
+  paleteValue?: number | null;
   inStock?: boolean;
   unitLabel?: string;
   brand?: {
@@ -34,16 +35,18 @@ export default function ProductSummary({
   name,
   category,
   description,
+  secondaryDescription,
   price,
   oldPrice,
-  embalagemValue,
+  paleteValue,
   inStock,
   unitLabel,
   brand,
 }: ProductSummaryProps) {
   const safeName = String(name ?? "").trim() || "Produto";
   const safeCategory = String(category ?? "").trim();
-  const safeDescription = String(description ?? "").trim() || "Descrição não disponível no momento.";
+  const safeDescription = String(description ?? "").trim();
+  const safeSecondaryDescription = String(secondaryDescription ?? "").trim();
   const safeUnitLabel = String(unitLabel ?? "").trim();
   const brandName = String(brand?.name ?? "").trim();
   const brandHref = String(brand?.slug ?? "").trim();
@@ -57,7 +60,10 @@ export default function ProductSummary({
 
       <h1 className="text-custom-dark-1000 font-league-spartan font-bold text-3xl leading-tight">{safeName}</h1>
 
-      <p className="text-custom-light-700 font-montserrat text-sm">{safeDescription}</p>
+      {safeDescription ? <p className="text-custom-light-700 font-montserrat text-sm">{safeDescription}</p> : null}
+      {safeSecondaryDescription ? (
+        <p className="text-custom-light-700 font-montserrat text-sm">{safeSecondaryDescription}</p>
+      ) : null}
 
       <div className="mt-2">
         {oldPrice && oldPrice > price ? (
@@ -68,11 +74,11 @@ export default function ProductSummary({
           <span className="text-custom-dark-1000 font-montserrat font-bold text-3xl">
             {price.toFixed(2).replace(".", ",")}
           </span>
-          <p className="text-custom-dark-1000 font-montserrat text-xs">por Unidade</p>
+          <p className="text-custom-dark-1000 font-montserrat text-xs">por Embalagem</p>
         </div>
-        {typeof embalagemValue === "number" && Number.isFinite(embalagemValue) && embalagemValue > 0 ? (
+        {typeof paleteValue === "number" && Number.isFinite(paleteValue) && paleteValue > 0 ? (
           <p className="text-custom-dark-1000 font-montserrat text-xs mt-1">
-            valor da embalgem, <span className="font-semibold">{formatCurrency(embalagemValue)}</span>
+            valor do Palete, <span className="font-semibold">{formatCurrency(paleteValue)}</span>
           </p>
         ) : null}
       </div>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/formatting";
+import { clampQuantityToMax, normalizeNonNegativeInteger, normalizePositiveInteger } from "@/lib/produtos/paletePricing";
 import { frontModal } from "@/stores/front-modal-store";
 import { useControlStore } from "@/stores/control-store";
 
@@ -15,12 +15,11 @@ interface ProductActivityProps {
   productImageUrl?: string;
   productCategory?: string;
   sku?: string;
-  embalagemValue?: number | null;
-  embalagemUnits?: number | null;
+  qtPalete?: number | null;
+  paleteValue?: number | null;
+  maxQuantity?: number | null;
   showHeaderPrice?: boolean;
   pricePerUnit?: string;
-  installments?: number;
-  installmentValue?: number;
   inStock?: boolean;
   onAddToCart?: (quantity: number) => void;
   onBuyNow?: (quantity: number) => void;
@@ -33,13 +32,11 @@ export default function ProductActivity({
   productName,
   productImageUrl,
   productCategory,
-  sku,
-  embalagemValue,
-  embalagemUnits,
+  qtPalete,
+  paleteValue,
+  maxQuantity,
   showHeaderPrice = true,
   pricePerUnit,
-  installments = 10,
-  installmentValue,
   inStock = true,
   onAddToCart,
   onBuyNow,
@@ -50,14 +47,12 @@ export default function ProductActivity({
   const addItem = useCarrinhoStore((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
 
-  const calculatedInstallmentValue = installmentValue || price / installments;
-  const maxQuantity = 10;
-  const safeSku = String(sku ?? "").trim();
-  const safeEmbalagemValue =
-    typeof embalagemValue === "number" && Number.isFinite(embalagemValue) && embalagemValue > 0 ? embalagemValue : null;
-  const safeEmbalagemUnits =
-    typeof embalagemUnits === "number" && Number.isFinite(embalagemUnits) && embalagemUnits > 1 ? Math.floor(embalagemUnits) : 1;
-  const totalValue = safeEmbalagemValue != null ? safeEmbalagemValue * quantity : null;
+  const safeQtPalete = normalizePositiveInteger(qtPalete);
+  const safePaleteValue =
+    typeof paleteValue === "number" && Number.isFinite(paleteValue) && paleteValue > 0 ? paleteValue : null;
+  const safeMaxQuantity = normalizeNonNegativeInteger(maxQuantity) ?? 0;
+  const totalValue = safePaleteValue != null ? safePaleteValue * quantity : null;
+  const isPurchasable = inStock && safeMaxQuantity > 0 && safePaleteValue != null && safeQtPalete != null;
 
   const addCurrentProductToCart = async (selectedQuantity: number) => {
     if (!productId || !productName) {
@@ -72,8 +67,10 @@ export default function ProductActivity({
         category: productCategory,
         imageUrl: productImageUrl,
         unitPrice: price,
-        embalagemUnits: safeEmbalagemUnits,
-        quantity: selectedQuantity,
+        qtPalete: safeQtPalete,
+        paleteValue: safePaleteValue,
+        maxQuantity: safeMaxQuantity,
+        quantity: clampQuantityToMax(selectedQuantity, safeMaxQuantity),
       });
       void frontModal.success({
         title: existed ? "Quantidade atualizada" : "Adicionado ao carrinho",
@@ -136,7 +133,7 @@ export default function ProductActivity({
               type="button"
               aria-label="Diminuir quantidade"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              disabled={!inStock || quantity <= 1}
+              disabled={!isPurchasable || quantity <= 1}
               className="h-11 flex items-center justify-center text-custom-dark-1000 disabled:opacity-40"
             >
               -
@@ -147,8 +144,8 @@ export default function ProductActivity({
             <button
               type="button"
               aria-label="Aumentar quantidade"
-              onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
-              disabled={!inStock || quantity >= maxQuantity}
+              onClick={() => setQuantity((q) => Math.min(safeMaxQuantity, q + 1))}
+              disabled={!isPurchasable || quantity >= safeMaxQuantity}
               className="h-11 flex items-center justify-center text-custom-dark-1000 disabled:opacity-40"
             >
               +
@@ -165,14 +162,14 @@ export default function ProductActivity({
         <div className="col-span-7 flex flex-col gap-2">
         <button
           onClick={() => void handleAddToCart()}
-          disabled={!inStock}
+          disabled={!isPurchasable}
           className="w-full h-11 bg-tints-french-blue cursor-pointer text-white font-montserrat font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Adicionar ao carrinho
         </button>
         <button
           onClick={() => void handleBuyNow()}
-          disabled={!inStock}
+          disabled={!isPurchasable}
           className="w-full h-11 border border-custom-light-400 bg-white cursor-pointer text-custom-dark-1000 font-montserrat font-semibold text-sm hover:bg-custom-light-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Comprar agora

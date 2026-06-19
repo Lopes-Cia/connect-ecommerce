@@ -5,7 +5,7 @@ export type LopesProdutoRaw = {
   ean?: unknown
   codVol?: unknown
   qtUnit?: unknown
-  qtUnitCaixa?: unknown
+  qtPalete?: unknown
   preco?: unknown
   qtEstoque?: unknown
   imagem?: unknown

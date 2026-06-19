@@ -10,6 +10,7 @@ import ProductActivity from "../_components/ProductActivity";
 import ProductSummary from "../_components/ProductSummary";
 import ProductInfoTabs from "../_components/ProductInfoTabs";
 import FreightConsult from "../_components/FreightConsult";
+import { computeMaxQuantity, computePaleteValue } from "@/lib/produtos/paletePricing";
 import { toProdutoDetailViewModel } from "@/lib/produtos/viewModels";
 import ProductCarousel from "../../_components/ProductCarousel";
 import type { ProductCardViewModel } from "@/lib/products/viewModels";
@@ -59,7 +60,11 @@ function toRelatedProductCard(raw: unknown): ProductCardViewModel | null {
   const compareAt = asNumber(record.compareAtPrice, 0);
   const hasDiscount = compareAt > 0 && compareAt > price;
 
-  const inStock = Boolean(record.inStock ?? record.in_stock ?? true);
+  const qtUnit = asNumber(record.qtUnit, 0);
+  const qtPalete = asNumber(record.qtPalete, 0);
+  const stock = asNumber(record.stock, 0);
+  const maxQuantity = computeMaxQuantity(stock, qtPalete);
+  const inStock = maxQuantity > 0;
 
   const image_url = asString(record.image, asString(record.image_url, "/placeholder.svg")) || "/placeholder.svg";
   const slug = asString(record.slug, "").trim() || undefined;
@@ -73,6 +78,11 @@ function toRelatedProductCard(raw: unknown): ProductCardViewModel | null {
     image_url,
     slug,
     cardType: inStock ? (hasDiscount ? "discount" : "standard") : "coming-soon",
+    qtUnit: qtUnit > 0 ? qtUnit : null,
+    qtPalete: qtPalete > 0 ? qtPalete : null,
+    stock: stock > 0 ? stock : 0,
+    paleteValue: computePaleteValue(price, qtPalete),
+    maxQuantity,
   };
 }
 
@@ -148,6 +158,18 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
   }, [rawProduct, setContratoData, view]);
 
   useEffect(() => {
+    if (!view) return;
+
+    console.log("[PDP] qtEstoque", {
+      codProd: view.id,
+      nome: view.name,
+      qtEstoque: view.stock,
+      qtPalete: view.qtPalete,
+      maxQuantity: view.maxQuantity,
+    });
+  }, [view]);
+
+  useEffect(() => {
     let active = true;
 
     const categoryId = view?.categoryId;
@@ -218,17 +240,14 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
   };
   const unitLabel = getSpecValue("Unidade") || undefined;
   const sku = getSpecValue("SKU") || undefined;
-  const embalagemUnits =
-    typeof view.qtUnit === "number" &&
-    Number.isFinite(view.qtUnit) &&
-    view.qtUnit > 0 &&
-    typeof view.qtUnitCaixa === "number" &&
-    Number.isFinite(view.qtUnitCaixa) &&
-    view.qtUnitCaixa > 0
-      ? view.qtUnit * view.qtUnitCaixa
-      : null;
-  const embalagemValue = embalagemUnits ? embalagemUnits * view.price : null;
-  const embalagemDescription = embalagemUnits ? `Embalagem: Fardo com ${embalagemUnits} Unidades` : view.shortDescription;
+  const embalagemDescription =
+    typeof view.qtUnit === "number" && Number.isFinite(view.qtUnit) && view.qtUnit > 0
+      ? `Embalagem com ${view.qtUnit} Unidades`
+      : undefined;
+  const paleteDescription =
+    typeof view.qtPalete === "number" && Number.isFinite(view.qtPalete) && view.qtPalete > 0
+      ? `Palete com ${view.qtPalete} embalagens`
+      : undefined;
 
   return (
     <div className="bg-white pt-6 pb-28 lg:pb-6 px-4 md:px-6">
@@ -267,9 +286,10 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
               name={view.name}
               category={view.category}
               description={embalagemDescription}
+              secondaryDescription={paleteDescription}
               price={view.price}
               oldPrice={view.oldPrice}
-              embalagemValue={embalagemValue}
+              paleteValue={view.paleteValue}
               inStock={view.inStock}
               unitLabel={unitLabel}
               brand={view.brand ?? null}
@@ -284,8 +304,9 @@ export default function ProdutoClient({ slugPath }: { slugPath: string }) {
                 productImageUrl={view.images[0]}
                 productCategory={view.category}
                 sku={sku}
-                embalagemValue={embalagemValue}
-                embalagemUnits={embalagemUnits}
+                qtPalete={view.qtPalete}
+                paleteValue={view.paleteValue}
+                maxQuantity={view.maxQuantity}
                 inStock={view.inStock}
                 showHeaderPrice={false}
               />

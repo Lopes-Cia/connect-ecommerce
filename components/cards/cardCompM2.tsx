@@ -139,7 +139,7 @@ export function CardCompM2({
     priceLabel ??
     (product ? formatCurrency(product.discountPrice ?? product.price) : "")
   const resolvedPriceSubLabel =
-    priceSubLabel ?? (product ? "por unidade" : undefined)
+    priceSubLabel ?? (product ? "por embalagem" : undefined)
   const resolvedCtaLabel =
     ctaLabel ?? (product ? (isComingSoon ? "EM BREVE!" : "Comprar") : "Add to cart")
   const resolvedDisabled = disabled || isComingSoon

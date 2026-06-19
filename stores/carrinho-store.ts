@@ -1,6 +1,12 @@
 "use client";
 
 import { create } from "zustand";
+import {
+  clampQuantityToMax,
+  computePaleteValue,
+  normalizeNonNegativeInteger,
+  normalizePositiveInteger,
+} from "@/lib/produtos/paletePricing";
 
 export type CartItem = {
   id: string;
@@ -8,20 +14,30 @@ export type CartItem = {
   category: string;
   imageUrl: string;
   unitPrice: number;
+  qtPalete?: number | null;
+  paleteValue?: number | null;
+  maxQuantity?: number | null;
   embalagemUnits?: number | null;
   quantity: number;
 };
 
 const CART_STORAGE_KEY = "connect_ecommerce_cart_v1";
 
-function normalizeQuantity(value: number | undefined): number {
-  if (!value || Number.isNaN(value) || value <= 0) return 1;
-  return Math.floor(value);
-}
-
 function normalizeEmbalagemUnits(value: number | undefined | null): number {
   if (!value || Number.isNaN(value) || value <= 1) return 1;
   return Math.floor(value);
+}
+
+function normalizePaleteValue(value: unknown, unitPrice: unknown, qtPalete: unknown): number | null {
+  const explicit = typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
+  if (explicit != null) return explicit;
+  const derived = computePaleteValue(unitPrice, qtPalete);
+  if (derived != null) return derived;
+  return typeof unitPrice === "number" && Number.isFinite(unitPrice) && unitPrice > 0 ? unitPrice : null;
+}
+
+function normalizeMaxQuantity(value: unknown): number | null {
+  return normalizeNonNegativeInteger(value);
 }
 
 function computeTotalItems(items: CartItem[]): number {
@@ -29,7 +45,11 @@ function computeTotalItems(items: CartItem[]): number {
 }
 
 function computeTotalAmount(items: CartItem[]): number {
-  return items.reduce((acc, item) => acc + item.unitPrice * item.quantity * normalizeEmbalagemUnits(item.embalagemUnits), 0);
+  return items.reduce((acc, item) => {
+    const paleteValue = normalizePaleteValue(item.paleteValue, item.unitPrice, item.qtPalete);
+    if (paleteValue == null) return acc;
+    return acc + paleteValue * item.quantity;
+  }, 0);
 }
 
 export type CarrinhoState = {
@@ -45,6 +65,9 @@ export type CarrinhoState = {
     category?: string;
     imageUrl?: string;
     unitPrice: number;
+    qtPalete?: number | null;
+    paleteValue?: number | null;
+    maxQuantity?: number | null;
     embalagemUnits?: number | null;
     quantity?: number;
   }) => Promise<void>;
@@ -71,7 +94,11 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
       if (Array.isArray(parsed)) {
         const normalized = parsed.map((item) => ({
           ...item,
+          qtPalete: normalizePositiveInteger(item?.qtPalete),
+          paleteValue: normalizePaleteValue(item?.paleteValue, item?.unitPrice, item?.qtPalete),
+          maxQuantity: normalizeMaxQuantity(item?.maxQuantity),
           embalagemUnits: normalizeEmbalagemUnits(item?.embalagemUnits),
+          quantity: clampQuantityToMax(item?.quantity, item?.maxQuantity),
         }));
         set({
           items: normalized,
@@ -95,8 +122,14 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
   },
 
   addItem: async (input) => {
-    const quantity = normalizeQuantity(input.quantity);
+    const maxQuantity = normalizeMaxQuantity(input.maxQuantity);
+    if (maxQuantity != null && maxQuantity <= 0) {
+      throw new Error("Quantidade máxima indisponível para este produto.");
+    }
+    const quantity = clampQuantityToMax(input.quantity, maxQuantity);
     const embalagemUnits = normalizeEmbalagemUnits(input.embalagemUnits);
+    const qtPalete = normalizePositiveInteger(input.qtPalete);
+    const paleteValue = normalizePaleteValue(input.paleteValue, input.unitPrice, qtPalete);
     let alreadyInCart = false;
     const nextItems = (() => {
       const current = get().items;
@@ -107,9 +140,14 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
           if (x.id !== input.id) return x;
           const existingUnits = normalizeEmbalagemUnits(x.embalagemUnits);
           const shouldUpdateUnits = embalagemUnits > 1 && existingUnits === 1;
+          const mergedMaxQuantity = maxQuantity ?? normalizeMaxQuantity(x.maxQuantity);
+          const nextQuantity = clampQuantityToMax(x.quantity + quantity, mergedMaxQuantity);
           return {
             ...x,
-            quantity: x.quantity + quantity,
+            quantity: nextQuantity,
+            qtPalete: qtPalete ?? normalizePositiveInteger(x.qtPalete),
+            paleteValue: paleteValue ?? normalizePaleteValue(x.paleteValue, x.unitPrice, x.qtPalete),
+            maxQuantity: mergedMaxQuantity,
             embalagemUnits: shouldUpdateUnits ? embalagemUnits : existingUnits,
           };
         });
@@ -122,6 +160,9 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
           category: input.category ?? "Sem categoria",
           imageUrl: input.imageUrl ?? "/placeholder.svg",
           unitPrice: Number.isFinite(input.unitPrice) ? input.unitPrice : 0,
+          qtPalete,
+          paleteValue,
+          maxQuantity,
           embalagemUnits,
           quantity,
         },
@@ -153,7 +194,12 @@ export const useCarrinhoStore = create<CarrinhoState>((set, get) => ({
       return;
     }
 
-    const nextItems = get().items.map((x) => (x.id === id ? { ...x, quantity: Math.floor(quantity) } : x));
+    const nextItems = get().items.flatMap((x) => {
+      if (x.id !== id) return [x];
+      const nextQuantity = clampQuantityToMax(quantity, x.maxQuantity);
+      if (nextQuantity <= 0) return [];
+      return [{ ...x, quantity: nextQuantity }];
+    });
     set({
       items: nextItems,
       totalItems: computeTotalItems(nextItems),
