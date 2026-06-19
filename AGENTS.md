@@ -15,6 +15,7 @@ Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteado
 
 - Índice geral: [IA/readme.md](file:///c:/LOPES/www/connect-ecommerce/IA/readme.md)
 - Regras globais: [INTERACAO.md](file:///c:/LOPES/www/connect-ecommerce/IA/RULES/INTERACAO.md)
+- Regra canônica para migração MVP ao painel (ler quando o tema envolver painel/admin, reaproveitamento do front e prazo curto): [PAINEL_MVP.md](file:///c:/LOPES/www/connect-ecommerce/IA/RULES/PAINEL_MVP.md)
 - Regras de versionamento e deploy (obrigatório ler antes de atuar): [VERSIONAMENTO.md](file:///c:/LOPES/www/connect-ecommerce/IA/RULES/VERSIONAMENTO.md)
 - Contrato comum (fonte única de regras compartilhadas): [_CONTRATO.md](file:///c:/LOPES/www/connect-ecommerce/IA/AGENTS/_CONTRATO.md)
 - Especialistas:
@@ -44,6 +45,9 @@ Este arquivo é o entrypoint de instruções do workspace. Use-o como “roteado
 - Sempre produzir saída estruturada quando a tarefa for não-trivial: /plan e /spec.
 - Se faltar contexto crítico, assumir o caminho mais razoável e registrar a suposição; perguntar apenas quando a decisão mudar a execução de forma relevante.
 - Não executar comandos/testes longos por impulso; quando necessário, declarar o que será executado e por quê.
+- Quando o tema envolver migração para painel/admin com prazo curto, seguir a regra canônica `IA/RULES/PAINEL_MVP.md`.
+- Nesses casos, a IA deve preferir piloto pequeno e validável, sem propor por padrão migração ampla para outro projeto/repositório.
+- Quem decide o corte e a ordem é o usuário; a IA sugere apenas caminhos minimalistas e testáveis.
 
 
 

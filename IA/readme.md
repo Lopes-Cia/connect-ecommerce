@@ -4,7 +4,7 @@ Modelo para compartilhar entre projetos e time: definições de especialistas, r
 
 ## Índice
 - Especialistas: [SEARCHER](#specialists-searcher), [CODER](#specialists-coder), [DESIGNER](#specialists-designer), [TESTER](#specialists-tester), [QUALITY](#specialists-quality)
-- Regras: [INTERAÇÃO](#rules-interacao)
+- Regras: [INTERAÇÃO](#rules-interacao), [PAINEL MVP](#rules-painel-mvp)
 - TODO: [CODER](#todo-pesquisa-parruda--reuso-por-delta---coder), [DESIGNER](#todo-pesquisa-parruda--reuso-por-delta---designer), [TESTER](#todo-pesquisa-parruda--reuso-por-delta---tester), [QUALITY](#todo-pesquisa-parruda--reuso-por-delta---quality)
 
 
@@ -57,6 +57,11 @@ Definição completa em: [AGENTS/QUALITY.md](./AGENTS/QUALITY.md)
 ## REGRAS
 
 Definição completa em: [RULES/INTERACAO.md](./RULES/INTERACAO.md)
+
+<a id="rules-painel-mvp"></a>
+## REGRAS (PAINEL MVP)
+
+Definição completa em: [RULES/PAINEL_MVP.md](./RULES/PAINEL_MVP.md)
 
 ## TODO (Pesquisa parruda + reuso por delta - CODER)
 - [x] Spec baseline criada: `.trae/specs/research-coder-stack/` (spec.md + tasks.md + checklist.md)

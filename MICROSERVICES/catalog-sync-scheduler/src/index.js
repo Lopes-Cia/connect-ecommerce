@@ -27,7 +27,7 @@ async function runSync() {
   const startedAt = Date.now();
 
   try {
-    const url = `${appBaseUrl}/api/dev/catalog/sync?only=${encodeURIComponent(only)}${
+    const url = `${appBaseUrl}/api/producao/catalog/sync?only=${encodeURIComponent(only)}${
       skipIfUnchanged ? "&skipIfUnchanged=1" : ""
     }`;
     const response = await fetch(url, { method: "POST" });

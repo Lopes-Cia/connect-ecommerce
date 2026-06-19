@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { slugify } from "@/lib/utils";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -13,9 +14,11 @@ type OverwriteFlags = {
   category: 0 | 1;
   brand: 0 | 1;
   image: 0 | 1;
+  name: 0 | 1;
+  slug: 0 | 1;
 };
 
-const DEFAULT_GLOBAL_OVERWRITE_FLAGS: OverwriteFlags = { category: 0, brand: 1, image: 0 };
+const DEFAULT_GLOBAL_OVERWRITE_FLAGS: OverwriteFlags = { category: 0, brand: 1, image: 0, name: 0, slug: 0 };
 
 function getPageName(pathname: string | null): string {
   const raw = String(pathname ?? "").trim();
@@ -44,6 +47,8 @@ function toOverwriteFlags(value: unknown): OverwriteFlags {
     category: normalizeFlag(record.category),
     brand: normalizeFlag(record.brand),
     image: normalizeFlag(record.image),
+    name: normalizeFlag(record.name),
+    slug: normalizeFlag(record.slug),
   };
 }
 
@@ -58,6 +63,17 @@ function asNumber(value: unknown): number | null {
 
 function asString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
+}
+
+function normalizeProductSlug(idProduto: number, name: string, slug: string) {
+  const provided = String(slug ?? "").trim();
+  if (provided) {
+    const withoutLeading = provided.replace(/^\/+/, "");
+    return withoutLeading.startsWith("produtos/") ? `/${withoutLeading}` : `/produtos/${withoutLeading}`;
+  }
+
+  const baseSlug = slugify(name);
+  return `/produtos/${baseSlug || `produto-${idProduto}`}-${idProduto}`;
 }
 
 function pickProdutoSubset(value: unknown) {
@@ -121,15 +137,20 @@ export default function ContextoView({
   const [idProduto, setIdProduto] = useState("");
   const [stock, setStock] = useState("");
   const [brandId, setBrandId] = useState("");
+  const [productName, setProductName] = useState("");
+  const [productSlug, setProductSlug] = useState("");
   const [globalOverwriteLoading, setGlobalOverwriteLoading] = useState(false);
   const [globalOverwriteSaving, setGlobalOverwriteSaving] = useState(false);
   const [globalOverwriteFlags, setGlobalOverwriteFlags] = useState<OverwriteFlags>(DEFAULT_GLOBAL_OVERWRITE_FLAGS);
 
   useEffect(() => {
-    const id = asNumber(asRecord(contratoRaw)?.id);
+    const rawRecord = asRecord(contratoRaw);
+    const id = asNumber(rawRecord?.id);
     setIdProduto(id ? String(id) : "");
     setStock("");
     setBrandId("");
+    setProductName(asString(rawRecord?.name) ?? "");
+    setProductSlug(asString(rawRecord?.slug) ?? "");
     setSyncRawAction(null);
   }, [contratoRaw, setSyncRawAction]);
 
@@ -177,7 +198,7 @@ export default function ContextoView({
 
     setSyncRawAction(async () => {
       const patch = pickProdutoSubset(contratoRaw);
-      const response = await fetch("/api/dev/redis/catalog/produto/sync-raw", {
+      const response = await fetch("/api/producao/redis/catalog/produto/sync-raw", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idProduto: id, patch }),
@@ -378,6 +399,8 @@ export default function ContextoView({
                   { key: "category" as const, label: "category" },
                   { key: "brand" as const, label: "brand" },
                   { key: "image" as const, label: "image" },
+                  { key: "name" as const, label: "name" },
+                  { key: "slug" as const, label: "slug" },
                 ] satisfies { key: keyof OverwriteFlags; label: string }[]
               ).map((item) => (
                 <div key={item.key} className="flex items-center justify-between gap-3">
@@ -408,7 +431,7 @@ export default function ContextoView({
 
         <details className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-4" open={false}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-zinc-900">DEV</p>
+            <p className="text-sm font-semibold text-zinc-900">PRODUCAO</p>
             <ChevronDown size={16} className="text-zinc-700" />
           </summary>
 
@@ -443,6 +466,27 @@ export default function ContextoView({
                   className="mt-1 h-9"
                 />
               </div>
+              <div>
+                <p className="text-xs font-medium text-zinc-700">name</p>
+                <Input
+                  value={productName}
+                  onChange={(e) => setProductName(e.target.value)}
+                  placeholder="Nome final do produto"
+                  className="mt-1 h-9"
+                />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-zinc-700">slug</p>
+                <Input
+                  value={productSlug}
+                  onChange={(e) => setProductSlug(e.target.value)}
+                  placeholder="/produtos/nome-do-produto-77"
+                  className="mt-1 h-9"
+                />
+                <p className="mt-1 text-[11px] text-zinc-500">
+                  Se deixar vazio, o sistema gera o slug a partir do nome e do id.
+                </p>
+              </div>
             </div>
 
             <div className="mt-3 flex items-center justify-end gap-2">
@@ -468,7 +512,7 @@ export default function ContextoView({
                   (async () => {
                     setUpdateLoading(true);
                     try {
-                      const response = await fetch("/api/dev/redis/catalog/produto/stock", {
+                      const response = await fetch("/api/producao/redis/catalog/produto/stock", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ idProduto: parsedId, stock: parsedStock }),
@@ -489,7 +533,7 @@ export default function ContextoView({
                   })();
                 }}
               >
-                {updateLoading ? "Atualizando..." : "Atualizar"}
+                {updateLoading ? "Atualizando..." : "Atualizar Stock"}
               </Button>
               <Button
                 type="button"
@@ -513,7 +557,7 @@ export default function ContextoView({
                   (async () => {
                     setUpdateLoading(true);
                     try {
-                      const response = await fetch("/api/dev/redis/catalog/produto/brand", {
+                      const response = await fetch("/api/producao/redis/catalog/produto/brand", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ idProduto: parsedId, idBrand: parsedBrand }),
@@ -535,6 +579,54 @@ export default function ContextoView({
                 }}
               >
                 {updateLoading ? "Atualizando..." : "Atualizar Marca"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={updateLoading}
+                onClick={() => {
+                  const parsedId = asNumber(idProduto);
+                  const trimmedName = productName.trim();
+
+                  if (!parsedId || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                    openJson(JSON.stringify({ ok: false, message: "idProduto inválido" }, null, 2));
+                    return;
+                  }
+
+                  if (!trimmedName) {
+                    openJson(JSON.stringify({ ok: false, message: "name inválido" }, null, 2));
+                    return;
+                  }
+
+                  const normalizedSlug = normalizeProductSlug(parsedId, trimmedName, productSlug);
+
+                  (async () => {
+                    setUpdateLoading(true);
+                    try {
+                      const response = await fetch("/api/producao/redis/catalog/produto/name-slug", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ idProduto: parsedId, name: trimmedName, slug: normalizedSlug }),
+                      });
+                      const body = await response.json().catch(() => null);
+                      setProductSlug(normalizedSlug);
+                      openJson(JSON.stringify(body, null, 2));
+                    } catch (error) {
+                      openJson(
+                        JSON.stringify(
+                          { ok: false, message: error instanceof Error ? error.message : "Erro ao atualizar Redis" },
+                          null,
+                          2
+                        )
+                      );
+                    } finally {
+                      setUpdateLoading(false);
+                    }
+                  })();
+                }}
+              >
+                {updateLoading ? "Atualizando..." : "Atualizar Name/Slug"}
               </Button>
             </div>
           </div>

@@ -179,7 +179,7 @@ export default function RedisSection() {
     setProductsError(null);
 
     try {
-      const response = await fetch(`/api/dev/catalog/list/products?limit=${encodeURIComponent(String(limit))}`, {
+      const response = await fetch(`/api/producao/catalog/list/products?limit=${encodeURIComponent(String(limit))}`, {
         method: "GET",
       });
       const payload = (await response.json().catch(() => null)) as unknown as RedisListProductsResponse | null;
@@ -211,7 +211,7 @@ export default function RedisSection() {
     setBrandInfo("");
 
     try {
-      const response = await fetch("/api/dev/catalog/brand/upsert-by-name", {
+      const response = await fetch("/api/producao/catalog/brand/upsert-by-name", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name }),
@@ -262,7 +262,7 @@ export default function RedisSection() {
       delete nextDoc.brandId;
       delete nextDoc.marca;
 
-      const responseSave = await fetch(`/api/dev/catalog/crud/product/${encodeURIComponent(selectedProduct.id)}`, {
+      const responseSave = await fetch(`/api/producao/catalog/crud/product/${encodeURIComponent(selectedProduct.id)}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ doc: nextDoc }),
@@ -291,7 +291,7 @@ export default function RedisSection() {
     setBrandInfo("");
 
     try {
-      const responseList = await fetch(`/api/dev/catalog/list/products?limit=${encodeURIComponent(String(200))}`, {
+      const responseList = await fetch(`/api/producao/catalog/list/products?limit=${encodeURIComponent(String(200))}`, {
         method: "GET",
       });
       const payloadList = (await responseList.json().catch(() => null)) as unknown as RedisListProductsResponse | null;
@@ -351,7 +351,7 @@ export default function RedisSection() {
           const cacheKey = brandName.trim().toLowerCase();
           let brandId: number | null = cache.get(cacheKey) ?? null;
           if (!brandId) {
-            const responseUpsert = await fetch("/api/dev/catalog/brand/upsert-by-name", {
+            const responseUpsert = await fetch("/api/producao/catalog/brand/upsert-by-name", {
               method: "POST",
               headers: { "content-type": "application/json" },
               body: JSON.stringify({ name: brandName }),
@@ -374,7 +374,7 @@ export default function RedisSection() {
           delete nextDoc.brandId;
           delete nextDoc.marca;
 
-          const responseSave = await fetch(`/api/dev/catalog/crud/product/${encodeURIComponent(item.id)}`, {
+          const responseSave = await fetch(`/api/producao/catalog/crud/product/${encodeURIComponent(item.id)}`, {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ doc: nextDoc }),
@@ -487,7 +487,7 @@ export default function RedisSection() {
     setBrandShapeResult("");
 
     try {
-      const response = await fetch("/api/dev/catalog/migrate/brand-shape", { method: "POST" });
+      const response = await fetch("/api/producao/catalog/migrate/brand-shape", { method: "POST" });
       const payload = (await response.json().catch(() => null)) as unknown;
       if (!response.ok) throw new Error(formatDevError(payload));
       setBrandShapeResult(stringifyJson(payload));
@@ -507,7 +507,7 @@ export default function RedisSection() {
     try {
       const id = productId.trim();
       if (!id) throw new Error("Informe o id do produto");
-      const response = await fetch(`/api/dev/catalog/crud/product/${encodeURIComponent(id)}`, { method: "GET" });
+      const response = await fetch(`/api/producao/catalog/crud/product/${encodeURIComponent(id)}`, { method: "GET" });
       const payload = (await response.json().catch(() => null)) as unknown as RedisCrudResponse | null;
       if (!response.ok || !payload || !payload.ok) {
         throw new Error(payload && "message" in payload ? String(payload.message) : "Erro ao carregar");
@@ -540,7 +540,7 @@ export default function RedisSection() {
       }
       if (!doc || typeof doc !== "object" || Array.isArray(doc)) throw new Error("JSON deve ser um objeto");
 
-      const response = await fetch(`/api/dev/catalog/crud/product/${encodeURIComponent(id)}`, {
+      const response = await fetch(`/api/producao/catalog/crud/product/${encodeURIComponent(id)}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ doc }),
@@ -569,7 +569,7 @@ export default function RedisSection() {
       const ok = window.confirm(`Remover do Redis o produto ${id}?`);
       if (!ok) return;
 
-      const response = await fetch(`/api/dev/catalog/crud/product/${encodeURIComponent(id)}`, { method: "DELETE" });
+      const response = await fetch(`/api/producao/catalog/crud/product/${encodeURIComponent(id)}`, { method: "DELETE" });
       const payload = (await response.json().catch(() => null)) as unknown as RedisCrudResponse | null;
       if (!response.ok || !payload || !payload.ok) {
         throw new Error(payload && "message" in payload ? String(payload.message) : "Erro ao remover");
@@ -589,7 +589,7 @@ export default function RedisSection() {
       <Card className="min-h-0">
         <CardHeader className="space-y-1">
           <CardTitle className="text-base">Redis (Catálogo)</CardTitle>
-          <p className="text-xs text-muted-foreground">Operações rápidas e CRUD de produto (DEV).</p>
+          <p className="text-xs text-muted-foreground">Operações rápidas e CRUD de produto (PRODUCAO).</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -600,7 +600,7 @@ export default function RedisSection() {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => runDevOp("/api/dev/catalog/sync?only=produtos")}
+              onClick={() => runDevOp("/api/producao/catalog/sync?only=produtos")}
               disabled={opsLoading}
             >
               Sync produtos
@@ -609,7 +609,7 @@ export default function RedisSection() {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => runDevOp("/api/dev/catalog/index?drop=0")}
+              onClick={() => runDevOp("/api/producao/catalog/index?drop=0")}
               disabled={opsLoading}
             >
               Garantir índice
@@ -618,7 +618,7 @@ export default function RedisSection() {
               type="button"
               variant="destructive"
               size="sm"
-              onClick={() => runDevOp("/api/dev/catalog/clean?types=product")}
+              onClick={() => runDevOp("/api/producao/catalog/clean?types=product")}
               disabled={opsLoading}
             >
               Limpar produtos
